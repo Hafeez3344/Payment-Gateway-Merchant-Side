@@ -9,6 +9,7 @@ function App() {
   return (
     <>
     <p className='bg-red-400'>Marchenat Side </p>
+    <h1>Merchant</h1>
     </>
   )
 }
