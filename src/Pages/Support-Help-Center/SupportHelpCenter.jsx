@@ -169,7 +169,7 @@ const SupportHelpCenter = ({ showSidebar }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-4 mt-6 mb-32">
+        <div className="bg-white rounded-lg p-4 mt-6">
           <div className="flex items-center justify-between">
             <p className="text-black text-[15px] font-[600]">Tickets</p>
             <Button type="primary" onClick={() => setOpen(true)}>

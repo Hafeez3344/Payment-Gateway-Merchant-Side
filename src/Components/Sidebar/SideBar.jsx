@@ -81,7 +81,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
           <Menu
           onClick={() => {
-            navigate("/SystemConfigurationIntegration");
+            navigate("/UploadStatement");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Upload Statement"

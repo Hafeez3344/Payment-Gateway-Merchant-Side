@@ -13,6 +13,7 @@ import VerifiedTransactions from "./Pages/Verified-Transactions/VerifiedTransact
 import ManualVerifiedTransactions from "./Pages/Manual-Verified-Transactions/ManualVerifiedTransactions";
 import UnverifiedTransactions from "./Pages/Unverified-Transactions/UnverifiedTransactions";
 import DeclinedTransactions from "./Pages/Declined-Transactions/DeclinedTransactions";
+import UploadStatement from "./Pages/Upload-Statement/UploadStatement";
 
 function App() {
   const [showSidebar, setShowSide] = useState(
@@ -58,6 +59,10 @@ function App() {
             element={
               <SystemConfigurationIntegration showSidebar={showSidebar} />
             }
+          />
+          <Route
+            path="/UploadStatement"
+            element={<UploadStatement showSidebar={showSidebar} />}
           />
         </Routes>
         <Footer showSide={setShowSide} showSidebar={showSidebar} />
