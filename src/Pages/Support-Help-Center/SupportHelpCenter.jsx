@@ -78,13 +78,98 @@ const SupportHelpCenter = ({ showSidebar }) => {
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Support / Help Center</h1>
-          <p
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
-          >
+          <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
         </div>
         <div className="bg-white rounded-lg p-4">
+          {/* Input Fields */}
+          <div className="flex flex-col gap-4">
+            {/* First Row: Name and Email */}
+            <div className="flex gap-4">
+              <div className="flex flex-col w-1/2">
+                <label className="text-black text-[12px] font-[600]">
+                Full Name *
+                </label>
+                <Input className="mt-1 text-[12px]" placeholder="Enter Full Name" />
+              </div>
+              <div className="flex flex-col w-1/2">
+                <label className="text-black text-[12px] font-[600]">
+                Email Address *
+                </label>
+                <Input className="mt-1 text-[12px]" placeholder="Enter Email Address" />
+              </div>
+            </div>
+
+            {/* Second Row: Phone and City */}
+            <div className="flex gap-4">
+              <div className="flex flex-col w-1/2">
+                <label className="text-black text-[12px] font-[600]">
+                  Phone 
+                </label>
+                <Input className="mt-1 text-[12px]" placeholder="Enter Phone Number" />
+              </div>
+              <div className="flex flex-col w-1/2">
+                <label className="text-black text-[12px] font-[600]">
+                  City
+                </label>
+                <Input className="mt-1 text-[12px]" placeholder="Enter Your City Name" />
+              </div>
+            </div>
+
+            {/* Third Row: State and ZIP Code */}
+            <div className="flex gap-4">
+              <div className="flex flex-col w-1/2">
+                <label className="text-black text-[12px] font-[600]">
+                  State *
+                </label>
+                <Input className="mt-1 text-[12px]" placeholder="Enter Your Country Name" />
+              </div>
+              <div className="flex flex-col w-1/2">
+                <label className="text-black text-[12px] font-[600]">
+                  Zip Code *
+                </label>
+                <Input className="mt-1 text-[12px]" placeholder="Enter Your City Name" />
+              </div>
+            </div>
+
+            {/* Full Row: Address */}
+            <div className="flex flex-col">
+              <label className="text-black text-[12px] font-[600]">
+                Address
+              </label>
+              <Input className="mt-1 text-[12px]" placeholder="Enter your address" />
+            </div>
+
+            {/* Full Row: Description */}
+            <div className="flex flex-col">
+              <label className="text-black text-[12px] font-[600]">
+                Description
+              </label>
+              <textarea
+                className="mt-1 p-2 text-[12px] border rounded outline-none resize-none"
+                rows={4}
+                placeholder="Write description....."
+              ></textarea>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-4 mt-6">
+            <Button className="flex start px-10 text-[11px]" type="primary">
+              Save
+            </Button>
+            <Button
+              className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[11px]"
+              type=""
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 mt-6 mb-32">
           <div className="flex items-center justify-between">
             <p className="text-black text-[15px] font-[600]">Tickets</p>
             <Button type="primary" onClick={() => setOpen(true)}>

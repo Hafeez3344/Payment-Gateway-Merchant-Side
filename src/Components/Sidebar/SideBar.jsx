@@ -5,7 +5,9 @@ import { PiNotebook } from "react-icons/pi";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { FaHeadphones } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
+import { TbBookUpload } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+
 
 const SideBar = ({ showSidebar, setShowSide }) => {
   const fn_controlSidebar = () => {
@@ -76,6 +78,14 @@ const SideBar = ({ showSidebar, setShowSide }) => {
           }}
           label="Setting"
           icon={<IoSettingsOutline className="text-[20px]" />}
+        />
+          <Menu
+          onClick={() => {
+            navigate("/SystemConfigurationIntegration");
+            if (isMobile()) fn_controlSidebar();
+          }}
+          label="Upload Statement"
+          icon={<TbBookUpload className="text-[20px]" />}
         />
       </div>
     </div>

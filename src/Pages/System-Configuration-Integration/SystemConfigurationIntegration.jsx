@@ -1,5 +1,7 @@
+import { Input } from "antd";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import gold from "../../assets/gold.svg";
 
 const SystemConfigurationIntegration = ({ showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
@@ -70,53 +72,44 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
 
         {/* API keys section */}
         <div className="bg-white rounded-lg p-4">
-          <div className="flex flex-col md:flex-row items-center justify-between pb-3">
-            <div>
-              <p className="text-black text-[11px] font-[600]">API Keys</p>
-              <span className="text-[13px] font-[600]">Your API Keys</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-3">
+            {/* First Row: API Key and Secret Key */}
+            <div className="flex flex-col">
+              <p className="text-black text-[11px] font-[600]">API Key:</p>
+              <Input className="mt-1 text-[10px]" placeholder="Enter API Key" />
             </div>
-          </div>
-          <div className="overflow-x-auto rounded-lg border border-gray-300">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b text-left text-[12px] text-gray-700">
-                  <th className="p-4">Version</th>
-                  <th className="p-4">API Key</th>
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Created On</th>
-                </tr>
-              </thead>
-              <tbody>
-                {apiKeys.length > 0 ? (
-                  apiKeys.map((key, index) => (
-                    <tr key={index} className="text-gray-800 text-sm border-b">
-                      <td className="p-4 flex items-center gap-2 text-[11px] font-[600] text-[#000000B2]">
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-4 w-4"
-                        />
-                        {key.version}
-                      </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {key.apiKey}
-                      </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {key.name}
-                      </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {key.createdOn}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="p-4 text-center text-gray-500">
-                      No API keys found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div className="flex flex-col">
+              <p className="text-black text-[11px] font-[600]">Secret Key:</p>
+              <Input
+                className="mt-1 text-[10px]"
+                placeholder="Enter Secret Key"
+              />
+            </div>
+
+            {/* Second Row: Membership and Tier */}
+            <div className="flex flex-col">
+              <p className="text-black text-[11px] font-[600]">Membership:</p>
+              <Input
+                className="mt-1 text-[10px]"
+                placeholder="Enter Phone Number"
+              />
+            </div>
+            <div className="flex flex-col">
+              <p className="text-black text-[11px] font-[600]">Tier:</p>
+              <div className="flex items-center mt-1 border border-gray-300 rounded px-2">
+                <img className="" src={gold} alt="Gold Icon" />
+                <Input
+                  className="flex-1 text-[10px]  outline-none border-none"
+                  placeholder="Gold"
+                />
+              </div>
+            </div>
+
+            <div className="flex">
+              <button className="bg-[#0864E8] text-white px-10  items-center rounded-md hover:bg-[#065BCC]">
+                <p className="text-[10px] py-1"> Save</p>
+              </button>
+            </div>
           </div>
         </div>
 

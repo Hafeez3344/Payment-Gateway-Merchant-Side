@@ -4,7 +4,7 @@ import Rectangle from "../../assets/Rectangle.jpg";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import { FiEdit } from "react-icons/fi";
 import { Switch, Button, Modal, Input } from "antd";
-import logo from "../../assets/logo.png";
+import mehtaLogo from "../../assets/mehtaLogo.png";
 
 const MerchantManagement = ({ showSidebar }) => {
   const [open, setOpen] = React.useState(false);
@@ -85,7 +85,7 @@ const MerchantManagement = ({ showSidebar }) => {
       <div className="p-7">
         {/* header */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-          <h1 className="text-[25px] font-[500]">Merchant Management</h1>
+          <h1 className="text-[25px] font-[500]">Merchant Profile</h1>
           <p
             className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
           >
@@ -99,20 +99,20 @@ const MerchantManagement = ({ showSidebar }) => {
             <div className="flex flex-col z-[-1] items-center">
               <img
                 src={Rectangle}
-                alt="Logo"
+                alt="image"
                 className="h-[130px] object-cover w-full rounded-t-lg"
               />
               <div
                 className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9]"
                 style={{ boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)" }}
               >
-                <img src={logo} alt="logo" className="w-[75px]" />
+                <img src={mehtaLogo} alt="logo" className="w-[75px]" />
               </div>
             </div>
-            <h2 className="text-[19px] font-[700] mt-4 text-center">BetPay</h2>
-            <p className="text-gray-500 text-[13px] text-center">@betpayllc</p>
+            <h2 className="text-[18px] font-[600] mt-4 text-center">Mehta & Mehta</h2>
+            <p className="text-gray-500 text-[13px] text-center">@mehta823</p>
             <div className="m-3 mt-6">
-              <h3 className="text-[17px] font-[700] border-b pb-2">
+              <h3 className="text-[16px] font-[600] border-b pb-2">
                 Personal Info
               </h3>
               <div className="space-y-3 pt-3">
@@ -121,7 +121,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Full Name:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    Bet Pay Inc
+                   Mehta & Mehta
                   </span>
                 </div>
                 <div className="flex">
@@ -129,7 +129,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Email:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    willjontex@gmail.com
+                   willjontoax@gmail.com
                   </span>
                 </div>
                 <div className="flex">
@@ -137,7 +137,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Phone Number:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    +91 9036 2361 236
+                   (1) 2536 2561 2365
                   </span>
                 </div>
                 <div className="flex">
@@ -145,7 +145,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Website:
                   </span>
                   <a
-                    href="https://www.betpay.com"
+                    href=": www.mehta&mehta.com"
                     className="text-[12px] font-[600] text-left text-[#505050] w-full"
                   >
                     www.betpay.com
@@ -156,8 +156,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Bio:
                   </span>
                   <span className="text-[12px] font-[600] text-[#505050] w-full">
-                    BetPay is Largest Payment Provider in Betting Industry
-                    across the World
+                   Lorem Ipsum is simply dummy text of the printing and typesetting industry.
                   </span>
                 </div>
               </div>
@@ -171,23 +170,25 @@ const MerchantManagement = ({ showSidebar }) => {
               {/* Merchant Accounts Button */}
               <div className="w-full md:w-auto">
                 <button
-                  className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto"
+                  className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
                   style={{
                     backgroundImage:
                       "linear-gradient(rgba(8, 100, 232, 0.1), rgba(115, 115, 115, 0))",
                   }}
                 >
-                  Merchant Accounts
+                  Bank Accounts
+                </button>
+                <button
+                  className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
+                >
+                 UPI Accounts
                 </button>
               </div>
 
               {/* Search Input and Add Merchant Button */}
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-                <button className="text-[10px] text-[#00000080] rounded border border-[#0000001A] px-4 py-2 w-full md:w-auto">
-                  Search Merchant...
-                </button>
                 <Button type="primary" onClick={() => setOpen(true)}>
-                  Add Merchant
+                Add Account
                 </Button>
                 <Modal
                   centered
@@ -195,7 +196,7 @@ const MerchantManagement = ({ showSidebar }) => {
                   style={{ fontFamily: "sans-serif" }}
                   title={
                     <p className="text-[16px] font-[700]">
-                      Add New Merchant Account
+                      Add New Account
                     </p>
                   }
                   footer={
@@ -222,31 +223,31 @@ const MerchantManagement = ({ showSidebar }) => {
                   <div className="flex gap-4 ">
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                        Merchant Name <span className="text-[#D50000]">*</span>
+                      Account Holder <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         className="w-full text-[12px]"
-                        placeholder="Enter Merchant Name"
+                        placeholder="Enter Account Holder"
                       />
                     </div>
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                        Phone Number <span className="text-[#D50000]">*</span>
+                      Account Number  <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         className="w-full  text-[12px]"
-                        placeholder="Enter Phone Number"
+                        placeholder="Enter Account Number"
                       />
                     </div>
                   </div>
                   <div className="flex gap-4">
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                        Email <span className="text-[#D50000]">*</span>
+                      IBAN  <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         className="w-full text-[12px]"
-                        placeholder="Enter Email"
+                        placeholder="Enter IBAN Number "
                       />
                     </div>
                     <div className="flex-1 my-2">
@@ -260,11 +261,11 @@ const MerchantManagement = ({ showSidebar }) => {
                     </div>
                   </div>
                   <p className="text-[12px] font-[500] pb-1 mt-2">
-                    API Key <span className="text-[#D50000]">*</span>
+                  Choose a Bank<span className="text-[#D50000]">*</span>
                   </p>
                   <Input
                     className="text-[12px]"
-                    placeholder="Enter Merchant API Key"
+                    placeholder="Enter Bank Name"
                   />
                 </Modal>
               </div>

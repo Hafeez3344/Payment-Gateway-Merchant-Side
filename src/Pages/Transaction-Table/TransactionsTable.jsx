@@ -7,6 +7,10 @@ import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Pagination, Switch, Button, Modal, Input } from "antd";
 import stcpay from "../../assets/stcpay.jpg";
+import { RiFindReplaceLine } from "react-icons/ri";
+import { IoMdCheckmark } from "react-icons/io";
+import { FaRegEdit } from "react-icons/fa";
+import { GoCircleSlash } from "react-icons/go";
 
 const TransactionsTable = ({ showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
@@ -203,9 +207,7 @@ const TransactionsTable = ({ showSidebar }) => {
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">All Transaction</h1>
-          <p
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
-          >
+          <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
         </div>
@@ -290,9 +292,22 @@ const TransactionsTable = ({ showSidebar }) => {
                       )}
                     </div>
                   ))}
+                  <div className="flex gap-2 mt-4">
+                    <button className="bg-[#03996933] flex text-[#039969] px-3 py-1  rounded hover:bg-[#03996950] text-[10px] ">
+                      <IoMdCheckmark className="mt-[3px] mr-[6px]" /> Approve
+                      Transaction
+                    </button>
+                    <button className="bg-[#FF405F33] flex text-[#FF3F5F] px-4  py-1 rounded hover:bg-[#FF405F50] text-[10px] ">
+                      <GoCircleSlash className="mt-[3px] mr-[6px]" />
+                      Decline TR
+                    </button>
+                    <button className="bg-[#F6790233] flex text-[#F67A03] px-4 ml-[40px] py-1 rounded hover:bg-[#F6790250] text-[10px] ">
+                      <FaRegEdit className="mt-[2px] mr-2" /> Edit TR
+                    </button>
+                  </div>
 
                   {/* Bottom Divider and Activity */}
-                  <div className="border-b w-[370px] mt-8"></div>
+                  <div className="border-b w-[370px] mt-4"></div>
                   <p className="text-[12px] font-[600]">Activity</p>
                   <p className="text-[9px] font-[600] leading-10">
                     Transaction ID:{" "}
@@ -303,12 +318,21 @@ const TransactionsTable = ({ showSidebar }) => {
                 </div>
 
                 {/* Right side with border and image */}
-                <div className="w-full md:w-1/2 md:border-l-2 my-10 md:mt-0 pl-0 md:pl-6 flex items-center justify-center">
+                <div className="w-full md:w-1/2 md:border-l-2 my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
+                  {/* Image */}
                   <img
                     src={stcpay}
                     alt="Payment Image"
                     className="max-h-full"
                   />
+
+                  {/* Button */}
+                  <div className="flex">
+                    <button className="mt-4 border flex border-black px-1 py-1 rounded ">
+                      <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
+                      <p>Replace Payment Proof</p>
+                    </button>
+                  </div>
                 </div>
               </div>
             </Modal>
@@ -321,11 +345,11 @@ const TransactionsTable = ({ showSidebar }) => {
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
-                  className="border-none px-2 text-[13px] w-24 text-gray-700 focus:outline-none"
+                  className="border-none px-3 text-[13px] w-24 text-gray-700 focus:outline-none"
                   placeholderText="Start Date"
                   dateFormat="yyyy-MM-dd"
                 />
-                <span className="py-1 text-[13px] font-[600]">To</span>
+                <span className="py-1 mt-1  text-[12px] font-[600]">To</span>
                 <DatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
