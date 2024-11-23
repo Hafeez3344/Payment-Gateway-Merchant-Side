@@ -14,6 +14,7 @@ import ManualVerifiedTransactions from "./Pages/Manual-Verified-Transactions/Man
 import UnverifiedTransactions from "./Pages/Unverified-Transactions/UnverifiedTransactions";
 import DeclinedTransactions from "./Pages/Declined-Transactions/DeclinedTransactions";
 import UploadStatement from "./Pages/Upload-Statement/UploadStatement";
+import ReportsAndAnalytics from "./Pages/Reports-&-Analytics/ReportsAndAnalytics";
 
 function App() {
   const [showSidebar, setShowSide] = useState(
@@ -49,6 +50,10 @@ function App() {
           <Route
             path="/MerchantManagement"
             element={<MerchantManagement showSidebar={showSidebar} />}
+          />
+           <Route
+            path="/ReportsAndAnalytics"
+            element={<ReportsAndAnalytics showSidebar={showSidebar} />}
           />
           <Route
             path="/SupportHelpCenter"

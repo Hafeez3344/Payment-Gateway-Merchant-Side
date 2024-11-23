@@ -7,6 +7,7 @@ import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Input } from "antd";
+import { FiUpload } from "react-icons/fi";
 
 const UploadStatement = ({ showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
@@ -122,9 +123,6 @@ const UploadStatement = ({ showSidebar }) => {
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Upload Statement</h1>
-          <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
-            Dashboard - Data Table
-          </p>
         </div>
         <div className="bg-white rounded-lg flex justify-center items-center h-40 p-4">
           <div className="flex flex-col items-center justify-center w-full">
@@ -135,8 +133,9 @@ const UploadStatement = ({ showSidebar }) => {
               {/* Upload File Button with Label */}
               <label
                 htmlFor="file-upload"
-                className="bg-blue-500 text-white rounded py-2 px-4 cursor-pointer"
+                className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
               >
+                <FiUpload />
                 Choose a file
               </label>
 
@@ -149,7 +148,8 @@ const UploadStatement = ({ showSidebar }) => {
                 className="hidden"
               />
             </div>
-            <span className="text-[10px] text-[#00000040]">PDF Files Only</span>
+
+            <span className="text-[11px] text-[#00000040]">PDF Files Only</span>
           </div>
         </div>
 

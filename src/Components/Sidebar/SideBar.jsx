@@ -7,7 +7,7 @@ import { FaHeadphones } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { TbBookUpload } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
-
+import { IoAnalytics } from "react-icons/io5";
 
 const SideBar = ({ showSidebar, setShowSide }) => {
   const fn_controlSidebar = () => {
@@ -60,8 +60,16 @@ const SideBar = ({ showSidebar, setShowSide }) => {
             navigate("/MerchantManagement");
             if (isMobile()) fn_controlSidebar();
           }}
-          label="Merchant Management"
+          label="Merchant Profile"
           icon={<FaRegCircleUser className="text-[20px]" />}
+        />
+        <Menu
+          onClick={() => {
+            navigate("/ReportsAndAnalytics");
+            if (isMobile()) fn_controlSidebar();
+          }}
+          label="Reports & Analytics"
+          icon={<IoAnalytics className="text-[20px]" />}
         />
         <Menu
           onClick={() => {
