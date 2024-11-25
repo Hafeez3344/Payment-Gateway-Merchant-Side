@@ -92,7 +92,7 @@ const ReportsAndAnalytics = ({ showSidebar }) => {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between gap-4 mt-5">
-          {/* User Overview Graph */}
+          {/* User Overview Graph Card*/}
           <div className="bg-white rounded-lg shadow-md p-4 flex-1">
             <h3 className="text-lg font-semibold mb-2">User Overview</h3>
             <div className="flex items-center justify-center">
@@ -104,11 +104,11 @@ const ReportsAndAnalytics = ({ showSidebar }) => {
             </div>
             <div className="flex justify-between">
               <p className="text-[11px] font-[700]"><span className="text-[#00000080]">New:</span> 500</p>
-              <p className="text-[11px] font-[700]"><span className="text-[#00000080]">Subscribed:</span> 300</p>
+              <p className="text-[11px] font-[700]"><span className="text-[#00000080]">Subscribed:</span> 3000</p>
             </div>
           </div>
 
-          {/* Total Transactions Graph */}
+          {/* Total Transactions Graph Card*/}
           <div className="bg-white rounded-lg shadow-md p-4 flex-1">
             <h3 className="text-lg font-semibold mb-2">Total Transactions</h3>
             <p className="text-[12px] font-[600]"><span className="text-[#00000080]">Total Gain: </span>$50,000</p>
@@ -121,7 +121,7 @@ const ReportsAndAnalytics = ({ showSidebar }) => {
             </div>
           </div>
 
-          {/* Statistics Graph */}
+          {/* Statistics Graph  Card*/}
           <div className="bg-white rounded-lg shadow-md p-4 flex-1">
             <h3 className="text-lg font-semibold mb-2">Statistics</h3>
             <div className="">
