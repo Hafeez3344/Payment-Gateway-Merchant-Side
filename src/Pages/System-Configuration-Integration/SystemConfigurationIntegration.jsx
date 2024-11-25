@@ -16,23 +16,30 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
       loginDate: "01 Jan 2024, 09:00 AM",
       logoutDate: "01 Jan 2024, 05:00 PM",
       ipAddress: "192.168.1.101",
-      isp: "Comcast",
-      city: "New York",
+      isp: "Triple Play Project",
+      city: "Mumbai, Maharashtra, India",
     },
     {
       loginDate: "02 Jan 2024, 10:00 AM",
       logoutDate: "02 Jan 2024, 06:00 PM",
       ipAddress: "192.168.1.102",
-      isp: "AT&T",
-      city: "San Francisco",
+      isp: "Triple Play Project",
+      city: "Bengaluru, Karnataka, India",
     },
     {
       loginDate: "03 Jan 2024, 08:30 AM",
       logoutDate: "03 Jan 2024, 04:30 PM",
       ipAddress: "192.168.1.103",
-      isp: "Spectrum",
-      city: "Chicago",
+      isp: "Triple Play Project",
+      city: "Mumbai, Maharashtra, India",
     },
+    {
+      loginDate: "02 Jan 2024, 10:00 AM",
+      logoutDate: "02 Jan 2024, 06:00 PM",
+      ipAddress: "192.168.1.102",
+      isp: "Triple Play Project",
+      city: "Bengaluru, Karnataka, India",
+    }
   ];
 
   const apiKeys = [
@@ -99,7 +106,7 @@ const SystemConfigurationIntegration = ({ showSidebar }) => {
               <div className="flex items-center mt-1 border border-gray-300 rounded px-2">
                 <img className="" src={gold} alt="Gold Icon" />
                 <Input
-                  className="flex-1 text-[10px]  outline-none border-none"
+                  className="flex-1 text-[10px] outline-none border-none"
                   placeholder="Gold"
                 />
               </div>

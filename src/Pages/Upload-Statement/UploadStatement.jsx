@@ -157,18 +157,19 @@ const UploadStatement = ({ showSidebar }) => {
           <p className="text-black font-medium text-lg">All Statements</p>
           <div className="flex flex-col md:flex-row items-center justify-between pb-3">
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-              <div className="flex border items-center rounded-md">
+              <div className="flex border border-gray-300 items-center bg-white rounded">
+                {/* 2px border radius */}
                 <DatePicker
                   selected={startDate}
                   onChange={(date) => setStartDate(date)}
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
-                  className="border-none px-3 text-[13px] w-24 text-gray-700 focus:outline-none"
+                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l" // 2px rounded left side
                   placeholderText="Start Date"
                   dateFormat="yyyy-MM-dd"
                 />
-                <span className="py-1 mt-1  text-[12px] font-[600]">To</span>
+                <span className="mt-[4px] text-[11px] font-[600] mr-1">To</span>
                 <DatePicker
                   selected={endDate}
                   onChange={(date) => setEndDate(date)}
@@ -176,28 +177,29 @@ const UploadStatement = ({ showSidebar }) => {
                   startDate={startDate}
                   endDate={endDate}
                   minDate={startDate}
-                  className="border-none px-2 text-[13px] w-24 text-gray-700 focus:outline-none"
+                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r" // 2px rounded right side
                   placeholderText="End Date"
                   dateFormat="yyyy-MM-dd"
                 />
               </div>
-              <div className="flex flex-col w-full md:w-40">
+
+              <div className="flex flex-col w-full md:w-32">
                 <select
                   value={bank}
                   onChange={(e) => setBank(e.target.value)}
                   className="border border-gray-300 rounded py-1 text-[12px] text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
-                  <option className="text-[10px] text-gray-400" value="">
+                  <option className="text-[6px] text-gray-400" value="">
                     Bank Name
                   </option>
                   <option
-                    className="text-[10px] text-gray-400"
+                    className="text-[6px] text-gray-400"
                     value="Canara Bank"
                   >
                     Canara Bank
                   </option>
                   <option
-                    className="text-[10px] text-gray-400"
+                    className="text-[6px] text-gray-400"
                     value="Bank of Baroda"
                   >
                     Bank of Baroda
