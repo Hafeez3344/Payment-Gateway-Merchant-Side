@@ -30,7 +30,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-01",
       time: "11:30 AM",
       amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
+      UTR: "#893727423434",
       status: "Verified",
     },
     {
@@ -40,7 +40,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-16",
       time: "10:55 AM",
       amount: "₹ 2400",
-      merchantName: "Book Fair",
+      UTR: "#893727423434",
       status: "Declined",
     },
     {
@@ -50,7 +50,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-01",
       time: "11:30 AM",
       amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
+      UTR: "#893727423434",
       status: "Verified",
     },
     {
@@ -60,7 +60,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-16",
       time: "10:55 AM",
       amount: "₹ 2400",
-      merchantName: "Book Fair",
+      UTR: "#893727423434",
       status: "Declined",
     },
     {
@@ -70,7 +70,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-01",
       time: "11:30 AM",
       amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
+      UTR: "#893727423434",
       status: "Verified",
     },
     {
@@ -80,7 +80,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-16",
       time: "10:55 AM",
       amount: "₹ 2400",
-      merchantName: "Book Fair",
+      UTR: "#893727423434",
       status: "Declined",
     },
     {
@@ -90,7 +90,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-01",
       time: "11:30 AM",
       amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
+      UTR: "#893727423434",
       status: "Verified",
     },
     {
@@ -100,7 +100,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-16",
       time: "10:55 AM",
       amount: "₹ 2400",
-      merchantName: "Book Fair",
+      UTR: "#893727423434",
       status: "Declined",
     },
     {
@@ -110,7 +110,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-01",
       time: "11:30 AM",
       amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
+      UTR: "#893727423434",
       status: "Verified",
     },
     {
@@ -120,7 +120,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-16",
       time: "10:55 AM",
       amount: "₹ 2400",
-      merchantName: "Book Fair",
+      UTR: "#893727423434",
       status: "Declined",
     },
     {
@@ -130,7 +130,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-01",
       time: "11:30 AM",
       amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
+      UTR: "#893727423434",
       status: "Verified",
     },
     {
@@ -140,7 +140,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-16",
       time: "10:55 AM",
       amount: "₹ 2400",
-      merchantName: "Book Fair",
+      UTR: "#893727423434",
       status: "Declined",
     },
     {
@@ -150,7 +150,7 @@ const TransactionsTable = ({ showSidebar }) => {
       date: "2024-01-01",
       time: "11:30 AM",
       amount: "₹ 5000",
-      merchantName: "Shubh Exchange",
+      UTR: "#893727423434",
       status: "Verified",
     },
   ];
@@ -318,7 +318,7 @@ const TransactionsTable = ({ showSidebar }) => {
                 </div>
 
                 {/* Right side with border and image */}
-                <div className="w-full md:w-1/2 md:border-l-2 my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
+                <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
                   {/* Image */}
                   <img
                     src={stcpay}
@@ -406,9 +406,9 @@ const TransactionsTable = ({ showSidebar }) => {
                   <th className="p-4">IBAN</th>
                   <th className="p-4">DATE</th>
                   <th className="p-4">AMOUNT</th>
-                  <th className="p-4">MERCHANT NAME</th>
-                  <th className="p-4">STATUS</th>
-                  <th className="p-4 cursor-pointer">ACTION</th>
+                  <th className="p-4">UTR#</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 cursor-pointer">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -425,7 +425,7 @@ const TransactionsTable = ({ showSidebar }) => {
                         <img
                           src={bankImages[transaction.bankName]}
                           alt={`${transaction.bankName} Logo`}
-                          className="w-6 h-6 rounded-full mr-2" // Adjusted to add margin-right
+                          className="w-6 h-6 rounded-full mr-2" 
                         />
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction.bankName}
@@ -435,14 +435,15 @@ const TransactionsTable = ({ showSidebar }) => {
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.iban}
                       </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
+                      <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap">
                         {transaction.date}
                       </td>
+
                       <td className="p-4 text-[11px] font-[700] text-[#000000B2]">
                         {transaction.amount}
                       </td>
                       <td className="p-4 text-[11px] font-[700] text-[#0864E8]">
-                        {transaction.merchantName}
+                        {transaction.UTR}
                       </td>
                       <td className="p-4 text-[11px] font-[500]">
                         <span className={getStatusClass(transaction.status)}>

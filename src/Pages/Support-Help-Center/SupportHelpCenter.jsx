@@ -89,7 +89,7 @@ const SupportHelpCenter = ({ showSidebar }) => {
             <div className="flex gap-4">
               <div className="flex flex-col w-1/2">
                 <label className="text-black text-[12px] font-[600]">
-                Full Name *
+                Full Name <span className="text-[#FF173D]">*</span>
                 </label>
                 <Input className="mt-1 text-[12px]" placeholder="Enter Full Name" />
               </div>
@@ -121,13 +121,13 @@ const SupportHelpCenter = ({ showSidebar }) => {
             <div className="flex gap-4">
               <div className="flex flex-col w-1/2">
                 <label className="text-black text-[12px] font-[600]">
-                  State *
+                  State <span className="text-[#FF173D]">*</span>
                 </label>
                 <Input className="mt-1 text-[12px]" placeholder="Enter Your Country Name" />
               </div>
               <div className="flex flex-col w-1/2">
                 <label className="text-black text-[12px] font-[600]">
-                  Zip Code *
+                  Zip Code <span className="text-[#FF173D]">*</span>
                 </label>
                 <Input className="mt-1 text-[12px]" placeholder="Enter Your City Name" />
               </div>

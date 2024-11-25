@@ -15,49 +15,49 @@ const MerchantManagement = ({ showSidebar }) => {
   const [merchants, setMerchants] = useState([
     {
       name: "Shubh Exchange",
-      accounts: 5,
-      website: "www.sizuh.exchange",
-      limit: "₹150000",
+      IBAN: 12332344,
+      AcountTitle: "Mehta",
+      limit: "₹1500",
       status: "Active",
       isToggled: false,
     },
     {
       name: "BetXFair",
-      accounts: 7,
-      website: "www.bet2fair.com",
-      limit: "₹300000",
+      IBAN: 6820050000,
+      AcountTitle: "Mehta & Mehta",
+      limit: "₹3000",
       status: "Active",
       isToggled: false,
     },
     {
       name: "Book Fair",
-      accounts: 4,
-      website: "www.bookfair.com",
-      limit: "₹120000",
+      IBAN: 6820050000,
+      AcountTitle: "Mehta & Mehta",
+      limit: "₹1200",
       status: "Inactive",
       isToggled: false,
     },
     {
       name: "All Exchange",
-      accounts: 9,
-      website: "www.allexchange.com",
-      limit: "₹780000",
+      IBAN: 6820050000,
+      AcountTitle: "Mehta & Mehta",
+      limit: "₹7800",
       status: "Active",
       isToggled: false,
     },
     {
       name: "New Bet Exchange",
-      accounts: 9,
-      website: "www.newbetexchange.com",
-      limit: "₹350000",
+      IBAN: 6820050000,
+      AcountTitle: "Mehta & Mehta",
+      limit: "₹3500",
       status: "Disabled",
       isToggled: false,
     },
     {
       name: "All Exchange",
-      accounts: 9,
-      website: "www.allexchange.com",
-      limit: "₹780000",
+      IBAN: 6820050000,
+      AcountTitle: "Mehta & Mehta",
+      limit: "₹7800",
       status: "Active",
       isToggled: false,
     },
@@ -86,9 +86,7 @@ const MerchantManagement = ({ showSidebar }) => {
         {/* header */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Merchant Profile</h1>
-          <p
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]"
-          >
+          <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
         </div>
@@ -109,7 +107,9 @@ const MerchantManagement = ({ showSidebar }) => {
                 <img src={mehtaLogo} alt="logo" className="w-[75px]" />
               </div>
             </div>
-            <h2 className="text-[18px] font-[600] mt-4 text-center">Mehta & Mehta</h2>
+            <h2 className="text-[18px] font-[600] mt-4 text-center">
+              Mehta & Mehta
+            </h2>
             <p className="text-gray-500 text-[13px] text-center">@mehta823</p>
             <div className="m-3 mt-6">
               <h3 className="text-[16px] font-[600] border-b pb-2">
@@ -121,7 +121,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Full Name:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                   Mehta & Mehta
+                    Mehta & Mehta
                   </span>
                 </div>
                 <div className="flex">
@@ -129,7 +129,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Email:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                   willjontoax@gmail.com
+                    willjontoax@gmail.com
                   </span>
                 </div>
                 <div className="flex">
@@ -137,7 +137,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     Phone Number:
                   </span>
                   <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                   (1) 2536 2561 2365
+                    (1) 2536 2561 2365
                   </span>
                 </div>
                 <div className="flex">
@@ -156,7 +156,8 @@ const MerchantManagement = ({ showSidebar }) => {
                     Bio:
                   </span>
                   <span className="text-[12px] font-[600] text-[#505050] w-full">
-                   Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                    Lorem Ipsum is simply dummy text of the printing and
+                    typesetting industry.
                   </span>
                 </div>
               </div>
@@ -178,26 +179,22 @@ const MerchantManagement = ({ showSidebar }) => {
                 >
                   Bank Accounts
                 </button>
-                <button
-                  className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
-                >
-                 UPI Accounts
+                <button className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t">
+                  UPI Accounts
                 </button>
               </div>
 
               {/* Search Input and Add Merchant Button */}
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
                 <Button type="primary" onClick={() => setOpen(true)}>
-                Add Account
+                  Add Account
                 </Button>
                 <Modal
                   centered
                   width={600}
                   style={{ fontFamily: "sans-serif" }}
                   title={
-                    <p className="text-[16px] font-[700]">
-                      Add New Account
-                    </p>
+                    <p className="text-[16px] font-[700]">Add New Account</p>
                   }
                   footer={
                     <div className="flex gap-4 mt-6">
@@ -223,7 +220,7 @@ const MerchantManagement = ({ showSidebar }) => {
                   <div className="flex gap-4 ">
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                      Account Holder <span className="text-[#D50000]">*</span>
+                        Account Holder <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         className="w-full text-[12px]"
@@ -232,7 +229,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     </div>
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                      Account Number  <span className="text-[#D50000]">*</span>
+                        Account Number <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         className="w-full  text-[12px]"
@@ -243,7 +240,7 @@ const MerchantManagement = ({ showSidebar }) => {
                   <div className="flex gap-4">
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                      IBAN  <span className="text-[#D50000]">*</span>
+                        IBAN <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         className="w-full text-[12px]"
@@ -261,7 +258,7 @@ const MerchantManagement = ({ showSidebar }) => {
                     </div>
                   </div>
                   <p className="text-[12px] font-[500] pb-1 mt-2">
-                  Choose a Bank<span className="text-[#D50000]">*</span>
+                    Choose a Bank<span className="text-[#D50000]">*</span>
                   </p>
                   <Input
                     className="text-[12px]"
@@ -272,16 +269,17 @@ const MerchantManagement = ({ showSidebar }) => {
             </div>
 
             <div className="overflow-x-auto">
-              {" "}
               {/* Make sure the table can scroll */}
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#ECF0FA]">
                   <tr>
                     <th className="p-3 text-[13px] font-[600]">
-                      Merchant Name
+                      Bank Name
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">Accounts</th>
-                    <th className="p-5 text-[13px] font-[600]">Website</th>
+                    <th className="p-5 text-[13px] font-[600]">IBAN</th>
+                    <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
+                      Account Title
+                    </th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
                     <th className="p-5 text-[13px] font-[600]">Action</th>
@@ -298,7 +296,7 @@ const MerchantManagement = ({ showSidebar }) => {
                       <td className="p-3 text-[13px] font-[600]">
                         <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
                           <img
-                            src={CanaraBank} // Placeholder image
+                            src={CanaraBank} // Replace with your image path
                             alt={`${merchant.name} logo`}
                             className="w-6 h-6 object-contain"
                           />
@@ -307,16 +305,9 @@ const MerchantManagement = ({ showSidebar }) => {
                           </span>
                         </div>
                       </td>
-                      <td className="p-3 text-[13px] pl-8">
-                        {merchant.accounts}
-                      </td>
-                      <td className="p-3 text-[13px]">
-                        <a
-                          href={`https://${merchant.website}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          {merchant.website}
-                        </a>
+                      <td className="p-3 text-[13px]">{merchant.IBAN}</td>
+                      <td className="p-3 text-[13px] whitespace-nowrap">
+                        {merchant.AcountTitle}
                       </td>
                       <td className="p-3 text-[13px] font-[400]">
                         {merchant.limit}
@@ -329,20 +320,13 @@ const MerchantManagement = ({ showSidebar }) => {
                               : merchant.status === "Inactive"
                               ? "bg-[#FF173D33] text-[#D50000]"
                               : merchant.status === "Disabled"
-                              ? "bg-[#BDBDBD] "
+                              ? "bg-[#BDBDBD]"
                               : ""
                           }`}
                         >
-                          {merchant.status === "Active"
-                            ? "Active"
-                            : merchant.status === "Inactive"
-                            ? "Inactive"
-                            : merchant.status === "Disabled"
-                            ? "Disabled"
-                            : ""}
+                          {merchant.status}
                         </button>
                       </td>
-
                       <td className="p-3 text-center">
                         <div className="flex justify-center items-center">
                           <Switch size="small" defaultChecked />
