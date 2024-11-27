@@ -23,7 +23,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
       className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${
         showSidebar ? "left-0" : "left-[-270px]"
       }`}
-      style={{ zIndex: 9999 }}
+      style={{ zIndex: 999 }}
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
         <div>
