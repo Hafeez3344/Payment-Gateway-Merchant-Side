@@ -72,6 +72,22 @@ const UploadStatement = ({ showSidebar }) => {
       noOfTransactions: 2500,
       status: "Manual",
     },
+    {
+      id: "9780924782474",
+      bankName: "Canara Bank",
+      date: "2024-01-01",
+      time: "11:30 AM",
+      noOfTransactions: 5000,
+      status: "System",
+    },
+    {
+      id: "9879827354233",
+      bankName: "Bank of Baroda",
+      date: "2024-01-16",
+      time: "10:55 AM",
+      noOfTransactions: 2500,
+      status: "Manual",
+    },
   ];
 
   const bankImages = {
@@ -190,6 +206,7 @@ const UploadStatement = ({ showSidebar }) => {
                   className="border border-gray-300 rounded py-1 text-[12px] text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option className="text-[6px] text-gray-400" value="">
+                  <img src={CanaraBank} alt="" />
                     Bank Name
                   </option>
                   <option

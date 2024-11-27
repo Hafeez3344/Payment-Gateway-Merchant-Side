@@ -12,16 +12,19 @@ const Home = ({ showSidebar }) => {
 
   return (
     <div
-    className={`bg-gray-100 transition-all duration-500 ${
-      showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-    }`}
-    style={{ minHeight: `${containerHeight}px` }}
-  >
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
+      style={{ minHeight: `${containerHeight}px` }}
+    >
       <div className="p-7">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Admin Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
+            <button className="text-white bg-[#0864E8] border w-[70px] sm:w-[70px] p-1 rounded">
+              ALL
+            </button>
             <button className="text-black border w-[70px] sm:w-[70px] p-1 rounded">
               TODAY
             </button>
@@ -97,49 +100,49 @@ const Home = ({ showSidebar }) => {
             </p>
             <RecentTransaction
               name="Saman Paret"
-              company="Bookfir"
+              utrId="#1234567"
               status="Verified"
               color="#029868"
               amount="₹4,980"
             />
             <RecentTransaction
               name="Rahul Dev"
-              company="Bookfir"
+              utrId="#1234567"
               status="Declined"
               color="#FF3F5E"
               amount="₹8,923"
             />
             <RecentTransaction
               name="Arjun Sharma"
-              company="Bookfir"
+              utrId="#1234567"
               status="Manual"
               color="#0864E8"
               amount="₹5,723"
             />
             <RecentTransaction
               name="Arjun Sharma"
-              company="Bookfir"
+              utrId="#1234567"
               status="Manual"
               color="#0864E8"
               amount="₹5,723"
             />
             <RecentTransaction
               name="Rahul Dev"
-              company="Bookfir"
+              utrId="#1234567"
               status="Declined"
               color="#FF3F5E"
               amount="₹8,923"
             />
             <RecentTransaction
               name="Saman Paret"
-              company="Bookfir"
+              utrId="#1234567"
               status="Verified"
               color="#029868"
               amount="₹4,980"
             />
             <RecentTransaction
-              name="Saman Paret"
-              company="Bookfir"
+              name="Shubh"
+              utrId="#1234567"
               status="Verified"
               color="#029868"
               amount="₹4,980"
@@ -174,12 +177,13 @@ const Stat = ({ label, value, color }) => (
   </div>
 );
 
-const RecentTransaction = ({ name, company, status, color, amount }) => (
-  <div className="flex gap-28 pt-3 border-b-2 py-3">
+const RecentTransaction = ({ name, status, color, amount, utrId }) => (
+  <div className="flex justify-between items-center pt-3 border-b py-3">
     <div>
       <p className="text-[15px] font-[600]">{name}</p>
-      <p className="text-[10px] pt-1 text-[#7987A1] font-[600]">
-        {company} <span className={`pl-10 text-[${color}]`}>{status}</span>
+      <p className="text-[10px] pt-1 text-[#7987A1] font-[600] flex items-center">
+        <span className="mr-3">UTR ID: {utrId}</span>
+        <span className={`text-[${color}] whitespace-nowrap`}>{status}</span>
       </p>
     </div>
     <div>

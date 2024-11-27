@@ -16,7 +16,6 @@ const SideBar = ({ showSidebar, setShowSide }) => {
 
   const navigate = useNavigate();
 
-  // Function to check if the screen size is mobile
   const isMobile = () => window.innerWidth < 1024; 
 
   return (

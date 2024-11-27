@@ -14,28 +14,28 @@ const SupportHelpCenter = ({ showSidebar }) => {
   const transactions = [
     {
       id: "9780924782474",
-      title: "Payment Issue",
+      title: "Receipt Issue",
       status: "New Ticket",
       ticketOpen: "01 Jan 2024, 11:30 AM",
       ticketClose: "02 Jan 2024, 03:45 PM",
     },
     {
       id: "9879827354233",
-      title: "Refund Request",
+      title: "Payment Failed",
       status: "In Progress",
       ticketOpen: "02 Jan 2024, 10:00 AM",
       ticketClose: "02 Jan 2024, 02:15 PM",
     },
     {
       id: "9780924782474",
-      title: "Payment Issue",
+      title: "Account Logins",
       status: "Solved",
       ticketOpen: "01 Jan 2024, 11:30 AM",
       ticketClose: "02 Jan 2024, 03:45 PM",
     },
     {
       id: "9879827354233",
-      title: "Refund Request",
+      title: "Balance Declined",
       status: "In Progress",
       ticketOpen: "02 Jan 2024, 10:00 AM",
       ticketClose: "02 Jan 2024, 02:15 PM",
@@ -198,7 +198,7 @@ const SupportHelpCenter = ({ showSidebar }) => {
               maxLength={50}
             />
           </Modal>
-          <div className="bg-white rounded-lg mt-4">
+          <div className="bg-white rounded-lg mt-2">
             <div className="overflow-x-auto rounded-lg border border-gray-300">
               <table className="min-w-full table-auto">
                 <thead>
