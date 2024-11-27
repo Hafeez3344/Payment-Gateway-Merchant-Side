@@ -20,7 +20,7 @@ const Home = ({ showSidebar }) => {
       <div className="p-7">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-          <h1 className="text-[25px] font-[500]">Admin Dashboard</h1>
+          <h1 className="text-[25px] font-[500]">Merchant Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
             <button className="text-white bg-[#0864E8] border w-[70px] sm:w-[70px] p-1 rounded">
               ALL

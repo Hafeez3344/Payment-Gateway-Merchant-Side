@@ -62,7 +62,7 @@ const Login = () => {
       <div style={styles.container}>
         <div style={styles.header}>
           <img src={logo} alt="Logo" style={styles.logo} />
-          <Title style={styles.title}>Admin Login</Title>
+          <Title style={styles.title}>Merchant Login</Title>
           <Text style={styles.text}>
             Welcome back! Please enter your details below to log in as an admin.
           </Text>
