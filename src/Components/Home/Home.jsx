@@ -93,61 +93,54 @@ const Home = ({ showSidebar }) => {
 
           {/* Recent Transactions Section */}
           <div className="bg-white p-6 rounded shadow w-full flex-1 h-[100%]">
-            <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
-            <p className="text-[11px] font-[500] text-gray-500 pt-1">
-              Customer is an individual or business that purchases the goods
-              service has evolved to include real-time.
-            </p>
-            <RecentTransaction
-              name="Saman Paret"
-              utrId="#1234567"
-              status="Verified"
-              color="#029868"
-              amount="₹4,980"
-            />
-            <RecentTransaction
-              name="Rahul Dev"
-              utrId="#1234567"
-              status="Declined"
-              color="#FF3F5E"
-              amount="₹8,923"
-            />
-            <RecentTransaction
-              name="Arjun Sharma"
-              utrId="#1234567"
-              status="Manual"
-              color="#0864E8"
-              amount="₹5,723"
-            />
-            <RecentTransaction
-              name="Arjun Sharma"
-              utrId="#1234567"
-              status="Manual"
-              color="#0864E8"
-              amount="₹5,723"
-            />
-            <RecentTransaction
-              name="Rahul Dev"
-              utrId="#1234567"
-              status="Declined"
-              color="#FF3F5E"
-              amount="₹8,923"
-            />
-            <RecentTransaction
-              name="Saman Paret"
-              utrId="#1234567"
-              status="Verified"
-              color="#029868"
-              amount="₹4,980"
-            />
-            <RecentTransaction
-              name="Shubh"
-              utrId="#1234567"
-              status="Verified"
-              color="#029868"
-              amount="₹4,980"
-            />
-          </div>
+  <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
+  <p className="text-[11px] font-[500] text-gray-500 pt-1">
+    Customer is an individual or business that purchases the goods or services, and the process has evolved to include real-time tracking.
+  </p>
+  <RecentTransaction
+    name="Saman Paret"
+    utrId="#1234567"
+    status="Verified"
+    amount="₹4,980"
+  />
+  <RecentTransaction
+    name="Rahul Dev"
+    utrId="#1234567"
+    status="Declined"
+    amount="₹8,923"
+  />
+  <RecentTransaction
+    name="Arjun Sharma"
+    utrId="#1234567"
+    status="Manual Verified"
+    amount="₹5,723"
+  />
+  <RecentTransaction
+    name="Arjun Sharma"
+    utrId="#1234567"
+    status="Unverified"
+    amount="₹5,723"
+  />
+  <RecentTransaction
+    name="Rahul Dev"
+    utrId="#1234567"
+    status="Verified"
+    amount="₹8,923"
+  />
+  <RecentTransaction
+    name="Saman Paret"
+    utrId="#1234567"
+    status="Declined"
+    amount="₹4,980"
+  />
+  <RecentTransaction
+    name="Shubh"
+    utrId="#1234567"
+    status="Manual Verified"
+    amount="₹4,980"
+  />
+</div>
+
         </div>
       </div>
     </div>
@@ -177,19 +170,43 @@ const Stat = ({ label, value, color }) => (
   </div>
 );
 
-const RecentTransaction = ({ name, status, color, amount, utrId }) => (
-  <div className="flex justify-between items-center pt-3 border-b py-3">
-    <div>
-      <p className="text-[15px] font-[600]">{name}</p>
-      <p className="text-[10px] pt-1 text-[#7987A1] font-[600] flex items-center">
-        <span className="mr-3">UTR ID: {utrId}</span>
-        <span className={`text-[${color}] whitespace-nowrap`}>{status}</span>
-      </p>
+const RecentTransaction = ({ name, utrId, status, color, amount }) => {
+  // Status color mapping
+  const statusColor = {
+    Verified: "#029868",   // Green for Verified
+    Declined: "#FF3F5E",   // Red for Declined
+    "Manual Verified": "#0864E8",  // Blue for Manual Verified
+    Unverified: "#F67A03"  // Orange for Unverified
+  };
+
+  return (
+    <div className="flex justify-between items-center py-3 border-b">
+      {/* Left Section */}
+      <div>
+        <p className="text-[15px] font-[600]">{name}</p>
+        <div className="flex items-center gap-2 text-[10px] pt-1 text-[#7987A1] font-[600]">
+          {/* UTR ID label */}
+          <span>UTR ID:</span>
+          {/* UTR ID value */}
+          <span>{utrId}</span>
+          {/* Status with dynamic color */}
+          <span
+            className="text-[10px] font-[600]"
+            style={{ color: statusColor[status] || color }}
+          >
+            {status}
+          </span>
+        </div>
+      </div>
+
+      {/* Right Section */}
+      <div>
+        <p className="text-[16px] font-[600]">{amount}</p>
+      </div>
     </div>
-    <div>
-      <p className="text-[16px] font-[600]">{amount}</p>
-    </div>
-  </div>
-);
+  );
+};
+
+
 
 export default Home;
