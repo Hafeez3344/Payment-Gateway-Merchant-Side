@@ -338,7 +338,7 @@ const TransactionsTable = ({ showSidebar }) => {
             </Modal>
 
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-            <div className="flex border border-gray-300 items-center bg-white rounded">
+              <div className="flex border border-gray-300 items-center bg-white rounded">
                 {/* 2px border radius */}
                 <DatePicker
                   selected={startDate}
@@ -426,7 +426,7 @@ const TransactionsTable = ({ showSidebar }) => {
                         <img
                           src={bankImages[transaction.bankName]}
                           alt={`${transaction.bankName} Logo`}
-                          className="w-6 h-6 rounded-full mr-2" 
+                          className="w-6 h-6 rounded-full mr-2"
                         />
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
                           {transaction.bankName}
