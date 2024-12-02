@@ -3,11 +3,15 @@ import { useNavigate } from "react-router-dom";
 import graph from "../../assets/graph.png";
 import { GoDotFill } from "react-icons/go";
 
-const Home = ({ showSidebar }) => {
+const Home = ({ authorization,  showSidebar }) => {
+  const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
 
   useEffect(() => {
     window.scroll(0, 0);
+    if (!authorization){
+      navigate("/login")
+    }
   }, []);
 
   return (

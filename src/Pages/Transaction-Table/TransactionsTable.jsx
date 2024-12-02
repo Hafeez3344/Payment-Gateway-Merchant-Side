@@ -12,7 +12,7 @@ import { IoMdCheckmark } from "react-icons/io";
 import { FaRegEdit } from "react-icons/fa";
 import { GoCircleSlash } from "react-icons/go";
 
-const TransactionsTable = ({ showSidebar }) => {
+const TransactionsTable = ({ authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -195,6 +195,8 @@ const TransactionsTable = ({ showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    if(!authorization)
+      navigate("/login")
   }, []);
 
   return (
