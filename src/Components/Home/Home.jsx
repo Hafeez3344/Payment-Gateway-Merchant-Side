@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import graph from "../../assets/graph.png";
 import { GoDotFill } from "react-icons/go";
 
-const Home = ({ authorization,  showSidebar }) => {
+const Home = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
 
   useEffect(() => {
     window.scroll(0, 0);
-    if (!authorization){
-      navigate("/login")
+    if (!authorization) {
+      navigate("/login");
     }
   }, []);
 
@@ -97,54 +97,55 @@ const Home = ({ authorization,  showSidebar }) => {
 
           {/* Recent Transactions Section */}
           <div className="bg-white p-6 rounded shadow w-full flex-1 h-[100%]">
-  <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
-  <p className="text-[11px] font-[500] text-gray-500 pt-1">
-    Customer is an individual or business that purchases the goods or services, and the process has evolved to include real-time tracking.
-  </p>
-  <RecentTransaction
-    name="Saman Paret"
-    utrId="#1234567"
-    status="Verified"
-    amount="₹4,980"
-  />
-  <RecentTransaction
-    name="Rahul Dev"
-    utrId="#1234567"
-    status="Declined"
-    amount="₹8,923"
-  />
-  <RecentTransaction
-    name="Arjun Sharma"
-    utrId="#1234567"
-    status="Manual Verified"
-    amount="₹5,723"
-  />
-  <RecentTransaction
-    name="Arjun Sharma"
-    utrId="#1234567"
-    status="Unverified"
-    amount="₹5,723"
-  />
-  <RecentTransaction
-    name="Rahul Dev"
-    utrId="#1234567"
-    status="Verified"
-    amount="₹8,923"
-  />
-  <RecentTransaction
-    name="Saman Paret"
-    utrId="#1234567"
-    status="Declined"
-    amount="₹4,980"
-  />
-  <RecentTransaction
-    name="Shubh"
-    utrId="#1234567"
-    status="Manual Verified"
-    amount="₹4,980"
-  />
-</div>
-
+            <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
+            <p className="text-[11px] font-[500] text-gray-500 pt-1">
+              Customer is an individual or business that purchases the goods or
+              services, and the process has evolved to include real-time
+              tracking.
+            </p>
+            <RecentTransaction
+              name="Saman Paret"
+              utrId="#1234567"
+              status="Verified"
+              amount="₹4,980"
+            />
+            <RecentTransaction
+              name="Rahul Dev"
+              utrId="#1234567"
+              status="Declined"
+              amount="₹8,923"
+            />
+            <RecentTransaction
+              name="Arjun Sharma"
+              utrId="#1234567"
+              status="Manual Verified"
+              amount="₹5,723"
+            />
+            <RecentTransaction
+              name="Arjun Sharma"
+              utrId="#1234567"
+              status="Unverified"
+              amount="₹5,723"
+            />
+            <RecentTransaction
+              name="Rahul Dev"
+              utrId="#1234567"
+              status="Verified"
+              amount="₹8,923"
+            />
+            <RecentTransaction
+              name="Saman Paret"
+              utrId="#1234567"
+              status="Declined"
+              amount="₹4,980"
+            />
+            <RecentTransaction
+              name="Shubh"
+              utrId="#1234567"
+              status="Manual Verified"
+              amount="₹4,980"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -177,10 +178,10 @@ const Stat = ({ label, value, color }) => (
 const RecentTransaction = ({ name, utrId, status, color, amount }) => {
   // Status color mapping
   const statusColor = {
-    Verified: "#029868",   // Green for Verified
-    Declined: "#FF3F5E",   // Red for Declined
-    "Manual Verified": "#0864E8",  // Blue for Manual Verified
-    Unverified: "#F67A03"  // Orange for Unverified
+    Verified: "#029868", // Green for Verified
+    Declined: "#FF3F5E", // Red for Declined
+    "Manual Verified": "#0864E8", // Blue for Manual Verified
+    Unverified: "#F67A03", // Orange for Unverified
   };
 
   return (
@@ -210,7 +211,5 @@ const RecentTransaction = ({ name, utrId, status, color, amount }) => {
     </div>
   );
 };
-
-
 
 export default Home;
