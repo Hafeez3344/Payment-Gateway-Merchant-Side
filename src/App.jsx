@@ -57,45 +57,45 @@ function App() {
           <Route path="/" element={<Home authorization={authorization} showSidebar={showSidebar} />} />
 
           <Route
-            path="/TransactionsTable"
+            path="/transactions-table"
             element={<TransactionsTable authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/VerifiedTransactions"
+            path="/verified-transactions"
             element={<VerifiedTransactions authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/ManualVerifiedTransactions"
+            path="/manual-verified"
             element={<ManualVerifiedTransactions authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/UnverifiedTransactions"
+            path="/unverified-transactions"
             element={<UnverifiedTransactions authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/DeclinedTransactions"
+            path="/declined-transactions"
             element={<DeclinedTransactions authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/MerchantManagement"
+            path="/merchant-management"
             element={<MerchantManagement authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/ReportsAndAnalytics"
+            path="/reports-and-analytics"
             element={<ReportsAndAnalytics authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/SupportHelpCenter"
+            path="/support-help-center"
             element={<SupportHelpCenter authorization={authorization} showSidebar={showSidebar} />}
           />
           <Route
-            path="/SystemConfigurationIntegration"
+            path="/system-configuration"
             element={
               <SystemConfigurationIntegration authorization={authorization} showSidebar={showSidebar} />
             }
           />
           <Route
-            path="/UploadStatement"
+            path="/upload-statement"
             element={<UploadStatement authorization={authorization} showSidebar={showSidebar} />}
           />
         </Routes>

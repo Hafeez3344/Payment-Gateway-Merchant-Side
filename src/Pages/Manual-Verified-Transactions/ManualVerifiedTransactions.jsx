@@ -7,7 +7,7 @@ import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Pagination, Input } from "antd";
 
-const ManualVerifiedTransactions = ({ showSidebar }) => {
+const ManualVerifiedTransactions = ({ authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -191,6 +191,7 @@ const ManualVerifiedTransactions = ({ showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    if (!authorization) navigate("/login");
   }, []);
 
   return (
@@ -205,12 +206,7 @@ const ManualVerifiedTransactions = ({ showSidebar }) => {
           <h1 className="text-[25px] font-[500]">
             Manual Verified Transactions
           </h1>
-          <p
-            onClick={() => navigate("/UnverifiedTransactions")}
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400] cursor-pointer"
-          >
-            Dashboard - Data Table
-          </p>
+          <p>Dashboard - Data Table</p>
         </div>
         <div className="bg-white rounded-lg p-4">
           <div className="flex flex-col md:flex-row items-center justify-between pb-3">
@@ -314,7 +310,7 @@ const ManualVerifiedTransactions = ({ showSidebar }) => {
                           {transaction.bankName}
                         </span>
                       </td>
-                      
+
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
                         {transaction.iban}
                       </td>

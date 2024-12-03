@@ -28,8 +28,9 @@ const MerchantLogin = ({authorization, setAuthorization}) => {
           description: "You have successfully logged in!",
           placement: "topRight",
         });
-        Cookies.set("token", response?.token);
-        Cookies.set("adminId", response?.id);
+        Cookies.set("merchantToken", response?.token);
+        Cookies.set("merchantId", response?.id);
+        
         
         navigate("/");
         setAuthorization(true);
@@ -106,7 +107,7 @@ const MerchantLogin = ({authorization, setAuthorization}) => {
           </Text>
         </div>
         <Form
-          name="admin_login"
+          name="merchant_login"
           initialValues={{
             remember: true,
           }}

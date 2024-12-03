@@ -1,14 +1,124 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import Rectangle from "../../assets/Rectangle.jpg";
+import { useNavigate } from "react-router-dom";
 import CanaraBank from "../../assets/CanaraBank.svg";
+import upilogo2 from "../../assets/upilogo2.svg";
 import { FiEdit } from "react-icons/fi";
 import { Switch, Button, Modal, Input } from "antd";
 import mehtaLogo from "../../assets/mehtaLogo.png";
+import axios from "axios";
+import BACKEND_URL from "../../api/api";
 
-const MerchantManagement = ({ showSidebar }) => {
+const MerchantManagement = ({ authorization, showSidebar }) => {
+  const [activeTab, setActiveTab] = useState("bank"); // 'bank' or 'upi'
+
+  // Sample Data
+  const bankAccounts = [
+    {
+      name: "Canara Bank",
+      IBAN: "IN0987654321",
+      AccountTitle: "John Doe",
+      limit: "₹50,000",
+      status: "Active",
+    },
+    {
+      name: "HDFC Bank",
+      IBAN: "IN1234567890",
+      AccountTitle: "Jane Smith",
+      limit: "₹1,00,000",
+      status: "Inactive",
+    },
+    {
+      name: "Canara Bank",
+      IBAN: "IN0987654321",
+      AccountTitle: "John Doe",
+      limit: "₹50,000",
+      status: "Active",
+    },
+    {
+      name: "HDFC Bank",
+      IBAN: "IN1234567890",
+      AccountTitle: "Jane Smith",
+      limit: "₹1,00,000",
+      status: "Inactive",
+    },
+    {
+      name: "Canara Bank",
+      IBAN: "IN0987654321",
+      AccountTitle: "John Doe",
+      limit: "₹50,000",
+      status: "Active",
+    },
+    {
+      name: "HDFC Bank",
+      IBAN: "IN1234567890",
+      AccountTitle: "Jane Smith",
+      limit: "₹1,00,000",
+      status: "Inactive",
+    },
+  ];
+
+  const upiAccounts = [
+    {
+      name: "UPI Bank",
+      IBAN: "UPI0987654321",
+      AccountTitle: "John Doe",
+      limit: "₹20,000",
+      status: "Active",
+    },
+    {
+      name: "UPI Bank",
+      IBAN: "UPI1234567890",
+      AccountTitle: "Jane Smith",
+      limit: "₹30,000",
+      status: "Disabled",
+    },
+    {
+      name: "UPI Bank",
+      IBAN: "UPI0987654321",
+      AccountTitle: "John Doe",
+      limit: "₹20,000",
+      status: "Active",
+    },
+    {
+      name: "UPI Bank",
+      IBAN: "UPI1234567890",
+      AccountTitle: "Jane Smith",
+      limit: "₹30,000",
+      status: "Disabled",
+    },
+    {
+      name: "UPI Bank",
+      IBAN: "UPI0987654321",
+      AccountTitle: "John Doe",
+      limit: "₹20,000",
+      status: "Active",
+    },
+    {
+      name: "UPI Bank",
+      IBAN: "UPI1234567890",
+      AccountTitle: "Jane Smith",
+      limit: "₹30,000",
+      status: "Disabled",
+    },
+  ];
+
+  const accountsToDisplay = activeTab === "bank" ? bankAccounts : upiAccounts;
+
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
   const { TextArea } = Input;
+  const [accountType, setAccountType] = useState("bank"); // bank , upi
+  const [data, setData] = useState({
+    image: {},
+    bankName: "",
+    accountNo: "",
+    accountType: accountType,
+    iban: "",
+    accountLimit: "",
+    accountHolderName: "",
+  });
 
   const containerHeight = window.innerHeight - 120;
 
@@ -65,6 +175,9 @@ const MerchantManagement = ({ showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    if (!authorization) {
+      navigate("/login");
+    }
   }, []);
 
   const handleToggle = (index) => {
@@ -73,6 +186,39 @@ const MerchantManagement = ({ showSidebar }) => {
         i === index ? { ...merchant, isToggled: !merchant.isToggled } : merchant
       )
     );
+  };
+
+  const fn_submit = async () => {
+    try {
+      console.log("data ", data);
+
+      const formData = new FormData();
+      formData.append("image", data?.image);
+      formData.append("bankName", data?.bankName);
+      formData.append("accountNo", data?.accountNo);
+      formData.append("accountType", data?.accountType);
+      formData.append("iban", data?.iban);
+      formData.append("accountLimit", data?.accountLimit);
+      formData.append("accountHolderName", data?.accountHolderName);
+
+      const token = Cookies.get("token");
+
+      const response = await axios.post(
+        `${BACKEND_URL}/merchant/create`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Response:", response.data);
+
+      setOpen(false);
+    } catch (error) {
+      console.error("Error:", error.response?.data || error.message);
+    }
   };
 
   return (
@@ -90,7 +236,6 @@ const MerchantManagement = ({ showSidebar }) => {
             Dashboard - Data Table
           </p>
         </div>
-        {/* content */}
         <div className="flex flex-col gap-7 md:flex-row bg-gray-100 ">
           {/* Left side card */}
           <div className="w-full md:w-2/6 bg-white rounded-lg lg:min-h-[550px] shadow-md border">
@@ -163,28 +308,39 @@ const MerchantManagement = ({ showSidebar }) => {
               </div>
             </div>
           </div>
-
           {/* Right side Card */}
           <div className="w-full md:w-3/4 lg:min-h-[550px] bg-white rounded-lg shadow-md border">
-            {/* Reduced padding */}
+            {/* Header */}
             <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between border-b space-y-4 md:space-y-0">
-              {/* Merchant Accounts Button */}
+              {/* Tab Buttons */}
               <div className="w-full md:w-auto">
                 <button
                   className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
                   style={{
                     backgroundImage:
-                      "linear-gradient(rgba(8, 100, 232, 0.1), rgba(115, 115, 115, 0))",
+                      activeTab === "bank"
+                        ? "linear-gradient(rgba(8, 100, 232, 0.1), rgba(115, 115, 115, 0))"
+                        : "none",
                   }}
+                  onClick={() => setActiveTab("bank")}
                 >
                   Bank Accounts
                 </button>
-                <button className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t">
+                <button
+                  className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
+                  style={{
+                    backgroundImage:
+                      activeTab === "upi"
+                        ? "linear-gradient(rgba(8, 100, 232, 0.1), rgba(115, 115, 115, 0))"
+                        : "none",
+                  }}
+                  onClick={() => setActiveTab("upi")}
+                >
                   UPI Accounts
                 </button>
               </div>
 
-              {/* Search Input and Add Merchant Button */}
+              {/* Add Account Button */}
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
                 <Button type="primary" onClick={() => setOpen(true)}>
                   Add Account
@@ -194,16 +350,23 @@ const MerchantManagement = ({ showSidebar }) => {
                   width={600}
                   style={{ fontFamily: "sans-serif" }}
                   title={
-                    <p className="text-[16px] font-[700]">Add New Account</p>
+                    <p className="text-[16px] font-[700]">
+                      Add New Bank Account
+                    </p>
                   }
                   footer={
                     <div className="flex gap-4 mt-6">
                       <Button
                         className="flex start px-10 text-[12px]"
                         type="primary"
+                        onClick={() => {
+                          fn_submit();
+                          setOpen(false);
+                        }}
                       >
                         Save
                       </Button>
+
                       <Button
                         className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
                         type=""
@@ -218,65 +381,128 @@ const MerchantManagement = ({ showSidebar }) => {
                   onClose={() => setOpen(false)}
                 >
                   <div className="flex gap-4 ">
+                    {/* Bank Name */}
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                        Account Holder <span className="text-[#D50000]">*</span>
+                        Bank Name <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
+                        value={data?.bankName}
+                        onChange={(e) =>
+                          setData((prev) => ({
+                            ...prev,
+                            bankName: e.target.value,
+                          }))
+                        }
                         className="w-full text-[12px]"
-                        placeholder="Enter Account Holder"
+                        placeholder="Enter Bank Name"
                       />
                     </div>
+                    {/* Account Number */}
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
                         Account Number <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
+                        value={data?.accountNo}
+                        onChange={(e) =>
+                          setData((prev) => ({
+                            ...prev,
+                            accountNo: e.target.value,
+                          }))
+                        }
                         className="w-full  text-[12px]"
                         placeholder="Enter Account Number"
                       />
                     </div>
                   </div>
                   <div className="flex gap-4">
+                    {/* IBAN No. */}
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                        IBAN <span className="text-[#D50000]">*</span>
+                        IBAN No. <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
+                        value={data?.iban}
+                        onChange={(e) =>
+                          setData((prev) => ({
+                            ...prev,
+                            iban: e.target.value,
+                          }))
+                        }
                         className="w-full text-[12px]"
                         placeholder="Enter IBAN Number "
                       />
                     </div>
+                    {/* account Holder Name */}
+                    <div className="flex-1 my-2">
+                      <p className="text-[12px] font-[500] pb-1">
+                        Account Holder Name{" "}
+                        <span className="text-[#D50000]">*</span>
+                      </p>
+                      <Input
+                        value={data?.accountHolderName}
+                        onChange={(e) =>
+                          setData((prev) => ({
+                            ...prev,
+                            accountHolderName: e.target.value,
+                          }))
+                        }
+                        className="w-full text-[12px]"
+                        placeholder="Account Holder Name"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    {/* Account Limit */}
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
                         Account Limit <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
+                        value={data?.accountLimit}
+                        onChange={(e) =>
+                          setData((prev) => ({
+                            ...prev,
+                            accountLimit: e.target.value,
+                          }))
+                        }
                         className="w-full text-[12px]"
-                        placeholder="Enter Account Limit"
+                        placeholder="Account Limit "
+                      />
+                    </div>
+                    {/* Account Logo */}
+                    <div className="flex-1 my-2">
+                      <p className="text-[12px] font-[500] pb-1">
+                        Account Logo<span className="text-[#D50000]">*</span>
+                      </p>
+                      <Input
+                        type="file"
+                        onChange={(e) => {
+                          setData((prev) => ({
+                            ...prev,
+                            image: e.target.files[0],
+                          }));
+                        }}
+                        className="w-full text-[12px]"
+                        placeholder="Enter IBAN Number "
                       />
                     </div>
                   </div>
-                  <p className="text-[12px] font-[500] pb-1 mt-2">
-                    Choose a Bank<span className="text-[#D50000]">*</span>
-                  </p>
-                  <Input
-                    className="text-[12px]"
-                    placeholder="Enter Bank Name"
-                  />
                 </Modal>
               </div>
             </div>
 
+            {/* Table */}
             <div className="overflow-x-auto">
-              {/* Make sure the table can scroll */}
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#ECF0FA]">
                   <tr>
-                    <th className="p-3 text-[13px] font-[600]">
-                      Bank Name
+                    <th className="p-3 text-[13px] font-[600]">Bank Name</th>
+                    {/* Conditionally render the header based on activeTab */}
+                    <th className="p-5 text-[13px] font-[600]">
+                      {activeTab === "upi" ? "UPI ID" : "IBAN"}
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">IBAN</th>
                     <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
                       Account Title
                     </th>
@@ -286,7 +512,7 @@ const MerchantManagement = ({ showSidebar }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {merchants.map((merchant, index) => (
+                  {accountsToDisplay.map((account, index) => (
                     <tr
                       key={index}
                       className={`border-t border-b ${
@@ -295,47 +521,66 @@ const MerchantManagement = ({ showSidebar }) => {
                     >
                       <td className="p-3 text-[13px] font-[600]">
                         <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
-                          <img
-                            src={CanaraBank} // Replace with your image path
-                            alt={`${merchant.name} logo`}
-                            className="w-6 h-6 object-contain"
-                          />
+                          {activeTab !== "upi" && (
+                            <img
+                              src={CanaraBank} 
+                              alt={`${account.name} logo`}
+                              className="w-6 h-6 object-contain"
+                            />
+                          )}
+                          {activeTab === "upi" && (
+                            <img
+                              src={upilogo2} 
+                              alt={`${account.name} UPI logo`}
+                              className="w-6 h-6 object-contain"
+                            />
+                          )}
                           <span className="whitespace-nowrap">
-                            {merchant.name}
+                            {account.name}
                           </span>
                         </div>
                       </td>
-                      <td className="p-3 text-[13px]">{merchant.IBAN}</td>
+
+                      <td className="p-3 text-[13px]">
+                        {activeTab === "upi" ? (
+                          <>
+                            <div>{account.IBAN}</div>
+                            <div className="text-[12px] text-gray-600 mt-1">
+                              {account.UPIID}
+                            </div>
+                          </>
+                        ) : (
+                          account.IBAN 
+                        )}
+                      </td>
+
                       <td className="p-3 text-[13px] whitespace-nowrap">
-                        {merchant.AcountTitle}
+                        {account.AccountTitle}
                       </td>
                       <td className="p-3 text-[13px] font-[400]">
-                        {merchant.limit}
+                        {account.limit}
                       </td>
                       <td className="text-center">
                         <button
                           className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                            merchant.status === "Active"
+                            account.status === "Active"
                               ? "bg-[#10CB0026] text-[#0DA000]"
-                              : merchant.status === "Inactive"
+                              : account.status === "Inactive"
                               ? "bg-[#FF173D33] text-[#D50000]"
-                              : merchant.status === "Disabled"
+                              : account.status === "Disabled"
                               ? "bg-[#BDBDBD]"
                               : ""
                           }`}
                         >
-                          {merchant.status}
+                          {account.status}
                         </button>
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex justify-center items-center">
-                          <Switch size="small" defaultChecked />
-                          <button
-                            className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
-                            title="Edit"
-                          >
-                            <FiEdit />
-                          </button>
+                          <Switch
+                            size="small"
+                            defaultChecked={account.isToggled}
+                          />
                         </div>
                       </td>
                     </tr>

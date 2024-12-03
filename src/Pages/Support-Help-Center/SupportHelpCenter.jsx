@@ -4,12 +4,13 @@ import { TbArrowBack } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import { Button, Modal, Input } from "antd";
 
-const SupportHelpCenter = ({ showSidebar }) => {
+const SupportHelpCenter = ({ authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [open, setOpen] = useState(false);
   const { TextArea } = Input;
+  const navigate = useNavigate();
 
   const transactions = [
     {
@@ -66,6 +67,8 @@ const SupportHelpCenter = ({ showSidebar }) => {
 
   useEffect(() => {
     handleSearch();
+    if(!authorization)
+      navigate("/login")
   }, [searchQuery]);
 
   return (

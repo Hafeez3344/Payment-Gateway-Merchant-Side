@@ -178,10 +178,10 @@ const Stat = ({ label, value, color }) => (
 const RecentTransaction = ({ name, utrId, status, color, amount }) => {
   // Status color mapping
   const statusColor = {
-    Verified: "#029868", // Green for Verified
-    Declined: "#FF3F5E", // Red for Declined
-    "Manual Verified": "#0864E8", // Blue for Manual Verified
-    Unverified: "#F67A03", // Orange for Unverified
+    Verified: "#029868", 
+    Declined: "#FF3F5E", 
+    "Manual Verified": "#0864E8", 
+    Unverified: "#F67A03", 
   };
 
   return (

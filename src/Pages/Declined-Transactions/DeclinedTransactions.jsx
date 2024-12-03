@@ -7,7 +7,7 @@ import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Pagination } from "antd";
 
-const DeclinedTransactions = ({ showSidebar }) => {
+const DeclinedTransactions = ({ authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -189,6 +189,8 @@ const DeclinedTransactions = ({ showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
+    if(!authorization)
+      navigate("/login")
   }, []);
 
   return (
@@ -201,10 +203,7 @@ const DeclinedTransactions = ({ showSidebar }) => {
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Declined Transactions</h1>
-          <p
-            onClick={() => navigate("/MerchantManagement")}
-            className="text-[#7987A1] text-[13px] md:text-[15px] font-[400] cursor-pointer"
-          >
+          <p>
             Dashboard - Data Table
           </p>
         </div>

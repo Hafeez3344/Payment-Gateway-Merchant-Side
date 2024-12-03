@@ -13,6 +13,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { GoCircleSlash } from "react-icons/go";
 
 const TransactionsTable = ({ authorization, showSidebar }) => {
+  const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);

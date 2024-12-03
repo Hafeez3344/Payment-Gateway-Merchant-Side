@@ -48,7 +48,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/TransactionsTable");
+            navigate("/transactions-table");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Transaction History"
@@ -56,7 +56,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/MerchantManagement");
+            navigate("/merchant-management");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Merchant Profile"
@@ -64,7 +64,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/ReportsAndAnalytics");
+            navigate("/reports-and-analytics");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Reports & Analytics"
@@ -72,7 +72,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/SupportHelpCenter");
+            navigate("/support-help-center");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Support / Help Center"
@@ -80,7 +80,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
         <Menu
           onClick={() => {
-            navigate("/SystemConfigurationIntegration");
+            navigate("/system-configuration");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Setting"
@@ -88,7 +88,7 @@ const SideBar = ({ showSidebar, setShowSide }) => {
         />
           <Menu
           onClick={() => {
-            navigate("/UploadStatement");
+            navigate("/upload-statement");
             if (isMobile()) fn_controlSidebar();
           }}
           label="Upload Statement"
