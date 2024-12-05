@@ -23,7 +23,7 @@ function App() {
   // const [hideNavbar, setHideNavbar] = useState(false);
   // const [hideFooter, setHideFooter] = useState(false);
   const [authorization, setAuthorization] = useState(
-    Cookies.get("token") ? true : false
+    Cookies.get("merchantToken") ? true : false
   );
 
   const [showSidebar, setShowSide] = useState(
@@ -51,8 +51,7 @@ function App() {
           <NavBar setShowSide={setShowSide} showSidebar={showSidebar} />
         )}
         <Routes>
-          <Route path="/login" element={<MerchantLogin authorization={authorization}
-                setAuthorization={setAuthorization}/>} />
+          <Route path="/login" element={<MerchantLogin authorization={authorization} setAuthorization={setAuthorization}/>} />
 
           <Route path="/" element={<Home authorization={authorization} showSidebar={showSidebar} />} />
 

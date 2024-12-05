@@ -20,11 +20,11 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   const [endDate, setEndDate] = useState(null);
   const [merchant, setMerchant] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [open, setOpen] = useState(false);
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [open, setOpen] = React.useState(false);
   const { TextArea } = Input;
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
-  
 
   const fetchTransactions = async () => {
     try {
@@ -51,14 +51,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
     }
     fetchTransactions();
   }, []);
-
-  const filteredTransactions = transactions.filter(
-    (transaction) =>
-      transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (merchant === "" || transaction?.merchantName === merchant)
-  );
-
-
 
   return (
     <div
@@ -209,7 +201,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
-                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l" 
+                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l" // 2px rounded left side
                   placeholderText="Start Date"
                   dateFormat="yyyy-MM-dd"
                 />
@@ -221,12 +213,11 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   startDate={startDate}
                   endDate={endDate}
                   minDate={startDate}
-                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r" 
+                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r" // 2px rounded right side
                   placeholderText="End Date"
                   dateFormat="yyyy-MM-dd"
                 />
               </div>
-              {/* Search Input */}
               <div className="flex flex-col w-full md:w-40">
                 <input
                   type="text"
@@ -236,7 +227,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   className="border w-full border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-              {/* Merchant Filter */}
               <div className="flex flex-col w-full md:w-40">
                 <select
                   value={merchant}
@@ -246,10 +236,16 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   <option className="text-[10px] text-gray-400" value="">
                     Merchant
                   </option>
-                  <option className="text-[10px] text-gray-400" value="Shubh Exchange">
+                  <option
+                    className="text-[10px] text-gray-400"
+                    value="Shubh Exchange"
+                  >
                     Shubh Exchange
                   </option>
-                  <option className="text-[10px] text-gray-400" value="Book Fair">
+                  <option
+                    className="text-[10px] text-gray-400"
+                    value="Book Fair"
+                  >
                     Book Fair
                   </option>
                 </select>
@@ -263,6 +259,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4">TRN-ID</th>
                   <th className="p-4">BANK NAME</th>
+                  {/* <th className="p-4">IBAN</th> */}
                   <th className="p-4">DATE</th>
                   <th className="p-4">AMOUNT</th>
                   <th className="p-4">UTR#</th>
@@ -271,8 +268,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTransactions.length > 0 ? (
-                   filteredTransactions.map((transaction) => (
+                {transactions.length > 0 ? (
+                  transactions.map((transaction) => (
                     <tr
                       key={transaction?._id}
                       className="text-gray-800 text-sm border-b"

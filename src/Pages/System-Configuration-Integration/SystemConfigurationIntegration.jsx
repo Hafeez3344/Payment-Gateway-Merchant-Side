@@ -124,7 +124,7 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
               {statusMessage && (
                 <p
                   className={`mt-2 ${
-                    statusMessage.includes("successfully")
+                    statusMessage.includes("successfully Verified")
                       ? "text-green-500"
                       : "text-red-500"
                   }`}

@@ -5,180 +5,51 @@ import { useNavigate } from "react-router-dom";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import upilogo2 from "../../assets/upilogo2.svg";
 import { FiEdit } from "react-icons/fi";
-import { Switch, Button, Modal, Input } from "antd";
+import { Switch, Button, Modal, Input, notification } from "antd";
 import mehtaLogo from "../../assets/mehtaLogo.png";
 import axios from "axios";
-import BACKEND_URL from "../../api/api";
+import BACKEND_URL, {
+  fn_BankUpdate,
+  fn_getBankByAccountTypeApi,
+} from "../../api/api";
 
 const MerchantManagement = ({ authorization, showSidebar }) => {
-  const [activeTab, setActiveTab] = useState("bank"); // 'bank' or 'upi'
-
-  // Sample Data
-  const bankAccounts = [
-    {
-      name: "Canara Bank",
-      IBAN: "IN0987654321",
-      AccountTitle: "John Doe",
-      limit: "₹50,000",
-      status: "Active",
-    },
-    {
-      name: "HDFC Bank",
-      IBAN: "IN1234567890",
-      AccountTitle: "Jane Smith",
-      limit: "₹1,00,000",
-      status: "Inactive",
-    },
-    {
-      name: "Canara Bank",
-      IBAN: "IN0987654321",
-      AccountTitle: "John Doe",
-      limit: "₹50,000",
-      status: "Active",
-    },
-    {
-      name: "HDFC Bank",
-      IBAN: "IN1234567890",
-      AccountTitle: "Jane Smith",
-      limit: "₹1,00,000",
-      status: "Inactive",
-    },
-    {
-      name: "Canara Bank",
-      IBAN: "IN0987654321",
-      AccountTitle: "John Doe",
-      limit: "₹50,000",
-      status: "Active",
-    },
-    {
-      name: "HDFC Bank",
-      IBAN: "IN1234567890",
-      AccountTitle: "Jane Smith",
-      limit: "₹1,00,000",
-      status: "Inactive",
-    },
-  ];
-
-  const upiAccounts = [
-    {
-      name: "UPI Bank",
-      IBAN: "UPI0987654321",
-      AccountTitle: "John Doe",
-      limit: "₹20,000",
-      status: "Active",
-    },
-    {
-      name: "UPI Bank",
-      IBAN: "UPI1234567890",
-      AccountTitle: "Jane Smith",
-      limit: "₹30,000",
-      status: "Disabled",
-    },
-    {
-      name: "UPI Bank",
-      IBAN: "UPI0987654321",
-      AccountTitle: "John Doe",
-      limit: "₹20,000",
-      status: "Active",
-    },
-    {
-      name: "UPI Bank",
-      IBAN: "UPI1234567890",
-      AccountTitle: "Jane Smith",
-      limit: "₹30,000",
-      status: "Disabled",
-    },
-    {
-      name: "UPI Bank",
-      IBAN: "UPI0987654321",
-      AccountTitle: "John Doe",
-      limit: "₹20,000",
-      status: "Active",
-    },
-    {
-      name: "UPI Bank",
-      IBAN: "UPI1234567890",
-      AccountTitle: "Jane Smith",
-      limit: "₹30,000",
-      status: "Disabled",
-    },
-  ];
-
-  const accountsToDisplay = activeTab === "bank" ? bankAccounts : upiAccounts;
-
+  const [activeTab, setActiveTab] = useState("bank");
+  const [banksData, setBanksData] = useState([]);
+  const bank = [];
+  const upi = [];
+  const accountsToShow = activeTab === "bank" ? bank : upi;
   const [open, setOpen] = React.useState(false);
+  const containerHeight = window.innerHeight - 120;
   const navigate = useNavigate();
   const { TextArea } = Input;
-  const [accountType, setAccountType] = useState("bank"); // bank , upi
   const [data, setData] = useState({
     image: {},
     bankName: "",
     accountNo: "",
-    accountType: accountType,
+    accountType: "",
     iban: "",
     accountLimit: "",
     accountHolderName: "",
   });
-
-  const containerHeight = window.innerHeight - 120;
-
-  const [merchants, setMerchants] = useState([
-    {
-      name: "Shubh Exchange",
-      IBAN: 12332344,
-      AcountTitle: "Mehta",
-      limit: "₹1500",
-      status: "Active",
-      isToggled: false,
-    },
-    {
-      name: "BetXFair",
-      IBAN: 6820050000,
-      AcountTitle: "Mehta & Mehta",
-      limit: "₹3000",
-      status: "Active",
-      isToggled: false,
-    },
-    {
-      name: "Book Fair",
-      IBAN: 6820050000,
-      AcountTitle: "Mehta & Mehta",
-      limit: "₹1200",
-      status: "Inactive",
-      isToggled: false,
-    },
-    {
-      name: "All Exchange",
-      IBAN: 6820050000,
-      AcountTitle: "Mehta & Mehta",
-      limit: "₹7800",
-      status: "Active",
-      isToggled: false,
-    },
-    {
-      name: "New Bet Exchange",
-      IBAN: 6820050000,
-      AcountTitle: "Mehta & Mehta",
-      limit: "₹3500",
-      status: "Disabled",
-      isToggled: false,
-    },
-    {
-      name: "All Exchange",
-      IBAN: 6820050000,
-      AcountTitle: "Mehta & Mehta",
-      limit: "₹7800",
-      status: "Active",
-      isToggled: false,
-    },
-  ]);
 
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
       navigate("/login");
     }
-  }, []);
+    fn_getBankByAccountType();
+  }, [activeTab]);
+
+  const fn_getBankByAccountType = async () => {
+    const response = await fn_getBankByAccountTypeApi(activeTab.toLowerCase());
+    console.log(response);
+    if (response?.status) {
+      if (response?.data?.status === "ok") {
+        setBanksData(response?.data?.data);
+      }
+    }
+  };
 
   const handleToggle = (index) => {
     setMerchants((prevMerchants) =>
@@ -190,21 +61,27 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
 
   const fn_submit = async () => {
     try {
-      console.log("data ", data);
-
       const formData = new FormData();
-      formData.append("image", data?.image);
-      formData.append("bankName", data?.bankName);
-      formData.append("accountNo", data?.accountNo);
-      formData.append("accountType", data?.accountType);
-      formData.append("iban", data?.iban);
-      formData.append("accountLimit", data?.accountLimit);
-      formData.append("accountHolderName", data?.accountHolderName);
-
-      const token = Cookies.get("token");
-
+      if (activeTab === "bank") {
+        formData.append("image", data?.image);
+        formData.append("bankName", data?.bankName);
+        formData.append("accountNo", data?.accountNo);
+        formData.append("accountType", activeTab);
+        formData.append("iban", data?.iban);
+        formData.append("accountLimit", data?.accountLimit);
+        formData.append("accountHolderName", data?.accountHolderName);
+        formData.append("block", true);
+      } else {
+        formData.append("image", data?.image);
+        formData.append("accountType", activeTab);
+        formData.append("iban", data?.iban);
+        formData.append("accountLimit", data?.accountLimit);
+        formData.append("accountHolderName", data?.accountHolderName);
+        formData.append("block", true);
+      }
+      const token = Cookies.get("merchantToken");
       const response = await axios.post(
-        `${BACKEND_URL}/merchant/create`,
+        `${BACKEND_URL}/bank/create`,
         formData,
         {
           headers: {
@@ -213,11 +90,24 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
         }
       );
 
-      console.log("Response:", response.data);
+      if (response?.status === 200) {
+        setOpen(false);
 
-      setOpen(false);
+        notification.success({
+          message: "Success",
+          description: "Bank Created Successfully!",
+          placement: "topRight",
+        });
+
+        fn_getBankByAccountType(); // Refresh the bank data
+      }
     } catch (error) {
-      console.error("Error:", error.response?.data || error.message);
+      const errorMessage = error?.response?.data?.message || "Network Error";
+      notification.error({
+        message: "Error",
+        description: errorMessage,
+        placement: "topRight",
+      });
     }
   };
 
@@ -231,7 +121,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
       <div className="p-7">
         {/* header */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-          <h1 className="text-[25px] font-[500]">Merchant Profile</h1>
+          <h1 className="text-[25px] font-[500]">Banks Details</h1>
           <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
@@ -340,7 +230,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                 </button>
               </div>
 
-              {/* Add Account Button */}
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
                 <Button type="primary" onClick={() => setOpen(true)}>
                   Add Account
@@ -380,47 +269,58 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                   onCancel={() => setOpen(false)}
                   onClose={() => setOpen(false)}
                 >
-                  <div className="flex gap-4 ">
-                    {/* Bank Name */}
-                    <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
-                        Bank Name <span className="text-[#D50000]">*</span>
-                      </p>
-                      <Input
-                        value={data?.bankName}
-                        onChange={(e) =>
-                          setData((prev) => ({
-                            ...prev,
-                            bankName: e.target.value,
-                          }))
-                        }
-                        className="w-full text-[12px]"
-                        placeholder="Enter Bank Name"
-                      />
+                  {activeTab === "bank" && (
+                    <div className="flex gap-4 ">
+                      {/* Bank Name */}
+                      <div className="flex-1 my-2">
+                        <p className="text-[12px] font-[500] pb-1">
+                          Bank Name <span className="text-[#D50000]">*</span>
+                        </p>
+                        <Input
+                          value={data?.bankName}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              bankName: e.target.value,
+                            }))
+                          }
+                          className="w-full text-[12px]"
+                          placeholder="Enter Bank Name"
+                        />
+                      </div>
+                      {/* Account Number */}
+                      <div className="flex-1 my-2">
+                        <p className="text-[12px] font-[500] pb-1">
+                          Account Number{" "}
+                          <span className="text-[#D50000]">*</span>
+                        </p>
+                        <Input
+                          value={data?.accountNo}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              accountNo: e.target.value,
+                            }))
+                          }
+                          className="w-full  text-[12px]"
+                          placeholder="Enter Account Number"
+                        />
+                      </div>
                     </div>
-                    {/* Account Number */}
-                    <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
-                        Account Number <span className="text-[#D50000]">*</span>
-                      </p>
-                      <Input
-                        value={data?.accountNo}
-                        onChange={(e) =>
-                          setData((prev) => ({
-                            ...prev,
-                            accountNo: e.target.value,
-                          }))
-                        }
-                        className="w-full  text-[12px]"
-                        placeholder="Enter Account Number"
-                      />
-                    </div>
-                  </div>
+                  )}
                   <div className="flex gap-4">
                     {/* IBAN No. */}
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                        IBAN No. <span className="text-[#D50000]">*</span>
+                        {activeTab === "bank" ? (
+                          <>
+                            IBAN No. <span className="text-[#D50000]">*</span>
+                          </>
+                        ) : (
+                          <>
+                            UPI ID <span className="text-[#D50000]">*</span>
+                          </>
+                        )}
                       </p>
                       <Input
                         value={data?.iban}
@@ -499,7 +399,6 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                 <thead className="bg-[#ECF0FA]">
                   <tr>
                     <th className="p-3 text-[13px] font-[600]">Bank Name</th>
-                    {/* Conditionally render the header based on activeTab */}
                     <th className="p-5 text-[13px] font-[600]">
                       {activeTab === "upi" ? "UPI ID" : "IBAN"}
                     </th>
@@ -512,79 +411,102 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {accountsToDisplay.map((account, index) => (
-                    <tr
-                      key={index}
-                      className={`border-t border-b ${
-                        index % 2 === 0 ? "bg-white" : ""
-                      }`}
-                    >
-                      <td className="p-3 text-[13px] font-[600]">
-                        <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
-                          {activeTab !== "upi" && (
-                            <img
-                              src={CanaraBank} 
-                              alt={`${account.name} logo`}
-                              className="w-6 h-6 object-contain"
-                            />
+                  {banksData.map((account, index) => {
+                    const accountStatus = account.status || "Active";
+                    return (
+                      <tr
+                        key={index}
+                        className={`border-t border-b ${
+                          index % 2 === 0 ? "bg-white" : ""
+                        }`}
+                      >
+                        <td className="p-3 text-[13px] font-[600]">
+                          <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
+                            {activeTab === "bank" ? (
+                              <div className="flex items-center gap-[3px]">
+                                <img src={`${BACKEND_URL}/${account?.image}`} alt="" className="w-[50px]" />
+                                <span className="whitespace-nowrap">
+                                  {account.bankName}
+                                </span>
+                              </div>
+                            ) : (
+                              <img src={upilogo2} alt="" className="w-[50px]" />
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 text-[13px]">
+                          {activeTab === "upi" ? (
+                            <>
+                              <div>{account.iban}</div>
+                              <div className="text-[12px] text-gray-600 mt-1">
+                                {account.UPIID}
+                              </div>
+                            </>
+                          ) : (
+                            account.iban
                           )}
-                          {activeTab === "upi" && (
-                            <img
-                              src={upilogo2} 
-                              alt={`${account.name} UPI logo`}
-                              className="w-6 h-6 object-contain"
+                        </td>
+                        <td className="p-3 text-[13px] whitespace-nowrap">
+                          {account.accountHolderName}
+                        </td>
+                        <td className="p-3 text-[13px] font-[400]">
+                          {account.accountLimit}
+                        </td>
+                        <td className="text-center">
+                          <button
+                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
+                              account?.block === false
+                                ? "bg-[#10CB0026] text-[#0DA000]"
+                                : "bg-[#FF173D33] text-[#D50000]"
+                            }`}
+                          >
+                            {!account?.block ? "Active" : "Inactive"}
+                          </button>
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex justify-center items-center">
+                            <Switch
+                              size="small"
+                              checked={!account?.block}
+                              onChange={async (checked) => {
+                                const newStatus = checked;
+
+                                const response = await fn_BankUpdate(account?._id,
+                                  {
+                                    block: !newStatus,
+                                    accountType: activeTab
+                                  }
+                                );
+
+                                if (response?.status) {
+                                  fn_getBankByAccountType();
+                                  notification.success({
+                                    message: "Status Updated",
+                                    description: `Bank Status Updated!  ${newStatus}.`,
+                                    placement: "topRight",
+                                  });
+                                } else {
+                                  notification.error({
+                                    message: "Error",
+                                    description:
+                                      response.message ||
+                                      "Failed to update bank status.",
+                                    placement: "topRight",
+                                  });
+                                }
+                              }}
                             />
-                          )}
-                          <span className="whitespace-nowrap">
-                            {account.name}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="p-3 text-[13px]">
-                        {activeTab === "upi" ? (
-                          <>
-                            <div>{account.IBAN}</div>
-                            <div className="text-[12px] text-gray-600 mt-1">
-                              {account.UPIID}
-                            </div>
-                          </>
-                        ) : (
-                          account.IBAN 
-                        )}
-                      </td>
-
-                      <td className="p-3 text-[13px] whitespace-nowrap">
-                        {account.AccountTitle}
-                      </td>
-                      <td className="p-3 text-[13px] font-[400]">
-                        {account.limit}
-                      </td>
-                      <td className="text-center">
-                        <button
-                          className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                            account.status === "Active"
-                              ? "bg-[#10CB0026] text-[#0DA000]"
-                              : account.status === "Inactive"
-                              ? "bg-[#FF173D33] text-[#D50000]"
-                              : account.status === "Disabled"
-                              ? "bg-[#BDBDBD]"
-                              : ""
-                          }`}
-                        >
-                          {account.status}
-                        </button>
-                      </td>
-                      <td className="p-3 text-center">
-                        <div className="flex justify-center items-center">
-                          <Switch
-                            size="small"
-                            defaultChecked={account.isToggled}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            <button
+                              className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
+                              title="Edit"
+                            >
+                              <FiEdit />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
