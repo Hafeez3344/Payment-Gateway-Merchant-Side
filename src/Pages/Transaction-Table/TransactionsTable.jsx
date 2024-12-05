@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import CanaraBank from "../../assets/CanaraBank.svg";
-import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Pagination, Button, Modal, Input } from "antd";
 import stcpay from "../../assets/stcpay.jpg";
@@ -24,7 +22,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   const { TextArea } = Input;
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
-  
 
   const fetchTransactions = async () => {
     try {
@@ -58,8 +55,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       (merchant === "" || transaction?.merchantName === merchant)
   );
 
-
-
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${
@@ -84,7 +79,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
             <Button type="primary" onClick={() => setOpen(true)}>
               Transaction Details
             </Button>
-
             <Modal
               centered
               footer={null}
@@ -199,7 +193,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 </div>
               </div>
             </Modal>
-
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
               <div className="flex border border-gray-300 items-center bg-white rounded">
                 {/* 2px border radius */}
@@ -320,7 +313,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                             transaction?.status?.slice(1)}
                         </span>
                       </td>
-
                       <td className="p-4 flex space-x-2">
                         <button
                           className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
