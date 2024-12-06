@@ -9,7 +9,7 @@ import dailyconversion from "../../assets/dailyconversion.svg";
 import visitbyday from "../../assets/visitbyday.svg";
 import todayincome from "../../assets/todayincome.svg";
 
-const ReportsAndAnalytics = ({ authorization, showSidebar }) => {
+const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
@@ -71,8 +71,8 @@ const ReportsAndAnalytics = ({ authorization, showSidebar }) => {
 
   useEffect(() => {
     handleSearch();
-    if(!authorization)
-      navigate("/login")
+    if(!authorization) navigate("/login");
+    setSelectedPage("reports-and-analytics")
   }, [searchQuery]);
 
   return (

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 const { useBreakpoint } = Grid;
 const { Text, Title, Link } = Typography;
 
-const MerchantLogin = ({authorization, setAuthorization}) => {
+const MerchantLogin = ({authorization, setAuthorization, setMerchantVerified}) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
 
@@ -28,10 +28,10 @@ const MerchantLogin = ({authorization, setAuthorization}) => {
           description: "You have successfully logged in!",
           placement: "topRight",
         });
-        Cookies.set("merchantToken", response?.token);
         Cookies.set("merchantId", response?.id);
-        
-        
+        Cookies.set("merchantToken", response?.token);
+        setMerchantVerified(response?.merchantVerified);
+        localStorage.setItem('merchantVerified', response?.merchantVerified)
         navigate("/");
         setAuthorization(true);
       } else {

@@ -1,17 +1,18 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import graph from "../../assets/graph.png";
 import { GoDotFill } from "react-icons/go";
 
-const Home = ({ authorization, showSidebar }) => {
+const Home = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
-  const containerHeight = window.innerHeight - 120;
+  const containerHeight = window.innerHeight - 105;
 
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
       navigate("/login");
     }
+    setSelectedPage("dashboard")
   }, []);
 
   return (
@@ -50,6 +51,7 @@ const Home = ({ authorization, showSidebar }) => {
             bgColor={
               "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
             }
+            link={"/transactions-table?status=verified"}
           />
           <Boxes
             number={"3,512"}
@@ -58,6 +60,7 @@ const Home = ({ authorization, showSidebar }) => {
             bgColor={
               "linear-gradient(to right, rgba(8, 100, 232, 1), rgba(108, 168, 255, 1))"
             }
+            link={"/transactions-table?status=manual"}
           />
           <Boxes
             number={"6,273"}
@@ -66,6 +69,7 @@ const Home = ({ authorization, showSidebar }) => {
             bgColor={
               "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
             }
+            link={"/transactions-table?status=unverified"}
           />
           <Boxes
             number={"6,273"}
@@ -74,6 +78,7 @@ const Home = ({ authorization, showSidebar }) => {
             bgColor={
               "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
             }
+            link={"/transactions-table?status=failed"}
           />
         </div>
 
@@ -152,8 +157,9 @@ const Home = ({ authorization, showSidebar }) => {
   );
 };
 
-const Boxes = ({ number, amount, title, bgColor }) => (
-  <div
+const Boxes = ({ number, amount, title, bgColor, link }) => (
+  <Link
+    to={link}
     className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
     style={{ backgroundImage: bgColor }}
   >
@@ -162,7 +168,7 @@ const Boxes = ({ number, amount, title, bgColor }) => (
     <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
       Amount: <span className="font-[700]">₹{amount}</span>
     </p>
-  </div>
+  </Link>
 );
 
 const Stat = ({ label, value, color }) => (

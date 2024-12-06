@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "antd";
 import { FiUpload } from "react-icons/fi";
 
-const UploadStatement = ({ authorization, showSidebar }) => {
+const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
@@ -128,8 +128,8 @@ const UploadStatement = ({ authorization, showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
-    if(!authorization)
-      navigate("/login")
+    if(!authorization) navigate("/login");
+    setSelectedPage("upload-statement")
   }, []);
 
   return (
