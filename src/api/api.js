@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "http://localhost:8888";
+const BACKEND_URL = "http://192.168.1.13:8888";
 
 export const fn_loginMerchantApi = async (data) => {
     try {
@@ -47,7 +47,6 @@ export const fn_getMerchantLoginHistoryApi = async (MerchantId) => {
     }
 };
 
-
 export const fn_updateApiKeys = async (apiKey, secretKey) => {
     console.log(apiKey, secretKey)
     try {
@@ -78,7 +77,6 @@ export const fn_updateApiKeys = async (apiKey, secretKey) => {
     }
 };
 
-
 export const fn_getApiKeys = async () => {
     try {
         const token = Cookies.get("merchantToken");
@@ -102,7 +100,6 @@ export const fn_getApiKeys = async () => {
         return { status: false, message: "Network Error" };
     }
 };
-
 
 export const fn_getBankByAccountTypeApi = async (accountType) => {
     try {
@@ -151,7 +148,6 @@ export const fn_BankUpdate = async (id, data) => {
     }
 };
 
-
 // get All Merchant api
 
 export const fn_getAllMerchantApi = async () => {
@@ -181,8 +177,5 @@ export const fn_getAllMerchantApi = async () => {
         return { status: false, message: "Network Error" };
     }
 };
-
-
-
 
 export default BACKEND_URL;
