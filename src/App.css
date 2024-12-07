@@ -23,3 +23,7 @@ textarea {
   min-height: 100px; /* Adjust this height as needed */
 }
 
+:where(.css-dev-only-do-not-override-1x0dypw).ant-modal-root .ant-modal-mask{
+  background-color: rgba(0, 0, 0, 0.103);
+}
+

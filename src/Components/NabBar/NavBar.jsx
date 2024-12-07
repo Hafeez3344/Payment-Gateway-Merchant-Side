@@ -16,16 +16,16 @@ const NavBar = ({setShowSide, showSidebar}) => {
           <FaBarsStaggered onClick={fn_controlSidebar} className="cursor-pointer" />
         </div>
         <div className="flex items-center gap-7 pr-7">
-        <div className="text-[25px]">
+        <div className="text-[25px] cursor-pointer">
           <RiMessageLine />
         </div>
-        <div className="text-[25px]">
+        <div className="text-[25px] cursor-pointer">
           <MdOutlineNotificationsNone />
         </div>
-        <div className="text-[26px]">
+        <div className="text-[26px] cursor-pointer">
           <MdOutlineFullscreen />
         </div>
-        <div className="text-[20px]">
+        <div className="text-[20px] cursor-pointer">
           <FaRegUser />
         </div>
         </div>

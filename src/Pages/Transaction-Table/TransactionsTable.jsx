@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useNavigate } from "react-router-dom";
-import { Pagination, Button, Modal, Input } from "antd";
-import stcpay from "../../assets/stcpay.jpg";
+import { Pagination, Button, Modal, Input, notification } from "antd";
 import { RiFindReplaceLine } from "react-icons/ri";
 import { IoMdCheckmark } from "react-icons/io";
 import { FaRegEdit } from "react-icons/fa";
 import { GoCircleSlash } from "react-icons/go";
-import BACKEND_URL, { fn_getAllMerchantApi } from "../../api/api";
+import BACKEND_URL, {
+  fn_getAllMerchantApi,
+  fn_updateTransactionStatusApi,
+} from "../../api/api";
 
 const TransactionsTable = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
   const { TextArea } = Input;
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const fetchTransactions = async () => {
     try {
@@ -55,6 +58,30 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       (merchant === "" || transaction?.merchantName === merchant)
   );
 
+  const handleViewTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
+    console.log(transaction);
+    setOpen(true);
+  };
+
+  const handleTransactionAction = async (action, transactionId) => {
+    console.log(`Transaction ID: ${transactionId}, Action: ${action}`);
+
+    const response = await fn_updateTransactionStatusApi(transactionId, action);
+
+    if (response.status) {
+      console.log(`Transaction ${action} successfully.`);
+      fetchTransactions();
+      // notification.success({
+      //   message: "Success",
+      //   description: "Transaction Approved!",
+      //   placement: "topRight",
+      // });
+    } else {
+      console.error(`Failed to ${action} transaction:`, response.message);
+    }
+  };
+
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${
@@ -76,123 +103,6 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 List of all Transactions
               </p>
             </div>
-            <Button type="primary" onClick={() => setOpen(true)}>
-              Transaction Details
-            </Button>
-            <Modal
-              centered
-              footer={null}
-              width={900}
-              style={{ fontFamily: "sans-serif", padding: "20px" }}
-              title={
-                <p className="text-[16px] font-[700]">Transaction Details</p>
-              }
-              open={open}
-              onCancel={() => setOpen(false)}
-              onClose={() => setOpen(false)}
-            >
-              <div className="flex flex-col md:flex-row">
-                {/* Left side input fields */}
-                <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
-                  {/* Repeated field structure for inputs */}
-                  {[
-                    { label: "Amount:", placeholder: "₹ 5000" },
-                    { label: "Account Holder:", placeholder: "Sorav Gopta" },
-                    { label: "UTR#:", placeholder: "#323032038826" },
-                    { label: "IBAN#:", placeholder: "COB94750934876767" },
-                    {
-                      label: "Date & Time:",
-                      placeholder: "01 Jan 2024, 11:30 AM",
-                    },
-                    {
-                      label: "Bank Name:",
-                      options: [
-                        "Select a bank",
-                        "Bank of Baroda",
-                        "State Bank of India",
-                        "HDFC Bank",
-                        "Axis Bank",
-                        "ICICI Bank",
-                      ],
-                    },
-                    {
-                      label: "Description:",
-                      placeholder:
-                        "IMPS-426713610684-EMIRATES NBD BANK MUMB AI-EBIL-XXXXXXXXXXX0005-REMITTANCE FROM INDIAN NON-RESIDENC",
-                      isTextarea: true,
-                    },
-                  ].map((field, index) => (
-                    <div className="flex items-center gap-4" key={index}>
-                      <p className="text-[12px] font-[600] w-[150px]">
-                        {field.label}
-                      </p>
-                      {field.options ? (
-                        <select className="w-[50%] text-[12px] border outline-none rounded p-1 input-placeholder-black">
-                          {field.options.map((option, idx) => (
-                            <option key={idx} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      ) : field.isTextarea ? (
-                        <textarea
-                          className="w-[50%] text-[11px] border rounded p-1 resize-none outline-none input-placeholder-black overflow-hidden"
-                          placeholder={field.placeholder}
-                          rows={3}
-                          style={{ overflow: "auto", resize: "none" }}
-                        />
-                      ) : (
-                        <Input
-                          className="w-[50%] text-[12px] input-placeholder-black"
-                          placeholder={field.placeholder}
-                        />
-                      )}
-                    </div>
-                  ))}
-                  <div className="flex gap-2 mt-4">
-                    <button className="bg-[#03996933] flex text-[#039969] px-3 py-1  rounded hover:bg-[#03996950] text-[10px] ">
-                      <IoMdCheckmark className="mt-[3px] mr-[6px]" /> Approve
-                      Transaction
-                    </button>
-                    <button className="bg-[#FF405F33] flex text-[#FF3F5F] px-4  py-1 rounded hover:bg-[#FF405F50] text-[10px] ">
-                      <GoCircleSlash className="mt-[3px] mr-[6px]" />
-                      Decline TR
-                    </button>
-                    <button className="bg-[#F6790233] flex text-[#F67A03] px-4 ml-[40px] py-1 rounded hover:bg-[#F6790250] text-[10px] ">
-                      <FaRegEdit className="mt-[2px] mr-2" /> Edit TR
-                    </button>
-                  </div>
-
-                  {/* Bottom Divider and Activity */}
-                  <div className="border-b w-[370px] mt-4"></div>
-                  <p className="text-[12px] font-[600]">Activity</p>
-                  <p className="text-[9px] font-[600] leading-10">
-                    Transaction ID:{" "}
-                    <span className="text-[9px] font-[600] text-[#00000080]">
-                      98714987971982
-                    </span>
-                  </p>
-                </div>
-
-                {/* Right side with border and image */}
-                <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
-                  {/* Image */}
-                  <img
-                    src={stcpay}
-                    alt="Payment Image"
-                    className="max-h-full"
-                  />
-
-                  {/* Button */}
-                  <div className="flex">
-                    <button className="mt-4 border flex border-black px-1 py-1 rounded ">
-                      <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
-                      <p>Replace Payment Proof</p>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Modal>
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
               <div className="flex border border-gray-300 items-center bg-white rounded">
                 {/* 2px border radius */}
@@ -202,7 +112,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   selectsStart
                   startDate={startDate}
                   endDate={endDate}
-                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l" 
+                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l"
                   placeholderText="Start Date"
                   dateFormat="yyyy-MM-dd"
                 />
@@ -214,7 +124,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                   startDate={startDate}
                   endDate={endDate}
                   minDate={startDate}
-                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r" 
+                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r"
                   placeholderText="End Date"
                   dateFormat="yyyy-MM-dd"
                 />
@@ -234,15 +144,21 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                 <select
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}
-                  className="border border-gray-300 rounded py-1 text-[12px] text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border border-gray-300 rounded py-1 text-[12px] cursor-pointer text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option className="text-[10px] text-gray-400" value="">
                     Merchant
                   </option>
-                  <option className="text-[10px] text-gray-400" value="Shubh Exchange">
+                  <option
+                    className="text-[10px] text-gray-400"
+                    value="Shubh Exchange"
+                  >
                     Shubh Exchange
                   </option>
-                  <option className="text-[10px] text-gray-400" value="Book Fair">
+                  <option
+                    className="text-[10px] text-gray-400"
+                    value="Book Fair"
+                  >
                     Book Fair
                   </option>
                 </select>
@@ -265,7 +181,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
               </thead>
               <tbody>
                 {filteredTransactions.length > 0 ? (
-                   filteredTransactions.map((transaction) => (
+                  filteredTransactions.map((transaction) => (
                     <tr
                       key={transaction?._id}
                       className="text-gray-800 text-sm border-b"
@@ -284,7 +200,8 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                         </span>
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap">
-                        {transaction?.createdAt}
+                        {new Date(transaction?.createdAt).toDateString()},{" "}
+                        {new Date(transaction?.createdAt).toLocaleTimeString()}
                       </td>
 
                       <td className="p-4 text-[11px] font-[700] text-[#000000B2]">
@@ -293,19 +210,14 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                       <td className="p-4 text-[11px] font-[700] text-[#0864E8]">
                         {transaction?.utr}
                       </td>
-                      {/* <td className="p-4 text-[11px] font-[500]">
-                        <span>
-                          {transaction?.status?.toLowerCase()}
-                        </span>
-                      </td> */}
                       <td className="p-4 text-[11px] font-[500]">
                         <span
                           className={`px-2 py-1 rounded-[20px] text-[12px] font-[600] w-20 flex items-center justify-center ${
                             transaction?.status?.toLowerCase() === "verified"
-                              ? "bg-[#10CB0026] text-[#0DA000]" 
+                              ? "bg-[#10CB0026] text-[#0DA000]"
                               : transaction?.status?.toLowerCase() ===
                                 "unverified"
-                              ? "bg-[#FFC70126] text-[#FFB800]" 
+                              ? "bg-[#FFC70126] text-[#FFB800]"
                               : "bg-[#FF7A8F33] text-[#FF002A]"
                           }`}
                         >
@@ -313,13 +225,169 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
                             transaction?.status?.slice(1)}
                         </span>
                       </td>
-                      <td className="p-4 flex space-x-2">
+                      <td className="p-4 flex space-x-2 transaction-view-model">
                         <button
                           className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
                           title="View"
+                          onClick={() => handleViewTransaction(transaction)}
                         >
                           <FiEye />
                         </button>
+                        <Modal
+                          centered
+                          footer={null}
+                          width={900}
+                          style={{ fontFamily: "sans-serif", padding: "20px" }}
+                          title={
+                            <p className="text-[16px] font-[700]">
+                              Transaction Details
+                            </p>
+                          }
+                          open={open}
+                          onCancel={() => setOpen(false)}
+                          onClose={() => setOpen(false)}
+                        >
+                          {selectedTransaction && (
+                            <div className="flex flex-col md:flex-row">
+                              {/* Left side input fields */}
+                              <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
+                                {[
+                                  {
+                                    label: "Amount:",
+                                    value: `₹ ${selectedTransaction?.amount}`,
+                                  },
+                                  {
+                                    label: "UTR#:",
+                                    value: selectedTransaction?.utr,
+                                  },
+                                  {
+                                    label: "Date & Time:",
+                                    value: `${new Date(
+                                      selectedTransaction.createdAt
+                                    ).toLocaleString()}`,
+                                  },
+                                  {
+                                    label: "Bank Name:",
+                                    value:
+                                      selectedTransaction.bankId?.bankName ||
+                                      "UPI",
+                                  },
+                                  {
+                                    label: "Description:",
+                                    value:
+                                      selectedTransaction.description || "",
+                                    isTextarea: true,
+                                  },
+                                ].map((field, index) => (
+                                  <div
+                                    className="flex items-center gap-4"
+                                    key={index}
+                                  >
+                                    <p className="text-[12px] font-[600] w-[150px]">
+                                      {field.label}
+                                    </p>
+                                    {field.isTextarea ? (
+                                      <textarea
+                                        className="w-[50%] text-[11px] border rounded p-1 resize-none outline-none input-placeholder-black overflow-hidden"
+                                        value={field.value}
+                                        rows={3}
+                                        readOnly
+                                        style={{
+                                          overflow: "auto",
+                                          resize: "none",
+                                        }}
+                                      />
+                                    ) : (
+                                      <Input
+                                        className="w-[50%] text-[12px] input-placeholder-black"
+                                        value={field.value}
+                                        readOnly
+                                      />
+                                    )}
+                                  </div>
+                                ))}
+                                <div className="flex gap-2 mt-4">
+                                  {/* Approve Button */}
+                                  <button
+                                    className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
+                                    onClick={() =>
+                                      handleTransactionAction(
+                                        "approve",
+                                        selectedTransaction._id
+                                      )
+                                    }
+                                  >
+                                    <IoMdCheckmark className="mt-[3px] mr-[6px]" />
+                                    Approve Transaction
+                                  </button>
+
+                                  {/* Decline Button */}
+                                  <button
+                                    className="bg-[#FF405F33] flex text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
+                                    onClick={() =>
+                                      handleTransactionAction(
+                                        "decline",
+                                        selectedTransaction._id
+                                      )
+                                    }
+                                  >
+                                    <GoCircleSlash className="mt-[3px] mr-[6px]" />
+                                    Decline TR
+                                  </button>
+
+                                  {/* Edit Button */}
+                                  <button
+                                    className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
+                                    onClick={() =>
+                                      handleTransactionAction(
+                                        "edit",
+                                        selectedTransaction._id
+                                      )
+                                    }
+                                  >
+                                    <FaRegEdit className="mt-[2px] mr-2" /> Edit
+                                    TR
+                                  </button>
+                                </div>
+
+                                {/* Bottom Divider and Activity */}
+                                <div className="border-b w-[370px] mt-4"></div>
+                                <p className="text-[14px] font-[700]">
+                                  Activity
+                                </p>
+                                <p className="text-[13px] font-[600] leading-10">
+                                  Transaction ID:
+                                  <span className="text-[12px] ml-2 font-[600] text-[#00000080]">
+                                    {selectedTransaction._id}
+                                  </span>
+                                </p>
+                              </div>
+                              {/* Right side with border and image */}
+                              <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
+                                <img
+                                  src={`${BACKEND_URL}/${selectedTransaction?.image}`}
+                                  alt="Payment Proof"
+                                  className="max-h-[500px]"
+                                />
+
+                                <div className="flex">
+                                  <button
+                                    className="mt-4 border flex border-black px-1 py-1 rounded"
+                                    onClick={() => {
+                                      const input =
+                                        document.createElement("input");
+                                      input.type = "file";
+                                      input.click();
+                                    }}
+                                  >
+                                    <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
+                                    <p>Replace Payment Proof</p>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </Modal>
                         <button
                           className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
                           title="Edit"

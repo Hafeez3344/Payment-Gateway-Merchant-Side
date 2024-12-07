@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 
 const BACKEND_URL = "http://192.168.1.13:8888";
 
+// ------------------------------------- Merchant Login api------------------------------------
 export const fn_loginMerchantApi = async (data) => {
     try {
         const response = await axios.post(`${BACKEND_URL}/merchant/login`, data);
@@ -24,6 +25,7 @@ export const fn_loginMerchantApi = async (data) => {
     }
 };
 
+// ------------------------------------- Merchant Login History api------------------------------------
 export const fn_getMerchantLoginHistoryApi = async (MerchantId) => {
     try {
         const token = Cookies.get('merchantToken');
@@ -47,6 +49,7 @@ export const fn_getMerchantLoginHistoryApi = async (MerchantId) => {
     }
 };
 
+// ------------------------------------- Update Api Keys api------------------------------------
 export const fn_updateApiKeys = async (apiKey, secretKey) => {
     console.log(apiKey, secretKey)
     try {
@@ -77,6 +80,7 @@ export const fn_updateApiKeys = async (apiKey, secretKey) => {
     }
 };
 
+// ------------------------------------- Get API Keys api------------------------------------
 export const fn_getApiKeys = async () => {
     try {
         const token = Cookies.get("merchantToken");
@@ -101,6 +105,7 @@ export const fn_getApiKeys = async () => {
     }
 };
 
+// ------------------------------------- Get Bank Account api------------------------------------
 export const fn_getBankByAccountTypeApi = async (accountType) => {
     try {
         const token = Cookies.get("merchantToken");
@@ -124,6 +129,7 @@ export const fn_getBankByAccountTypeApi = async (accountType) => {
     }
 };
 
+// ------------------------------------- Bank Update api------------------------------------
 export const fn_BankUpdate = async (id, data) => {
     try {
         const token = Cookies.get("merchantToken");
@@ -148,8 +154,7 @@ export const fn_BankUpdate = async (id, data) => {
     }
 };
 
-// get All Merchant api
-
+// -------------------------------- get All Merchant api-----------------------------------
 export const fn_getAllMerchantApi = async () => {
     try {
         const token = Cookies.get("merchantToken");
@@ -177,5 +182,38 @@ export const fn_getAllMerchantApi = async () => {
         return { status: false, message: "Network Error" };
     }
 };
+
+//----------------------------------Transaction Status APi----------------------------------
+export const fn_updateTransactionStatusApi = async (transactionId, action) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.put(
+            `${BACKEND_URL}/ledger/update/${transactionId}`,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                params: {
+                    action: action, 
+                },
+            }
+        );
+
+        return {
+            status: response?.data?.status === "ok",
+            message: response?.data?.message || "Transaction updated successfully",
+            data: response?.data,
+        };
+    } catch (error) {
+        console.error(`Error updating transaction status:`, error?.response || error);
+        return {
+            status: false,
+            message: error?.response?.data?.message || "An error occurred",
+        };
+    }
+};
+
 
 export default BACKEND_URL;
