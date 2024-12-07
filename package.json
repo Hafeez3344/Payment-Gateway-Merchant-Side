@@ -14,11 +14,15 @@
     "axios": "^1.7.8",
     "date-fns": "^4.1.0",
     "js-cookie": "^3.0.5",
+    "pdf-table-extractor": "^1.0.3",
+    "pdfjs-dist": "^4.9.155",
     "react": "^18.3.1",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
-    "react-router-dom": "^7.0.1"
+    "react-pdftotext": "^1.3.4",
+    "react-router-dom": "^7.0.1",
+    "tabula-js": "^1.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
@@ -33,6 +37,7 @@
     "globals": "^15.11.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "vite-plugin-static-copy": "^2.2.0"
   }
 }

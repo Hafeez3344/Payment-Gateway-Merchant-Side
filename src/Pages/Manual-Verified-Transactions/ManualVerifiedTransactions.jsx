@@ -7,7 +7,7 @@ import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
 import { useNavigate } from "react-router-dom";
 import { Pagination, Input } from "antd";
 
-const ManualVerifiedTransactions = ({ authorization, showSidebar }) => {
+const ManualVerifiedTransactions = ({ setSelectedPage, authorization, showSidebar }) => {
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -192,6 +192,7 @@ const ManualVerifiedTransactions = ({ authorization, showSidebar }) => {
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) navigate("/login");
+    setSelectedPage("transaction-history")
   }, []);
 
   return (

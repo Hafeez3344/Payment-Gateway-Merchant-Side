@@ -13,7 +13,7 @@ import BACKEND_URL, {
   fn_getBankByAccountTypeApi,
 } from "../../api/api";
 
-const MerchantManagement = ({ authorization, showSidebar }) => {
+const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => {
   const [activeTab, setActiveTab] = useState("bank");
   const [banksData, setBanksData] = useState([]);
   const bank = [];
@@ -38,6 +38,7 @@ const MerchantManagement = ({ authorization, showSidebar }) => {
     if (!authorization) {
       navigate("/login");
     }
+    setSelectedPage("merchant-profile")
     fn_getBankByAccountType();
   }, [activeTab]);
 

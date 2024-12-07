@@ -13,7 +13,7 @@ import BACKEND_URL, {
   fn_updateTransactionStatusApi,
 } from "../../api/api";
 
-const TransactionsTable = ({ authorization, showSidebar }) => {
+const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
@@ -49,6 +49,7 @@ const TransactionsTable = ({ authorization, showSidebar }) => {
       navigate("/login");
       return;
     }
+    setSelectedPage("transaction-history")
     fetchTransactions();
   }, []);
 

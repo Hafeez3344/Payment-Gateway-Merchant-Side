@@ -1,17 +1,18 @@
 import { Input } from "antd";
 import Cookies from "js-cookie";
-import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+
 import gold from "../../assets/gold.svg";
+
 import {fn_getMerchantLoginHistoryApi, fn_updateApiKeys, fn_getApiKeys } from "../../api/api"
 
-
-const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
-  const containerHeight = window.innerHeight - 120;
+const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSidebar, setMerchantVerified }) => {
   const navigate = useNavigate();
-  const [loginData, setLoginData] = useState([]);
   const [apiKey, setApiKey] = useState("");
+  const [loginData, setLoginData] = useState([]);
   const [secretKey, setSecretKey] = useState("");
+  const containerHeight = window.innerHeight - 120;
   const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
@@ -19,6 +20,7 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
     if (!authorization) {
       navigate("/login");
     } else {
+      setSelectedPage("setting")
       fetchApiKeys();
       fetchMerchantLoginHistory();
     }
@@ -33,7 +35,6 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
       console.error("Error fetching login history:", response.message);
     }
   };
-
 
   const fetchApiKeys = async () => {
     const response = await fn_getApiKeys();
@@ -51,9 +52,12 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
       return;
     }
     const response = await fn_updateApiKeys(apiKey, secretKey);
+    if(response?.status){
+      setMerchantVerified(true);
+      localStorage.setItem('merchantVerified', 'true');
+    }
     setStatusMessage(response.message);
   };
-
 
   return (
     <div
@@ -76,8 +80,8 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
             {/* First Row: API Key and Secret Key */}
             <div className="flex flex-col ">
               <p className="text-black text-[14px] font-[600]">API Key:</p>
-              <Input
-                type="text"
+              <Input.Password
+                type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 className="mt-1 p-2 text-[14px]"
@@ -86,8 +90,8 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
             </div>
             <div className="flex flex-col">
               <p className="text-black text-[14px] font-[600]">Secret Key:</p>
-              <Input
-                type="text"
+              <Input.Password
+                type="password"
                 value={secretKey}
                 onChange={(e) => setSecretKey(e.target.value)}
                 className="mt-1 p-2 text-[14px]"
@@ -123,8 +127,8 @@ const SystemConfigurationIntegration = ({ authorization, showSidebar }) => {
               </button>
               {statusMessage && (
                 <p
-                  className={`mt-2 ${
-                    statusMessage.includes("successfully Verified")
+                  className={`mt-2 ms-2 text-[14px] ${
+                    statusMessage.includes("Merchant Verified Successfully")
                       ? "text-green-500"
                       : "text-red-500"
                   }`}

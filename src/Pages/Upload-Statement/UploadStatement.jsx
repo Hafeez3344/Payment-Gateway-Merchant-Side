@@ -1,27 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
-import { GoCircleSlash } from "react-icons/go";
+import pdfToText from 'react-pdftotext'
 import DatePicker from "react-datepicker";
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
+
+import { FiEye } from "react-icons/fi";
+import { FiUpload } from "react-icons/fi";
+import { GoCircleSlash } from "react-icons/go";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
-import { useNavigate } from "react-router-dom";
-import { Input } from "antd";
-import { FiUpload } from "react-icons/fi";
 
-const UploadStatement = ({ authorization, showSidebar }) => {
+const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
+
   const navigate = useNavigate();
+  const [bank, setBank] = useState("");
+  const [endDate, setEndDate] = useState(null);
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [bank, setBank] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [open, setOpen] = React.useState(false);
-  const { TextArea } = Input;
-  const handleFileUpload = (event) => {
+
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    console.log(file);
+    pdfToText(file).then((text) => {
+      console.log(text)
+    }).catch(error => console.error("Failed to extract text from pdf"))
   };
 
   const transactions = [
@@ -128,15 +131,14 @@ const UploadStatement = ({ authorization, showSidebar }) => {
 
   useEffect(() => {
     window.scroll(0, 0);
-    if(!authorization)
-      navigate("/login")
+    if (!authorization) navigate("/login");
+    setSelectedPage("upload-statement")
   }, []);
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -209,7 +211,7 @@ const UploadStatement = ({ authorization, showSidebar }) => {
                   className="border border-gray-300 rounded py-1 text-[12px] text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option className="text-[6px] text-gray-400" value="">
-                  <img src={CanaraBank} alt="" />
+                    <img src={CanaraBank} alt="" />
                     Bank Name
                   </option>
                   <option

@@ -10,12 +10,13 @@ export const fn_loginMerchantApi = async (data) => {
         console.log(response)
         const token = response?.data?.token;
         const id = response?.data?.data?._id;
-
+        const merchantVerified = response?.data?.data?.verify;
         return {
             status: true,
             message: "Merchant Logged in successfully",
             token: token,
             id: id,
+            merchantVerified: merchantVerified
         };
     } catch (error) {
         if (error?.response?.status === 400) {
@@ -51,7 +52,6 @@ export const fn_getMerchantLoginHistoryApi = async (MerchantId) => {
 
 // ------------------------------------- Update Api Keys api------------------------------------
 export const fn_updateApiKeys = async (apiKey, secretKey) => {
-    console.log(apiKey, secretKey)
     try {
         const token = Cookies.get("merchantToken");
         const formData = new FormData;
@@ -66,10 +66,9 @@ export const fn_updateApiKeys = async (apiKey, secretKey) => {
                 },
             }
         );
-        console.log(response)
         return {
             status: true,
-            message: "API keys updated successfully",
+            message: "Merchant Verified Successfully",
             data: response
         };
     } catch (error) {
@@ -83,20 +82,9 @@ export const fn_updateApiKeys = async (apiKey, secretKey) => {
 // ------------------------------------- Get API Keys api------------------------------------
 export const fn_getApiKeys = async () => {
     try {
-        const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/merchant/get`,
-            {},
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-        return {
-            status: true,
-            data: response.data,
-        };
+        const merchantId = Cookies.get("merchantId");
+        const response = await axios.get(`${BACKEND_URL}/merchant/get/${merchantId}`);
+        return { status: true, data: response.data };
     } catch (error) {
         if (error?.response?.status === 400) {
             return { status: false, message: error?.response?.data?.message };
