@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Button, Modal, Input, notification } from "antd";
-import { RiFindReplaceLine } from "react-icons/ri";
-import { IoMdCheckmark } from "react-icons/io";
 import { FaRegEdit } from "react-icons/fa";
+import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { RiFindReplaceLine } from "react-icons/ri";
+import "react-datepicker/dist/react-datepicker.css";
+import { FaIndianRupeeSign, } from "react-icons/fa6";
+import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
+import { Pagination, Button, Modal, Input, notification } from "antd";
 import BACKEND_URL, {
   fn_getAllMerchantApi,
   fn_updateTransactionStatusApi,
@@ -15,12 +16,15 @@ import BACKEND_URL, {
 
 const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const status = searchParams.get('status');
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [merchant, setMerchant] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const { TextArea } = Input;
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
@@ -28,7 +32,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
 
   const fetchTransactions = async () => {
     try {
-      const result = await fn_getAllMerchantApi();
+      const result = await fn_getAllMerchantApi(status || null);
       setLoading(false);
       if (result?.status) {
         if (result?.data?.status === "ok") {
@@ -49,7 +53,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
       navigate("/login");
       return;
     }
-    setSelectedPage("transaction-history")
+    setSelectedPage("transaction-history");
     fetchTransactions();
   }, []);
 
@@ -61,24 +65,44 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
-    console.log(transaction);
     setOpen(true);
   };
 
   const handleTransactionAction = async (action, transactionId) => {
-    console.log(`Transaction ID: ${transactionId}, Action: ${action}`);
-
-    const response = await fn_updateTransactionStatusApi(transactionId, action);
-
+    const response = await fn_updateTransactionStatusApi(transactionId, {
+      status: action,
+    });
     if (response.status) {
-      console.log(`Transaction ${action} successfully.`);
       fetchTransactions();
-      // notification.success({
-      //   message: "Success",
-      //   description: "Transaction Approved!",
-      //   placement: "topRight",
-      // });
+      notification.success({
+        message: "Success",
+        description: "Transaction Updated!",
+        placement: "topRight",
+      });
+      setIsEdit(false);
+      setOpen(false);
     } else {
+      setIsEdit(false);
+      console.error(`Failed to ${action} transaction:`, response.message);
+    }
+  };
+
+  const handleEditTransactionAction = async (status, id, amount) => {
+    const response = await fn_updateTransactionStatusApi(id, {
+      status: status,
+      amount: parseInt(amount),
+    });
+    if (response.status) {
+      fetchTransactions();
+      notification.success({
+        message: "Success",
+        description: "Transaction Updated!",
+        placement: "topRight",
+      });
+      setOpen(false);
+      setIsEdit(false);
+    } else {
+      setIsEdit(false);
       console.error(`Failed to ${action} transaction:`, response.message);
     }
   };
@@ -213,13 +237,11 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                       </td>
                       <td className="p-4 text-[11px] font-[500]">
                         <span
-                          className={`px-2 py-1 rounded-[20px] text-[12px] font-[600] w-20 flex items-center justify-center ${
-                            transaction?.status?.toLowerCase() === "verified"
+                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${
+                            transaction?.status === "Verified"
                               ? "bg-[#10CB0026] text-[#0DA000]"
-                              : transaction?.status?.toLowerCase() ===
-                                "unverified"
-                              ? "bg-[#FFC70126] text-[#FFB800]"
-                              : "bg-[#FF7A8F33] text-[#FF002A]"
+                              : transaction?.status === "Unverified"
+                              ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.status === "Manual Verified" ? "bg-[#10CB0026] text-[#0DA000]" : "bg-[#FF7A8F33] text-[#FF002A]"
                           }`}
                         >
                           {transaction?.status?.charAt(0).toUpperCase() +
@@ -245,8 +267,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                             </p>
                           }
                           open={open}
-                          onCancel={() => setOpen(false)}
-                          onClose={() => setOpen(false)}
+                          onCancel={() => {setOpen(false); setIsEdit(false)}}
+                          onClose={() => {setOpen(false); setIsEdit(false)}}
                         >
                           {selectedTransaction && (
                             <div className="flex flex-col md:flex-row">
@@ -255,7 +277,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                 {[
                                   {
                                     label: "Amount:",
-                                    value: `₹ ${selectedTransaction?.amount}`,
+                                    value: selectedTransaction?.amount,
                                   },
                                   {
                                     label: "UTR#:",
@@ -300,9 +322,28 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                       />
                                     ) : (
                                       <Input
-                                        className="w-[50%] text-[12px] input-placeholder-black"
-                                        value={field.value}
-                                        readOnly
+                                        prefix={
+                                          field.label === "Amount:" ? (
+                                            <FaIndianRupeeSign className="mt-[2px]" />
+                                          ) : null
+                                        }
+                                        className={`w-[50%] text-[12px] input-placeholder-black ${
+                                          isEdit && field.label === "Amount:"
+                                            ? "bg-white"
+                                            : "bg-gray-200"
+                                        }`}
+                                        readOnly={
+                                          isEdit && field.label === "Amount:"
+                                            ? false
+                                            : true
+                                        }
+                                        value={field?.value}
+                                        onChange={(e) =>
+                                          setSelectedTransaction((prev) => ({
+                                            ...prev,
+                                            amount: e.target.value,
+                                          }))
+                                        }
                                       />
                                     )}
                                   </div>
@@ -313,8 +354,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                     className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
                                     onClick={() =>
                                       handleTransactionAction(
-                                        "approve",
-                                        selectedTransaction._id
+                                        "Verified",
+                                        selectedTransaction?._id
                                       )
                                     }
                                   >
@@ -327,8 +368,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                     className="bg-[#FF405F33] flex text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
                                     onClick={() =>
                                       handleTransactionAction(
-                                        "decline",
-                                        selectedTransaction._id
+                                        "Decline",
+                                        selectedTransaction?._id
                                       )
                                     }
                                   >
@@ -339,15 +380,29 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                   {/* Edit Button */}
                                   <button
                                     className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                                    onClick={() =>
-                                      handleTransactionAction(
-                                        "edit",
-                                        selectedTransaction._id
-                                      )
-                                    }
+                                    onClick={() => {
+                                      if (!isEdit) {
+                                        setIsEdit(true);
+                                      } else {
+                                        handleEditTransactionAction(
+                                          "Manual Verified",
+                                          selectedTransaction._id,
+                                          selectedTransaction?.amount
+                                        );
+                                      }
+                                    }}
                                   >
-                                    <FaRegEdit className="mt-[2px] mr-2" /> Edit
-                                    TR
+                                    {!isEdit ? (
+                                      <>
+                                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                                        Edit TR
+                                      </>
+                                    ) : (
+                                      <>
+                                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                                        Saved and Approve TR
+                                      </>
+                                    )}
                                   </button>
                                 </div>
 
@@ -368,7 +423,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                 <img
                                   src={`${BACKEND_URL}/${selectedTransaction?.image}`}
                                   alt="Payment Proof"
-                                  className="max-h-[500px]"
+                                  className="max-h-[400px]"
                                 />
 
                                 <div className="flex">

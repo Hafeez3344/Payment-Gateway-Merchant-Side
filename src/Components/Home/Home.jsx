@@ -1,19 +1,67 @@
-import React, { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import graph from "../../assets/graph.png";
 import { GoDotFill } from "react-icons/go";
+import graph from "../../assets/graph.png";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getAllVerifiedTransactionApi } from "../../api/api";
 
 const Home = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const containerHeight = window.innerHeight - 105;
+  const [transactions, setTransactions] = useState([]);
+  const [verifiedTransactions, setVerifiedTransactions] = useState(0);
+  const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
+  const [manualVerifiedTransactions, setManualVerifiedTransactions] = useState(0);
+  const [declineTransactions, setDeclineTransactions] = useState(0);
+  const [totalTransaction, setTotalTransactions] = useState(0);
 
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
       navigate("/login");
     }
-    setSelectedPage("dashboard")
-  }, []);
+    setSelectedPage("dashboard");
+  
+    const fetchTransactions = async () => {
+      try {
+        console.log("Fetching all transactions...");
+        const response = await fn_getAllMerchantApi();
+        // console.log("Response from fn_getAllMerchantApi: ", response);
+        if (response.status) {
+          setTransactions(response?.data?.data || []);
+        } else {
+          setError(response.message);
+        }
+      } catch (err) {
+        console.error("Error fetching transactions:", err);
+        setError("Unable to fetch transactions.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    const fetchVerifiedTransactions = async () => {
+      try {
+        const response = await fn_getAllVerifiedTransactionApi("Verified");
+        const manualResponse = await fn_getAllVerifiedTransactionApi("Manual Verified");
+        const declineResponse = await fn_getAllVerifiedTransactionApi("Decline");
+        const unverifiedResponse = await fn_getAllVerifiedTransactionApi("Unverified");
+        const total = await fn_getAllTransactionApi();
+        setVerifiedTransactions(response?.data || 0);
+        setUnverifiedTransactions(unverifiedResponse?.data || 0);
+        setManualVerifiedTransactions(manualResponse?.data || 0);
+        setDeclineTransactions(declineResponse?.data || 0);
+        setTotalTransactions(total?.data || 0);
+      } catch (err) {
+        console.error("Error fetching verified transactions:", err);
+        setError("Unable to fetch verified transactions.");
+      }
+    };
+  
+    fetchTransactions();
+    fetchVerifiedTransactions();
+  }, [authorization, navigate, setSelectedPage]);
 
   return (
     <div
@@ -45,40 +93,40 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
         {/* Boxes Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
           <Boxes
-            number={"6,273"}
-            amount={"876347"}
+            number={verifiedTransactions}
+            amount={totalTransaction}
             title={"SYSTEM VERIFIED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
             }
-            link={"/transactions-table?status=verified"}
+            link={"/transactions-table?status=Verified"}
           />
           <Boxes
-            number={"3,512"}
-            amount={"574535"}
+            number={manualVerifiedTransactions}
+            amount={totalTransaction}
             title={"MANUAL VERIFIED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(8, 100, 232, 1), rgba(108, 168, 255, 1))"
             }
-            link={"/transactions-table?status=manual"}
+            link={"/transactions-table?status=Manual Verified"}
           />
           <Boxes
-            number={"6,273"}
+            number={unverifiedTransactions}
             amount={"876347"}
             title={"PENDING TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
             }
-            link={"/transactions-table?status=unverified"}
+            link={"/transactions-table?status=Unverified"}
           />
           <Boxes
-            number={"6,273"}
+            number={declineTransactions}
             amount={"876347"}
             title={"FAILED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
             }
-            link={"/transactions-table?status=failed"}
+            link={"/transactions-table?status=Decline"}
           />
         </div>
 
@@ -108,48 +156,26 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
               services, and the process has evolved to include real-time
               tracking.
             </p>
-            <RecentTransaction
-              name="Saman Paret"
-              utrId="#1234567"
-              status="Verified"
-              amount="₹4,980"
-            />
-            <RecentTransaction
-              name="Rahul Dev"
-              utrId="#1234567"
-              status="Declined"
-              amount="₹8,923"
-            />
-            <RecentTransaction
-              name="Arjun Sharma"
-              utrId="#1234567"
-              status="Manual Verified"
-              amount="₹5,723"
-            />
-            <RecentTransaction
-              name="Arjun Sharma"
-              utrId="#1234567"
-              status="Unverified"
-              amount="₹5,723"
-            />
-            <RecentTransaction
-              name="Rahul Dev"
-              utrId="#1234567"
-              status="Verified"
-              amount="₹8,923"
-            />
-            <RecentTransaction
-              name="Saman Paret"
-              utrId="#1234567"
-              status="Declined"
-              amount="₹4,980"
-            />
-            <RecentTransaction
-              name="Shubh"
-              utrId="#1234567"
-              status="Manual Verified"
-              amount="₹4,980"
-            />
+              {loading ? (
+                <p>Loading...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : (
+                <div>
+                  {transactions.length > 0 ? (
+                    transactions.map((transaction, index) => (
+                      <RecentTransaction
+                        name={transaction?.bankId?.bankName || "UPI"}
+                        utrId={transaction?.utr}
+                        status={transaction?.status}
+                        amount={`₹${transaction?.amount}`}
+                      />
+                    ))
+                  ) : (
+                    <p>No transactions found.</p>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </div>
@@ -184,10 +210,10 @@ const Stat = ({ label, value, color }) => (
 const RecentTransaction = ({ name, utrId, status, color, amount }) => {
   // Status color mapping
   const statusColor = {
-    Verified: "#029868", 
-    Declined: "#FF3F5E", 
-    "Manual Verified": "#0864E8", 
-    Unverified: "#F67A03", 
+    Verified: "#029868",
+    Declined: "#FF3F5E",
+    "Manual Verified": "#0864E8",
+    Unverified: "#F67A03",
   };
 
   return (
