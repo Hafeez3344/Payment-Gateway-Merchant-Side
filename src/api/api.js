@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "http://192.168.1.13:8888";
+const BACKEND_URL = "http://192.168.1.4:8888";
 
 // ------------------------------------- Merchant Login api------------------------------------
 export const fn_loginMerchantApi = async (data) => {
