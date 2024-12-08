@@ -2,13 +2,13 @@ import DatePicker from "react-datepicker";
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { RiFindReplaceLine } from "react-icons/ri";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaIndianRupeeSign, } from "react-icons/fa6";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
-import { Pagination, Button, Modal, Input, notification } from "antd";
+import { Pagination, Modal, Input, notification } from "antd";
 import BACKEND_URL, {
   fn_getAllMerchantApi,
   fn_updateTransactionStatusApi,
@@ -25,18 +25,18 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const { TextArea } = Input;
-  const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (pageNumber) => {
     try {
-      const result = await fn_getAllMerchantApi(status || null);
-      setLoading(false);
+      const result = await fn_getAllMerchantApi(status || null, pageNumber);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
+          setTotalPages(result?.data?.totalPages);
         } else {
           setTransactions([]);
         }
@@ -54,8 +54,11 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
       return;
     }
     setSelectedPage("transaction-history");
-    fetchTransactions();
   }, []);
+
+  useEffect(() => {
+    fetchTransactions(currentPage);
+  }, [currentPage]);
 
   const filteredTransactions = transactions.filter(
     (transaction) =>
@@ -73,7 +76,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
       status: action,
     });
     if (response.status) {
-      fetchTransactions();
+      fetchTransactions(currentPage);
       notification.success({
         message: "Success",
         description: "Transaction Updated!",
@@ -93,7 +96,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
       amount: parseInt(amount),
     });
     if (response.status) {
-      fetchTransactions();
+      fetchTransactions(currentPage);
       notification.success({
         message: "Success",
         description: "Transaction Updated!",
@@ -109,9 +112,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -237,12 +239,11 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                       </td>
                       <td className="p-4 text-[11px] font-[500]">
                         <span
-                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${
-                            transaction?.status === "Verified"
-                              ? "bg-[#10CB0026] text-[#0DA000]"
-                              : transaction?.status === "Unverified"
+                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
+                            ? "bg-[#10CB0026] text-[#0DA000]"
+                            : transaction?.status === "Unverified"
                               ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.status === "Manual Verified" ? "bg-[#10CB0026] text-[#0DA000]" : "bg-[#FF7A8F33] text-[#FF002A]"
-                          }`}
+                            }`}
                         >
                           {transaction?.status?.charAt(0).toUpperCase() +
                             transaction?.status?.slice(1)}
@@ -267,8 +268,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                             </p>
                           }
                           open={open}
-                          onCancel={() => {setOpen(false); setIsEdit(false)}}
-                          onClose={() => {setOpen(false); setIsEdit(false)}}
+                          onCancel={() => { setOpen(false); setIsEdit(false) }}
+                          onClose={() => { setOpen(false); setIsEdit(false) }}
                         >
                           {selectedTransaction && (
                             <div className="flex flex-col md:flex-row">
@@ -327,11 +328,10 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                             <FaIndianRupeeSign className="mt-[2px]" />
                                           ) : null
                                         }
-                                        className={`w-[50%] text-[12px] input-placeholder-black ${
-                                          isEdit && field.label === "Amount:"
-                                            ? "bg-white"
-                                            : "bg-gray-200"
-                                        }`}
+                                        className={`w-[50%] text-[12px] input-placeholder-black ${isEdit && field.label === "Amount:"
+                                          ? "bg-white"
+                                          : "bg-gray-200"
+                                          }`}
                                         readOnly={
                                           isEdit && field.label === "Amount:"
                                             ? false
@@ -470,14 +470,12 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
             </table>
           </div>
           <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
-            <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left">
-              Showing 1 to 10 of 17 entries
-            </p>
+            <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
             <Pagination
               className="self-center md:self-auto"
-              onChange={() => navigate("")}
+              onChange={(e) => setCurrentPage(e)}
               defaultCurrent={1}
-              total={50}
+              total={totalPages * 10}
             />
           </div>
         </div>

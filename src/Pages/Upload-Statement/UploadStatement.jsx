@@ -1,4 +1,4 @@
-import pdfToText from 'react-pdftotext'
+import axios from 'axios';
 import DatePicker from "react-datepicker";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
@@ -9,6 +9,8 @@ import { FiUpload } from "react-icons/fi";
 import { GoCircleSlash } from "react-icons/go";
 import CanaraBank from "../../assets/CanaraBank.svg";
 import BankOfBarodaLogo from "../../assets/BankOfBarodaLogo.svg";
+
+import { fn_compareTransactions, PDF_READ_URL } from '../../api/api';
 
 const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
 
@@ -21,10 +23,24 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
   const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    pdfToText(file).then((text) => {
-      console.log(text)
-    }).catch(error => console.error("Failed to extract text from pdf"))
+    try {
+      const file = event.target.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(PDF_READ_URL, formData);
+      console.log("data ", response?.data?.data);
+
+      const transactionPromises = response?.data?.data?.map(async (item) => {
+        await fn_compareTransactions(item);
+      });
+
+      await Promise.all(transactionPromises);
+
+      alert("All Transactions Checked Successfully");
+    } catch (error) {
+      console.error("Error during file upload:", error);
+    }
   };
 
   const transactions = [

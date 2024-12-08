@@ -1,7 +1,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "http://192.168.1.13:8888";
+const BACKEND_URL = "http://192.168.1.4:8888";
+export const PDF_READ_URL = "http://127.0.0.1:5000/parse-statement"
 
 // ------------------------------------- Merchant Login api------------------------------------
 export const fn_loginMerchantApi = async (data) => {
@@ -143,10 +144,10 @@ export const fn_BankUpdate = async (id, data) => {
 };
 
 // -------------------------------- get All Merchant api----------------------------------------
-export const fn_getAllMerchantApi = async (status) => {
+export const fn_getAllMerchantApi = async (status, pageNumber) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?status=${status || ""}`,
+        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -250,6 +251,32 @@ export const fn_getAllTransactionApi = async () => {
     } catch (error) {
         console.error(error);
 
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_compareTransactions = async (data) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.post(`${BACKEND_URL}/ledger/compare`, data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+        return {
+            status: true,
+            message: "Transaction Verified",
+            data: response.data?.data,
+        };
+    } catch (error) {
         if (error?.response) {
             return {
                 status: false,
