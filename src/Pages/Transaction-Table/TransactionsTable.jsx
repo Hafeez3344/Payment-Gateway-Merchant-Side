@@ -8,18 +8,21 @@ import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
 import { RiFindReplaceLine } from "react-icons/ri";
-import { FaIndianRupeeSign, } from "react-icons/fa6";
+import { FaIndianRupeeSign } from "react-icons/fa6";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 
-import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
+import BACKEND_URL, {
+  fn_deleteTransactionApi,
+  fn_getAllMerchantApi,
+  fn_updateTransactionStatusApi,
+} from "../../api/api";
 
 const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
-
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
 
   const [open, setOpen] = useState(false);
-  const status = searchParams.get('status');
+  const status = searchParams.get("status");
   const [isEdit, setIsEdit] = useState(false);
   const [merchant, setMerchant] = useState("");
   const [endDate, setEndDate] = useState(null);
@@ -91,10 +94,11 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
     }
   };
 
-  const handleEditTransactionAction = async (status, id, amount) => {
+  const handleEditTransactionAction = async (status, id, amount, utr) => {
     const response = await fn_updateTransactionStatusApi(id, {
       status: status,
       total: parseInt(amount),
+      utr: utr
     });
     if (response.status) {
       fetchTransactions(currentPage);
@@ -121,12 +125,13 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
       });
       fetchTransactions(currentPage);
     }
-  }
+  };
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -211,6 +216,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4">TRN-ID</th>
+                  <th className="p-4">User Name</th>
                   <th className="p-4">BANK NAME</th>
                   <th className="p-4">DATE</th>
                   <th className="p-4">TOTAL AMOUNT</th>
@@ -226,8 +232,11 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                       key={transaction?._id}
                       className="text-gray-800 text-sm border-b"
                     >
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {transaction?._id}
+                      <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
+                        {transaction?.trnNo}
+                      </td>
+                      <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
+                        {transaction?.username &&  transaction?.username !== "" ?  transaction?.username : "GUEST"}
                       </td>
                       <td className="p-4 flex items-center">
                         <img
@@ -235,28 +244,33 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                           alt={`Logo`}
                           className="w-6 h-6 rounded-full mr-2"
                         />
-                        <span className="text-[12px] font-[700] text-black whitespace-nowrap">
+                        <span className="text-[13px] font-[700] text-black whitespace-nowrap">
                           {transaction?.bankId?.bankName || "UPI"}
                         </span>
                       </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap">
+                      <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
                         {new Date(transaction?.createdAt).toDateString()},{" "}
                         {new Date(transaction?.createdAt).toLocaleTimeString()}
                       </td>
 
-                      <td className="p-4 text-[11px] font-[700] text-[#000000B2]">
-                        <FaIndianRupeeSign className="inline-block mt-[-1px]" /> {transaction?.total}
+                      <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
+                        <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
+                        {transaction?.total}
                       </td>
-                      <td className="p-4 text-[11px] font-[700] text-[#0864E8]">
+                      <td className="p-4 text-[12px] font-[700] text-[#0864E8]">
                         {transaction?.utr}
                       </td>
-                      <td className="p-4 text-[11px] font-[500]">
+                      <td className="p-4 text-[13px] font-[500]">
                         <span
-                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
-                            ? "bg-[#10CB0026] text-[#0DA000]"
-                            : transaction?.status === "Unverified"
-                              ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.status === "Manual Verified" ? "bg-[#0865e851] text-[#0864E8]" : "bg-[#FF7A8F33] text-[#FF002A]"
-                            }`}
+                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${
+                            transaction?.status === "Verified"
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : transaction?.status === "Unverified"
+                              ? "bg-[#FFC70126] text-[#FFB800]"
+                              : transaction?.status === "Manual Verified"
+                              ? "bg-[#0865e851] text-[#0864E8]"
+                              : "bg-[#FF7A8F33] text-[#FF002A]"
+                          }`}
                         >
                           {transaction?.status?.charAt(0).toUpperCase() +
                             transaction?.status?.slice(1)}
@@ -276,13 +290,21 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                           width={900}
                           style={{ fontFamily: "sans-serif", padding: "20px" }}
                           title={
+                            <>
                             <p className="text-[16px] font-[700]">
                               Transaction Details
                             </p>
+                            </>
                           }
                           open={open}
-                          onCancel={() => { setOpen(false); setIsEdit(false) }}
-                          onClose={() => { setOpen(false); setIsEdit(false) }}
+                          onCancel={() => {
+                            setOpen(false);
+                            setIsEdit(false);
+                          }}
+                          onClose={() => {
+                            setOpen(false);
+                            setIsEdit(false);
+                          }}
                         >
                           {selectedTransaction && (
                             <div className="flex flex-col md:flex-row">
@@ -341,22 +363,34 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                             <FaIndianRupeeSign className="mt-[2px]" />
                                           ) : null
                                         }
-                                        className={`w-[50%] text-[12px] input-placeholder-black ${isEdit && field.label === "Amount:"
-                                          ? "bg-white"
-                                          : "bg-gray-200"
-                                          }`}
+                                        className={`w-[50%] text-[12px] input-placeholder-black ${
+                                          isEdit &&
+                                          (field.label === "Amount:" ||
+                                            field?.label === "UTR#:")
+                                            ? "bg-white"
+                                            : "bg-gray-200"
+                                        }`}
                                         readOnly={
-                                          isEdit && field.label === "Amount:"
+                                          isEdit &&
+                                          (field.label === "Amount:" ||
+                                            field?.label === "UTR#:")
                                             ? false
                                             : true
                                         }
                                         value={field?.value}
-                                        onChange={(e) =>
-                                          setSelectedTransaction((prev) => ({
-                                            ...prev,
-                                            total: e.target.value,
-                                          }))
-                                        }
+                                        onChange={(e) => {
+                                          if (field?.label === "Amount:") {
+                                            setSelectedTransaction((prev) => ({
+                                              ...prev,
+                                              total: e.target.value,
+                                            }));
+                                          }else{
+                                            setSelectedTransaction((prev) => ({
+                                              ...prev,
+                                              utr: e.target.value,
+                                            }));
+                                          }
+                                        }}
                                       />
                                     )}
                                   </div>
@@ -400,7 +434,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                         handleEditTransactionAction(
                                           "Manual Verified",
                                           selectedTransaction._id,
-                                          selectedTransaction?.total
+                                          selectedTransaction?.total,
+                                          selectedTransaction?.utr
                                         );
                                       }
                                     }}
@@ -421,14 +456,14 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
 
                                 {/* Bottom Divider and Activity */}
                                 <div className="border-b w-[370px] mt-4"></div>
-                                <p className="text-[14px] font-[700]">
-                                  Activity
-                                </p>
                                 <p className="text-[13px] font-[600] leading-10">
                                   Transaction ID:
                                   <span className="text-[12px] ml-2 font-[600] text-[#00000080]">
-                                    {selectedTransaction._id}
+                                    {selectedTransaction.trnNo}
                                   </span>
+                                </p>
+                                <p className="text-[14px] font-[700]">
+                                  Activity
                                 </p>
                               </div>
                               {/* Right side with border and image */}

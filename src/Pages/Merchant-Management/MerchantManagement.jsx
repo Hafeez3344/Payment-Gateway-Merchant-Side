@@ -372,7 +372,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
                           }))
                         }
                         className="w-full text-[12px]"
-                        placeholder="Enter IBAN Number "
+                        placeholder={`${activeTab === "bank" ? "Enter IBAN Number" : "Enter UPI ID"}`}
                       />
                     </div>
                     {/* account Holder Name */}
@@ -412,10 +412,10 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
                         placeholder="Account Limit "
                       />
                     </div>
-                    {/* Account Logo */}
+                    {/* Account QR Code */}
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
-                        Account Logo<span className="text-[#D50000]">*</span>
+                        {activeTab === "upi" ? "UPI" : "Bank"} QR Code<span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         type="file"
