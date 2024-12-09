@@ -1,34 +1,35 @@
 import DatePicker from "react-datepicker";
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import "react-datepicker/dist/react-datepicker.css";
+import { Pagination, Modal, Input, notification } from "antd";
+
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
-import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
 import { RiFindReplaceLine } from "react-icons/ri";
-import "react-datepicker/dist/react-datepicker.css";
 import { FaIndianRupeeSign, } from "react-icons/fa6";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
-import { Pagination, Modal, Input, notification } from "antd";
-import BACKEND_URL, {
-  fn_getAllMerchantApi,
-  fn_updateTransactionStatusApi,
-} from "../../api/api";
+
+import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
 
 const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
+
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
+
+  const [open, setOpen] = useState(false);
   const status = searchParams.get('status');
+  const [isEdit, setIsEdit] = useState(false);
+  const [merchant, setMerchant] = useState("");
+  const [endDate, setEndDate] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [merchant, setMerchant] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   const fetchTransactions = async (pageNumber) => {
     try {
@@ -93,7 +94,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
   const handleEditTransactionAction = async (status, id, amount) => {
     const response = await fn_updateTransactionStatusApi(id, {
       status: status,
-      amount: parseInt(amount),
+      total: parseInt(amount),
     });
     if (response.status) {
       fetchTransactions(currentPage);
@@ -109,6 +110,18 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
       console.error(`Failed to ${action} transaction:`, response.message);
     }
   };
+
+  const fn_deleteTransaction = async (id) => {
+    const response = await fn_deleteTransactionApi(id);
+    if (response?.status) {
+      notification.success({
+        message: "Success",
+        description: "Transaction Deleted!",
+        placement: "topRight",
+      });
+      fetchTransactions(currentPage);
+    }
+  }
 
   return (
     <div
@@ -200,7 +213,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                   <th className="p-4">TRN-ID</th>
                   <th className="p-4">BANK NAME</th>
                   <th className="p-4">DATE</th>
-                  <th className="p-4">AMOUNT</th>
+                  <th className="p-4">TOTAL AMOUNT</th>
                   <th className="p-4">UTR#</th>
                   <th className="p-4">Status</th>
                   <th className="p-4 cursor-pointer">Action</th>
@@ -232,7 +245,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                       </td>
 
                       <td className="p-4 text-[11px] font-[700] text-[#000000B2]">
-                        {transaction?.amount}
+                        <FaIndianRupeeSign className="inline-block mt-[-1px]" /> {transaction?.total}
                       </td>
                       <td className="p-4 text-[11px] font-[700] text-[#0864E8]">
                         {transaction?.utr}
@@ -242,7 +255,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                           className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
                             ? "bg-[#10CB0026] text-[#0DA000]"
                             : transaction?.status === "Unverified"
-                              ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.status === "Manual Verified" ? "bg-[#10CB0026] text-[#0DA000]" : "bg-[#FF7A8F33] text-[#FF002A]"
+                              ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.status === "Manual Verified" ? "bg-[#0865e851] text-[#0864E8]" : "bg-[#FF7A8F33] text-[#FF002A]"
                             }`}
                         >
                           {transaction?.status?.charAt(0).toUpperCase() +
@@ -278,7 +291,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                 {[
                                   {
                                     label: "Amount:",
-                                    value: selectedTransaction?.amount,
+                                    value: selectedTransaction?.total,
                                   },
                                   {
                                     label: "UTR#:",
@@ -341,7 +354,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                         onChange={(e) =>
                                           setSelectedTransaction((prev) => ({
                                             ...prev,
-                                            amount: e.target.value,
+                                            total: e.target.value,
                                           }))
                                         }
                                       />
@@ -387,7 +400,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                         handleEditTransactionAction(
                                           "Manual Verified",
                                           selectedTransaction._id,
-                                          selectedTransaction?.amount
+                                          selectedTransaction?.total
                                         );
                                       }
                                     }}
@@ -400,7 +413,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                     ) : (
                                       <>
                                         <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                                        Saved and Approve TR
+                                        Update TR
                                       </>
                                     )}
                                   </button>
@@ -453,6 +466,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                         <button
                           className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
                           title="Delete"
+                          onClick={() => fn_deleteTransaction(transaction?._id)}
                         >
                           <FiTrash2 />
                         </button>

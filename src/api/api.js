@@ -287,4 +287,29 @@ export const fn_compareTransactions = async (data) => {
     }
 };
 
+export const fn_deleteTransactionApi = async (id) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.delete(`${BACKEND_URL}/ledger/delete/${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+        return {
+            status: true,
+            message: "Transaction Deleted",
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
 export default BACKEND_URL;

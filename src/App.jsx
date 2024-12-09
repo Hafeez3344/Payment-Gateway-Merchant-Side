@@ -1,7 +1,7 @@
 import "./App.css";
 import Cookies from "js-cookie";
+import { Routes, Route } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
 
 import Home from "./Components/Home/Home";
 import NavBar from "./Components/NabBar/NavBar";
@@ -36,7 +36,7 @@ function App() {
     <>
       {!merchantVerified && <NotVerfiedBar />}
       {authorization && (
-        <SideBar showSidebar={showSidebar} setShowSide={setShowSide} setAuthorization={setAuthorization} selectedPage={selectedPage} setSelectedPage={setSelectedPage} />
+        <SideBar showSidebar={showSidebar} setShowSide={setShowSide} setAuthorization={setAuthorization} selectedPage={selectedPage} setSelectedPage={setSelectedPage} setMerchantVerified={setMerchantVerified} />
       )}
       <div>
         {authorization && (

@@ -22,7 +22,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
       navigate("/login");
     }
     setSelectedPage("dashboard");
-  
+
     const fetchTransactions = async () => {
       try {
         console.log("Fetching all transactions...");
@@ -40,7 +40,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
         setLoading(false);
       }
     };
-  
+
     const fetchVerifiedTransactions = async () => {
       try {
         const response = await fn_getAllVerifiedTransactionApi("Verified");
@@ -58,16 +58,15 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
         setError("Unable to fetch verified transactions.");
       }
     };
-  
+
     fetchTransactions();
     fetchVerifiedTransactions();
   }, [authorization, navigate, setSelectedPage]);
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -112,7 +111,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
           />
           <Boxes
             number={unverifiedTransactions}
-            amount={"876347"}
+            amount={totalTransaction}
             title={"PENDING TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
@@ -121,7 +120,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
           />
           <Boxes
             number={declineTransactions}
-            amount={"876347"}
+            amount={totalTransaction}
             title={"FAILED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
@@ -156,26 +155,26 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
               services, and the process has evolved to include real-time
               tracking.
             </p>
-              {loading ? (
-                <p>Loading...</p>
-              ) : error ? (
-                <p className="text-red-500">{error}</p>
-              ) : (
-                <div>
-                  {transactions.length > 0 ? (
-                    transactions.map((transaction, index) => (
-                      <RecentTransaction
-                        name={transaction?.bankId?.bankName || "UPI"}
-                        utrId={transaction?.utr}
-                        status={transaction?.status}
-                        amount={`₹${transaction?.amount}`}
-                      />
-                    ))
-                  ) : (
-                    <p>No transactions found.</p>
-                  )}
-                </div>
-              )}
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : (
+              <div>
+                {transactions.length > 0 ? (
+                  transactions.map((transaction, index) => (
+                    <RecentTransaction
+                      name={transaction?.bankId?.bankName || "UPI"}
+                      utrId={transaction?.utr}
+                      status={transaction?.status}
+                      amount={`₹${transaction?.amount}`}
+                    />
+                  ))
+                ) : (
+                  <p>No transactions found.</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

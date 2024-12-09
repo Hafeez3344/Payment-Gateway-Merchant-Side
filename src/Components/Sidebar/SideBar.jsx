@@ -13,11 +13,11 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
 
-const SideBar = ({ showSidebar, setShowSide, setAuthorization, selectedPage, setSelectedPage }) => {
+const SideBar = ({ showSidebar, setShowSide, setAuthorization, selectedPage, setSelectedPage, setMerchantVerified }) => {
 
   const navigate = useNavigate();
   const isMobile = () => window.innerWidth < 1024;
-  
+
   const fn_controlSidebar = () => {
     setShowSide(!showSidebar);
   };
@@ -27,6 +27,7 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization, selectedPage, set
     Cookies.remove('merchantToken')
     localStorage.removeItem('merchantVerified')
     setAuthorization(false);
+    setMerchantVerified(true)
     navigate("/login");
   }
 

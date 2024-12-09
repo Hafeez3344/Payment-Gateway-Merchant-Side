@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 
 import gold from "../../assets/gold.svg";
 
-import {fn_getMerchantLoginHistoryApi, fn_updateApiKeys, fn_getApiKeys } from "../../api/api"
+import { fn_getMerchantLoginHistoryApi, fn_updateApiKeys, fn_getApiKeys } from "../../api/api"
 
 const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSidebar, setMerchantVerified }) => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSi
       return;
     }
     const response = await fn_updateApiKeys(apiKey, secretKey);
-    if(response?.status){
+    if (response?.status) {
       setMerchantVerified(true);
       localStorage.setItem('merchantVerified', 'true');
     }
@@ -61,9 +61,8 @@ const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSi
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -127,11 +126,10 @@ const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSi
               </button>
               {statusMessage && (
                 <p
-                  className={`mt-2 ms-2 text-[14px] ${
-                    statusMessage.includes("Merchant Verified Successfully")
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }`}
+                  className={`mt-2 ms-2 text-[14px] ${statusMessage.includes("Merchant Verified Successfully")
+                    ? "text-green-500"
+                    : "text-red-500"
+                    }`}
                 >
                   {statusMessage}
                 </p>
@@ -152,9 +150,8 @@ const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSi
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4">Login Date & Time</th>
-                  <th className="p-4">Logout Date & Time</th>
                   <th className="p-4">IP Address</th>
-                  <th className="p-4">ISP</th>
+                  {/* <th className="p-4">ISP</th> */}
                   <th className="p-4">City</th>
                 </tr>
               </thead>
@@ -163,9 +160,8 @@ const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSi
                   loginData.map((entry, index) => (
                     <tr key={index} className="text-gray-800 text-sm border-b">
                       <td className="p-4">{entry.loginDate || "-"}</td>
-                      <td className="p-4">{entry.logoutDate || "-"}</td>
-                      <td className="p-4">{entry.ipAddress || "-"}</td>
-                      <td className="p-4">{entry.isp || "-"}</td>
+                      <td className="p-4">{(entry.ip?.split("::ffff:")[1]) || "-"}</td>
+                      {/* <td className="p-4">{entry.isp || "-"}</td> */}
                       <td className="p-4">{entry.city || "-"}</td>
                     </tr>
                   ))

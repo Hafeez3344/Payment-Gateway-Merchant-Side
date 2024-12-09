@@ -1,30 +1,27 @@
-import React, { useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import Rectangle from "../../assets/Rectangle.jpg";
-import { useNavigate } from "react-router-dom";
-import CanaraBank from "../../assets/CanaraBank.svg";
-import upilogo2 from "../../assets/upilogo2.svg";
-import { FiEdit } from "react-icons/fi";
-import { Switch, Button, Modal, Input, notification } from "antd";
-import mehtaLogo from "../../assets/mehtaLogo.png";
 import axios from "axios";
-import BACKEND_URL, {
-  fn_BankUpdate,
-  fn_getBankByAccountTypeApi,
-} from "../../api/api";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Switch, Button, Modal, Input, notification } from "antd";
+
+import { FiEdit } from "react-icons/fi";
+
+import upilogo2 from "../../assets/upilogo2.svg";
+import Rectangle from "../../assets/Rectangle.jpg";
+import mehtaLogo from "../../assets/mehtaLogo.png";
+import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi } from "../../api/api";
 
 const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => {
-  const [activeTab, setActiveTab] = useState("bank");
-  const [banksData, setBanksData] = useState([]);
-  const bank = [];
-  const upi = [];
-  const accountsToShow = activeTab === "bank" ? bank : upi;
-  const [open, setOpen] = React.useState(false);
-  const containerHeight = window.innerHeight - 120;
+
   const navigate = useNavigate();
-  const { TextArea } = Input;
+  const containerHeight = window.innerHeight - 120;
+
+  const [open, setOpen] = React.useState(false);
+  const [banksData, setBanksData] = useState([]);
+  const [activeTab, setActiveTab] = useState("bank");
+
   const [data, setData] = useState({
-    image: {},
+    image: null,
     bankName: "",
     accountNo: "",
     accountType: "",
@@ -52,16 +49,60 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
     }
   };
 
-  const handleToggle = (index) => {
-    setMerchants((prevMerchants) =>
-      prevMerchants.map((merchant, i) =>
-        i === index ? { ...merchant, isToggled: !merchant.isToggled } : merchant
-      )
-    );
-  };
-
   const fn_submit = async () => {
     try {
+      if (data?.bankName === "") {
+        if (activeTab === "bank") {
+          notification.error({
+            message: "Error",
+            description: "Enter Bank Name",
+            placement: "topRight",
+          });
+          return;
+        }
+      }
+      if (data?.accountNo === "") {
+        if (activeTab === "bank") {
+          notification.error({
+            message: "Error",
+            description: "Enter Account Number",
+            placement: "topRight",
+          });
+          return;
+        }
+      }
+      if (data?.iban === "") {
+        notification.error({
+          message: "Error",
+          description: `Enter ${activeTab === "bank" ? "IBAN Number" : "UPI ID"}`,
+          placement: "topRight",
+        });
+        return;
+      }
+      if (data?.accountLimit === "") {
+        notification.error({
+          message: "Error",
+          description: "Enter Account Limit",
+          placement: "topRight",
+        });
+        return;
+      }
+      if (data?.accountHolderName === "") {
+        notification.error({
+          message: "Error",
+          description: "Enter Account Holder Name",
+          placement: "topRight",
+        });
+        return;
+      }
+      if (!data?.image) {
+        notification.error({
+          message: "Error",
+          description: "Update Image",
+          placement: "topRight",
+        });
+        return;
+      }
       const formData = new FormData();
       if (activeTab === "bank") {
         formData.append("image", data?.image);
@@ -81,26 +122,29 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
         formData.append("block", true);
       }
       const token = Cookies.get("merchantToken");
-      const response = await axios.post(
-        `${BACKEND_URL}/bank/create`,
-        formData,
+      const response = await axios.post(`${BACKEND_URL}/bank/create`, formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
       if (response?.status === 200) {
         setOpen(false);
-
         notification.success({
           message: "Success",
           description: "Bank Created Successfully!",
           placement: "topRight",
         });
-
-        fn_getBankByAccountType(); // Refresh the bank data
+        setData({
+          image: null,
+          bankName: "",
+          accountNo: "",
+          iban: "",
+          accountLimit: "",
+          accountHolderName: "",
+        });
+        fn_getBankByAccountType();
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message || "Network Error";
@@ -114,9 +158,8 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -249,10 +292,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
                       <Button
                         className="flex start px-10 text-[12px]"
                         type="primary"
-                        onClick={() => {
-                          fn_submit();
-                          setOpen(false);
-                        }}
+                        onClick={fn_submit}
                       >
                         Save
                       </Button>
@@ -417,9 +457,8 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
                     return (
                       <tr
                         key={index}
-                        className={`border-t border-b ${
-                          index % 2 === 0 ? "bg-white" : ""
-                        }`}
+                        className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                          }`}
                       >
                         <td className="p-3 text-[13px] font-[600]">
                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
@@ -455,11 +494,10 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar }) => 
                         </td>
                         <td className="text-center">
                           <button
-                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                              account?.block === false
-                                ? "bg-[#10CB0026] text-[#0DA000]"
-                                : "bg-[#FF173D33] text-[#D50000]"
-                            }`}
+                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : "bg-[#FF173D33] text-[#D50000]"
+                              }`}
                           >
                             {!account?.block ? "Active" : "Inactive"}
                           </button>
