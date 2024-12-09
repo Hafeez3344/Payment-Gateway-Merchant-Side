@@ -7,7 +7,6 @@ import { Pagination, Modal, Input, notification } from "antd";
 
 import { FiUpload } from "react-icons/fi";
 import { GoCircleSlash } from "react-icons/go";
-import CanaraBank from "../../assets/CanaraBank.svg";
 import { FiEdit, FiEye, FiTrash2 } from "react-icons/fi";
 
 import BACKEND_URL, { fn_compareTransactions, fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi, PDF_READ_URL } from '../../api/api';
@@ -42,6 +41,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
       console.log("data ", response?.data?.data);
 
       const transactionPromises = response?.data?.data?.map(async (item) => {
+        item.total = item.deposit;
         await fn_compareTransactions(item);
       });
 
