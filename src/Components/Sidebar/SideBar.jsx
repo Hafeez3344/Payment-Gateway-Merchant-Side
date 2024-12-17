@@ -13,7 +13,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
 
-const SideBar = ({ showSidebar, setShowSide, setAuthorization, selectedPage, setSelectedPage, setMerchantVerified }) => {
+const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization, selectedPage, setSelectedPage, setMerchantVerified }) => {
 
   const navigate = useNavigate();
   const isMobile = () => window.innerWidth < 1024;
@@ -61,50 +61,54 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization, selectedPage, set
           selectedPage={selectedPage}
           icon={<MdOutlineDashboard className="text-[20px]" />}
         />
-        <Menu
-          onClick={() => {
-            setSelectedPage("transaction-history")
-            navigate("/transactions-table");
-            if (isMobile()) fn_controlSidebar();
-          }}
-          label="Transaction History"
-          name="transaction-history"
-          selectedPage={selectedPage}
-          icon={<PiNotebook className="text-[20px]" />}
-        />
-        <Menu
-          onClick={() => {
-            setSelectedPage("merchant-profile")
-            navigate("/merchant-management");
-            if (isMobile()) fn_controlSidebar();
-          }}
-          label="Merchant Profile"
-          name="merchant-profile"
-          selectedPage={selectedPage}
-          icon={<FaRegCircleUser className="text-[20px]" />}
-        />
-        <Menu
-          onClick={() => {
-            setSelectedPage("reports-and-analytics")
-            navigate("/reports-and-analytics");
-            if (isMobile()) fn_controlSidebar();
-          }}
-          label="Reports & Analytics"
-          name="reports-and-analytics"
-          selectedPage={selectedPage}
-          icon={<IoAnalytics className="text-[20px]" />}
-        />
-        <Menu
-          onClick={() => {
-            setSelectedPage("help-center")
-            navigate("/support-help-center");
-            if (isMobile()) fn_controlSidebar();
-          }}
-          label="Support / Help Center"
-          name="help-center"
-          selectedPage={selectedPage}
-          icon={<FaHeadphones className="text-[20px]" />}
-        />
+        {merchantVerified && (
+          <>
+            <Menu
+              onClick={() => {
+                setSelectedPage("transaction-history")
+                navigate("/transactions-table");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Transaction History"
+              name="transaction-history"
+              selectedPage={selectedPage}
+              icon={<PiNotebook className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("merchant-profile")
+                navigate("/merchant-management");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Merchant Profile"
+              name="merchant-profile"
+              selectedPage={selectedPage}
+              icon={<FaRegCircleUser className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("reports-and-analytics")
+                navigate("/reports-and-analytics");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Reports & Analytics"
+              name="reports-and-analytics"
+              selectedPage={selectedPage}
+              icon={<IoAnalytics className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("help-center")
+                navigate("/support-help-center");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Support / Help Center"
+              name="help-center"
+              selectedPage={selectedPage}
+              icon={<FaHeadphones className="text-[20px]" />}
+            />
+          </>
+        )}
         <Menu
           onClick={() => {
             setSelectedPage("setting")
@@ -116,17 +120,19 @@ const SideBar = ({ showSidebar, setShowSide, setAuthorization, selectedPage, set
           selectedPage={selectedPage}
           icon={<IoSettingsOutline className="text-[20px]" />}
         />
-        <Menu
-          onClick={() => {
-            setSelectedPage("upload-statement")
-            navigate("/upload-statement");
-            if (isMobile()) fn_controlSidebar();
-          }}
-          label="Upload Statement"
-          name="upload-statement"
-          selectedPage={selectedPage}
-          icon={<TbBookUpload className="text-[20px]" />}
-        />
+        {merchantVerified && (
+          <Menu
+            onClick={() => {
+              setSelectedPage("upload-statement")
+              navigate("/upload-statement");
+              if (isMobile()) fn_controlSidebar();
+            }}
+            label="Upload Statement"
+            name="upload-statement"
+            selectedPage={selectedPage}
+            icon={<TbBookUpload className="text-[20px]" />}
+          />
+        )}
       </div>
       <div
         onClick={fn_logout}

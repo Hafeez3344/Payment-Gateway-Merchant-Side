@@ -36,7 +36,7 @@ function App() {
     <>
       {!merchantVerified && <NotVerfiedBar />}
       {authorization && (
-        <SideBar showSidebar={showSidebar} setShowSide={setShowSide} setAuthorization={setAuthorization} selectedPage={selectedPage} setSelectedPage={setSelectedPage} setMerchantVerified={setMerchantVerified} />
+        <SideBar merchantVerified={merchantVerified} showSidebar={showSidebar} setShowSide={setShowSide} setAuthorization={setAuthorization} selectedPage={selectedPage} setSelectedPage={setSelectedPage} setMerchantVerified={setMerchantVerified} />
       )}
       <div>
         {authorization && (
