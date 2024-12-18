@@ -290,11 +290,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                           width={900}
                           style={{ fontFamily: "sans-serif", padding: "20px" }}
                           title={
-                            <>
                             <p className="text-[16px] font-[700]">
                               Transaction Details
                             </p>
-                            </>
                           }
                           open={open}
                           onCancel={() => {

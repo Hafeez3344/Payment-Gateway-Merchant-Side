@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "http://localhost:8888";
+const BACKEND_URL = "http://192.168.1.21:8888";
 export const PDF_READ_URL = "http://127.0.0.1:5000/parse-statement"
 
 // ------------------------------------- Merchant Login api------------------------------------

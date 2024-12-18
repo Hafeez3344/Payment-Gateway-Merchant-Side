@@ -11,7 +11,6 @@ import BACKEND_URL, {
   fn_BankUpdate,
   fn_getBankByAccountTypeApi,
 } from "../../api/api";
-import { Banks } from "../../json-data/banks";
 
 const MerchantManagement = ({
   setSelectedPage,
@@ -35,11 +34,6 @@ const MerchantManagement = ({
     accountHolderName: "",
   });
 
-  const [state, setState] = useState({
-    bank: "",
-  });
-  const [selectedBank, setSelectedBank] = useState(null);
-
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
@@ -48,47 +42,6 @@ const MerchantManagement = ({
     setSelectedPage("merchant-profile");
     fn_getBankByAccountType();
   }, [activeTab]);
-
-  useEffect(() => {
-    const bank = Banks.find((item) => item.title === state.bank);
-    if (bank) {
-      setSelectedBank(bank);
-    }
-  }, [state.bank]);
-
-  // const handleInputChange = (evt) => {
-  //   const { name, value } = evt.target;
-  //   // setState((prev) => ({ ...prev, [name]: value }));
-  //   setState((prev) => {
-  //     const updateState = { ...prev, [name]: value};
-
-  //     if (name === 'bank') {
-  //       setData((prevData) => ({
-  //         ...prevData,
-  //         bankName: value,
-  //       }));
-  //     }
-  //     return updateState;
-  //   })
-  // };
-  const handleInputChange = (evt) => {
-    const { name, value } = evt.target;
-    setState((prev) => {
-      const updateState = { ...prev, [name]: value };
-      if (name === 'bank') {
-        setData((prevData) => {
-          const updatedData = {
-            ...prevData,
-            bankName: value,
-          };
-          console.log('Updated Data:', updatedData);
-          return updatedData;
-        });
-      }
-      // console.log('Updated State:', updateState);
-      return updateState;
-    });
-  };
 
   const fn_getBankByAccountType = async () => {
     const response = await fn_getBankByAccountTypeApi(activeTab.toLowerCase());
@@ -210,8 +163,6 @@ const MerchantManagement = ({
       });
     }
   };
-
-  console.log("selectedBank ", selectedBank?.title);
 
   return (
     <div
@@ -369,69 +320,43 @@ const MerchantManagement = ({
                   onClose={() => setOpen(false)}
                 >
                   {activeTab === "bank" && (
-                    <>
-                      {/* bank image */}
-                      {selectedBank && (
-                        <div className="w-[120px] h-[120px]">
-                          <img alt="" src={selectedBank?.img} />
-                        </div>
-                      )}
-                      <div className="flex gap-4 ">
-                        {/* bank name */}
-                        <div className="flex-1 my-2">
-                          <p className="text-[12px] font-[500] pb-1">
-                            Bank Name <span className="text-[#D50000]">*</span>
-                          </p>
-                          {/* <select
-                            name="bank"
-                            onChange={handleInputChange}
-                            className="w-full  text-[12px] border border-[#d9d9d9] h-[28.84px] px-[11px] py-[4px] rounded-[6px]"
-                          >
-                            <option value={""} selected disabled>
-                              ---Select Bank---
-                            </option>
-                            {Banks.map((item, index) => (
-                              <option key={index} value={item.title}>
-                                {item.title}
-                              </option>
-                            ))}
-                          </select> */}
-                            <select
-                            name="bank"
-                            value={data?.bankName || ""}
-                            onChange={handleInputChange}
-                            className="w-full  text-[12px] border border-[#d9d9d9] h-[28.84px] px-[11px] py-[4px] rounded-[6px]"
-                          >
-                            <option value="" disabled>
-                              ---Select Bank---
-                            </option>
-                            {Banks.map((item, index) => (
-                              <option key={index} value={item.title}>
-                                {item.title}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        {/* Account Number */}
-                        <div className="flex-1 my-2">
-                          <p className="text-[12px] font-[500] pb-1">
-                            Account Number{" "}
-                            <span className="text-[#D50000]">*</span>
-                          </p>
-                          <Input
-                            value={data?.accountNo}
-                            onChange={(e) =>
-                              setData((prev) => ({
-                                ...prev,
-                                accountNo: e.target.value,
-                              }))
-                            }
-                            className="w-full  text-[12px]"
-                            placeholder="Enter Account Number"
-                          />
-                        </div>
+                    <div className="flex gap-4 ">
+                      {/* Bank Name */}
+                      <div className="flex-1 my-2">
+                        <p className="text-[12px] font-[500] pb-1">
+                          Bank Name <span className="text-[#D50000]">*</span>
+                        </p>
+                        <Input
+                          value={data?.bankName}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              bankName: e.target.value,
+                            }))
+                          }
+                          className="w-full text-[12px]"
+                          placeholder="Enter Bank Name"
+                        />
                       </div>
-                    </>
+                      {/* Account Number */}
+                      <div className="flex-1 my-2">
+                        <p className="text-[12px] font-[500] pb-1">
+                          Account Number{" "}
+                          <span className="text-[#D50000]">*</span>
+                        </p>
+                        <Input
+                          value={data?.accountNo}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              accountNo: e.target.value,
+                            }))
+                          }
+                          className="w-full  text-[12px]"
+                          placeholder="Enter Account Number"
+                        />
+                      </div>
+                    </div>
                   )}
                   <div className="flex gap-4">
                     {/* IBAN No. */}
