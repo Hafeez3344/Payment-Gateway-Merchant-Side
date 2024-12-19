@@ -2,9 +2,7 @@ import { Input } from "antd";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-
 import gold from "../../assets/gold.svg";
-
 import { fn_getMerchantLoginHistoryApi, fn_updateApiKeys, fn_getApiKeys } from "../../api/api"
 
 const SystemConfigurationIntegration = ({ setSelectedPage, authorization, showSidebar, setMerchantVerified }) => {

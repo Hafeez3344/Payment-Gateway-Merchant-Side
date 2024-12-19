@@ -382,20 +382,6 @@ const MerchantManagement = ({
                           <p className="text-[12px] font-[500] pb-1">
                             Bank Name <span className="text-[#D50000]">*</span>
                           </p>
-                          {/* <select
-                            name="bank"
-                            onChange={handleInputChange}
-                            className="w-full  text-[12px] border border-[#d9d9d9] h-[28.84px] px-[11px] py-[4px] rounded-[6px]"
-                          >
-                            <option value={""} selected disabled>
-                              ---Select Bank---
-                            </option>
-                            {Banks.map((item, index) => (
-                              <option key={index} value={item.title}>
-                                {item.title}
-                              </option>
-                            ))}
-                          </select> */}
                             <select
                             name="bank"
                             value={data?.bankName || ""}
@@ -557,7 +543,7 @@ const MerchantManagement = ({
                             {activeTab === "bank" ? (
                               <div className="flex items-center gap-[3px]">
                                 <img
-                                  src={`${BACKEND_URL}/${account?.image}`}
+                                  src={Banks?.find((bank) => bank?.title === account?.bankName)?.img}
                                   alt=""
                                   className="w-[50px]"
                                 />
@@ -586,10 +572,10 @@ const MerchantManagement = ({
                           {account.accountHolderName}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          {account.accountLimit}
+                        ₹ {account.accountLimit}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          {account.remainingLimit}
+                        ₹ {account.remainingLimit}
                         </td>
                         <td className="text-center">
                           <button

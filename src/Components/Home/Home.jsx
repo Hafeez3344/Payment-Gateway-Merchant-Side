@@ -1,8 +1,23 @@
 import { GoDotFill } from "react-icons/go";
-import graph from "../../assets/graph.png";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getAllVerifiedTransactionApi } from "../../api/api";
+import {
+  fn_getAllMerchantApi,
+  fn_getAllTransactionApi,
+  fn_getAllVerifiedTransactionApi,
+} from "../../api/api";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const Home = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
@@ -12,7 +27,8 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
   const [transactions, setTransactions] = useState([]);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
-  const [manualVerifiedTransactions, setManualVerifiedTransactions] = useState(0);
+  const [manualVerifiedTransactions, setManualVerifiedTransactions] =
+    useState(0);
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [totalTransaction, setTotalTransactions] = useState(0);
 
@@ -44,9 +60,15 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
     const fetchVerifiedTransactions = async () => {
       try {
         const response = await fn_getAllVerifiedTransactionApi("Verified");
-        const manualResponse = await fn_getAllVerifiedTransactionApi("Manual Verified");
-        const declineResponse = await fn_getAllVerifiedTransactionApi("Decline");
-        const unverifiedResponse = await fn_getAllVerifiedTransactionApi("Unverified");
+        const manualResponse = await fn_getAllVerifiedTransactionApi(
+          "Manual Verified"
+        );
+        const declineResponse = await fn_getAllVerifiedTransactionApi(
+          "Decline"
+        );
+        const unverifiedResponse = await fn_getAllVerifiedTransactionApi(
+          "Unverified"
+        );
         const total = await fn_getAllTransactionApi();
         setVerifiedTransactions(response?.data || 0);
         setUnverifiedTransactions(unverifiedResponse?.data || 0);
@@ -63,10 +85,95 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
     fetchVerifiedTransactions();
   }, [authorization, navigate, setSelectedPage]);
 
+  const data = {
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    datasets: [
+      {
+        label: "Verified",
+        data: [
+          10300, 15200, 19300, 14500, 5300, 10200, 12200, 7100, 16300, 13500,
+          5300, 7400,
+        ],
+        backgroundColor: "#009666",
+        // borderRadius: {
+        //   topLeft: 10,
+        //   topRight: 10,
+        // },
+      },
+      {
+        label: "Manual Varified",
+        data: [
+          15300, 5200, 17300, 18500, 5300, 17200, 12400, 7100, 14300, 13500,
+          5300, 7400,
+        ],
+        backgroundColor: "#0C67E9",
+      
+      },
+      {
+        label: "Pending",
+        data: [
+          16300, 15200, 15300, 13500, 15300, 14200, 10200, 10200, 7100, 13500,
+          5900, 3300,
+        ],
+        backgroundColor: "#F67A03",
+  
+      },
+      {
+        label: "Faild",
+        data: [
+          4500, 4000, 9300, 15000, 4000, 11000, 2000, 8000, 10200, 17400, 15300,
+          18800,
+        ],
+        backgroundColor: "#FF3E5E",
+    
+      },
+    ],
+  };
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+    datasets: {
+      bar: {
+        barPercentage: 0.6,
+        categoryPercentage: 0.9,
+      },
+    },
+  };
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -132,21 +239,34 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
         {/* Graph and Recent Transactions */}
         <div className="grid grid-cols-1 lg:grid-cols-3">
           {/* Graph Section */}
-          <div className="col-span-2  bg-white p-6 mb-4 md:mb-0 md:mr-4 rounded shadow flex-1 h-[100%]">
-            <h2 className="text-[16px] font-[700]">TRANSACTION STATS</h2>
-            <p className="text-[11px] font-[500] text-gray-500 mt-1">
-              Order status and tracking. Track your order from ship date to
-              arrival.To begin, enter your order number.
-            </p>
-            <div className="grid grid-cols-2 gap-4 md:flex md:gap-12 mt-3">
-              <Stat label="System Verified" value="120,750" color="#029868" />
-              <Stat label="Declined" value="56,108" color="#FF3E5E" />
-              <Stat label="Unverified" value="32,894" color="#F67A03" />
-              <Stat label="Manual Verified" value="51,235" color="#0C67E9" />
+          <div className="col-span-2 bg-white p-6 mb-4 md:mb-0 md:mr-4 rounded shadow flex-1 h-[100%]">
+            <div className="w-full">
+              <div className="justify-between items-center mb-4">
+                <h2 className="text-[16px] font-[700]">TRANSACTION STATS</h2>
+                <p className="text-[11px] font-[500] text-gray-500 mt-1">
+                  Order status and tracking. Track your order from ship date to
+                  arrival.To begin, enter your order number.
+                </p>
+                <div className="grid grid-cols-2 gap-4 md:flex md:gap-12 mt-3">
+                  <Stat
+                    label="System Verified"
+                    value="120,750"
+                    color="#029868"
+                  />
+                  <Stat label="Declined" value="56,108" color="#FF3E5E" />
+                  <Stat label="Unverified" value="32,894" color="#F67A03" />
+                  <Stat
+                    label="Manual Verified"
+                    value="51,235"
+                    color="#0C67E9"
+                  />
+                </div>
+              </div>
+              <div className="w-full h-[300px]">
+                <Bar data={data} options={options} />
+              </div>
             </div>
-            <img className="pt-8" src={graph} alt="Graph" />
           </div>
-
           {/* Recent Transactions Section */}
           <div className="bg-white p-6 rounded shadow w-full flex-1 h-[100%]">
             <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
@@ -189,22 +309,23 @@ const Boxes = ({ number, amount, title, bgColor, link }) => (
     style={{ backgroundImage: bgColor }}
   >
     <h2 className="text-[13px] uppercase font-[500]">{title}</h2>
-    <p className="mt-[13px] text-[20px] font-[700]">{number}</p>
+    <p className="mt-[13px] text-[20px] font-[700]">₹ {number}</p>
     <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-      Amount: <span className="font-[700]">₹{amount}</span>
+      Amount: <span className="font-[700]">₹ {amount}</span>
     </p>
   </Link>
 );
 
 const Stat = ({ label, value, color }) => (
   <div>
-    <p className="text-[15px] font-[700]">{value}</p>
+    <p className="text-[15px] font-[700]">₹ {value}</p>
     <div className="flex pt-1 gap-1 items-center">
-      <GoDotFill className={`text-[${color}]`} />
+      <GoDotFill style={{ color }} /> 
       <p className="text-[12px] font-[500]">{label}</p>
     </div>
   </div>
 );
+
 
 const RecentTransaction = ({ name, utrId, status, color, amount }) => {
   // Status color mapping

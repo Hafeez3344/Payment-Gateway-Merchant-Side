@@ -1,40 +1,45 @@
 import React from "react";
-
 import Cookies from "js-cookie";
 import logo from "../../assets/logo.png";
-import { useNavigate } from "react-router-dom";
-
 import { LuLogOut } from "react-icons/lu";
 import { PiNotebook } from "react-icons/pi";
-import { IoAnalytics } from "react-icons/io5";
 import { TbBookUpload } from "react-icons/tb";
+import { IoAnalytics } from "react-icons/io5";
 import { FaHeadphones } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"; 
 import { FaRegCircleUser } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
 
-const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization, selectedPage, setSelectedPage, setMerchantVerified }) => {
-
+const SideBar = ({
+  merchantVerified,
+  showSidebar,
+  setShowSide,
+  setAuthorization,
+  selectedPage,
+  setSelectedPage,
+  setMerchantVerified,
+}) => {
   const navigate = useNavigate();
   const isMobile = () => window.innerWidth < 1024;
-
   const fn_controlSidebar = () => {
     setShowSide(!showSidebar);
   };
 
   const fn_logout = () => {
-    Cookies.remove('merchantId')
-    Cookies.remove('merchantToken')
-    localStorage.removeItem('merchantVerified')
+    Cookies.remove("merchantId");
+    Cookies.remove("merchantToken");
+    localStorage.removeItem("merchantVerified");
     setAuthorization(false);
-    setMerchantVerified(true)
+    setMerchantVerified(true);
     navigate("/login");
-  }
+  };
 
   return (
     <div
-      className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${showSidebar ? "left-0" : "left-[-270px]"
-        }`}
+      className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${
+        showSidebar ? "left-0" : "left-[-270px]"
+      }`}
       style={{ zIndex: 999 }}
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
@@ -52,7 +57,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
       <div className="mt-[10px]">
         <Menu
           onClick={() => {
-            setSelectedPage("dashboard")
+            setSelectedPage("dashboard");
             navigate("/");
             if (isMobile()) fn_controlSidebar();
           }}
@@ -65,7 +70,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
           <>
             <Menu
               onClick={() => {
-                setSelectedPage("transaction-history")
+                setSelectedPage("transaction-history");
                 navigate("/transactions-table");
                 if (isMobile()) fn_controlSidebar();
               }}
@@ -76,7 +81,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
             />
             <Menu
               onClick={() => {
-                setSelectedPage("merchant-profile")
+                setSelectedPage("merchant-profile");
                 navigate("/merchant-management");
                 if (isMobile()) fn_controlSidebar();
               }}
@@ -87,7 +92,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
             />
             <Menu
               onClick={() => {
-                setSelectedPage("reports-and-analytics")
+                setSelectedPage("reports-and-analytics");
                 navigate("/reports-and-analytics");
                 if (isMobile()) fn_controlSidebar();
               }}
@@ -98,7 +103,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
             />
             <Menu
               onClick={() => {
-                setSelectedPage("help-center")
+                setSelectedPage("help-center");
                 navigate("/support-help-center");
                 if (isMobile()) fn_controlSidebar();
               }}
@@ -111,7 +116,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
         )}
         <Menu
           onClick={() => {
-            setSelectedPage("setting")
+            setSelectedPage("setting");
             navigate("/system-configuration");
             if (isMobile()) fn_controlSidebar();
           }}
@@ -123,7 +128,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
         {merchantVerified && (
           <Menu
             onClick={() => {
-              setSelectedPage("upload-statement")
+              setSelectedPage("upload-statement");
               navigate("/upload-statement");
               if (isMobile()) fn_controlSidebar();
             }}
@@ -138,7 +143,9 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
         onClick={fn_logout}
         className="flex border-t gap-[15px] items-center py-[14px] px-[20px] cursor-pointer absolute bottom-0 w-full"
       >
-        <div className="text-[rgba(105,155,247,1)]"><LuLogOut className="text-[20px] rotate-180" /></div>
+        <div className="text-[rgba(105,155,247,1)]">
+          <LuLogOut className="text-[20px] rotate-180" />
+        </div>
         <p className="text-[14px] font-[600] text-gray-500">Logout</p>
       </div>
     </div>
@@ -150,7 +157,9 @@ export default SideBar;
 const Menu = ({ label, name, icon, onClick, selectedPage }) => {
   return (
     <div
-      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${name === selectedPage && "bg-blue-50"}`}
+      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${
+        name === selectedPage && "bg-blue-50"
+      }`}
       onClick={onClick}
     >
       <div className="text-[rgba(105,155,247,1)]">{icon}</div>

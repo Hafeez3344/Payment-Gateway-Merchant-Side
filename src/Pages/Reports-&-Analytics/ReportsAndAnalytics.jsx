@@ -157,7 +157,7 @@ const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) =>
             <div className="flex justify-between pt-2">
               <div className="">
                 <p className="text-[13px]">Visits By Day</p>
-                <p className="text-[15px] font-[600]">20K</p>
+                <p className="text-[15px] font-[600]">₹ 20K</p>
               </div>
               <div className="">
                 <img
@@ -170,7 +170,7 @@ const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) =>
             <div className="flex justify-between pt-2">
               <div className="">
                 <p className="text-[13px]">Today Income</p>
-                <p className="text-[15px] font-[600]">₹5580k</p>
+                <p className="text-[15px] font-[600]">₹ 550k</p>
               </div>
               <div className="">
                 <img
