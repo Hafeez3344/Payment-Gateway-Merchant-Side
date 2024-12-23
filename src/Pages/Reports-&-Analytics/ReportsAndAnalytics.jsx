@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "antd";
-import ReportAnalytic from "../../assets/ReportAnalytic.svg";
+// import ReportAnalytic from "../../assets/ReportAnalytic.svg";
 import userGraph from "../../assets/userGraph.svg";
 import transactionGraph from "../../assets/transactionGraph.png";
 import statasticGraph from "../../assets/statasticGraph.png";
 import dailyconversion from "../../assets/dailyconversion.svg";
 import visitbyday from "../../assets/visitbyday.svg";
 import todayincome from "../../assets/todayincome.svg";
+// import {
+//   Chart as ChartJS,
+//   BarElement,
+//   CategoryScale,
+//   LinearScale,
+//   Tooltip,
+//   Legend,
+// } from "chart.js";
+import { Bar } from "react-chartjs-2";
 
-const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) => {
+const ReportsAndAnalytics = ({
+  setSelectedPage,
+  authorization,
+  showSidebar,
+}) => {
   const containerHeight = window.innerHeight - 120;
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
@@ -71,9 +84,68 @@ const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) =>
 
   useEffect(() => {
     handleSearch();
-    if(!authorization) navigate("/login");
-    setSelectedPage("reports-and-analytics")
+    if (!authorization) navigate("/login");
+    setSelectedPage("reports-and-analytics");
   }, [searchQuery]);
+
+  const data = {
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    datasets: [
+      {
+        label: "Manual Varified",
+        data: [
+          15300, 5200, 17300, 18500, 5300, 17200, 12400, 7100, 14300, 13500,
+          5300, 7400,
+        ],
+        backgroundColor: "#0C67E9",
+          borderRadius: {
+          topLeft: 7,
+          topRight: 7,
+        },
+      },
+   
+    ],
+  };
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+    datasets: {
+      bar: {
+        barPercentage: 0.2,
+        categoryPercentage: 0.9,
+      },
+    },
+  };
 
   return (
     <div
@@ -90,17 +162,20 @@ const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) =>
           </p>
         </div>
         <div className="bg-white rounded-lg p-4">
-          <p className="text-[13px] font-[700]">Earning Statistic</p>
-          <p className="text-[11px] font-[400]">Yearly earning overview</p>
-          <div className="mt-4">
+          <p className="text-[20px] font-[700]">Earning Statistic</p>
+          <p className="text-[14px] font-[400]">Yearly earning overview</p>
+          {/* <div className="mt-4">
             <img src={ReportAnalytic} alt="" />
+          </div> */}
+          <div className="w-full h-[400px] mt-4">
+            <Bar data={data} options={options} />
           </div>
         </div>
 
         <div className="flex flex-col md:flex-row justify-between gap-4 mt-5">
           {/* User Overview Graph Card*/}
           <div className="bg-white rounded-lg shadow-md p-4 flex-1">
-            <h3 className="text-[14px] font-[700] mb-2">User Overview</h3>
+            <h3 className="text-[20px] font-[700] mb-2">User Overview</h3>
             <div className="flex items-center justify-center">
               <img
                 src={userGraph}
@@ -117,16 +192,20 @@ const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) =>
 
               <div className="w-3 h-3 mt-[3px] rounded bg-[#FF9F2A]"></div>
               <p className="text-[11px] font-[700]">
-                <span className="text-[#00000080] font-normal">Subscribed:</span> 300
+                <span className="text-[#00000080] font-normal">
+                  Subscribed:
+                </span>
+                 300
               </p>
             </div>
           </div>
 
           {/* Total Transactions Graph Card*/}
           <div className="bg-white rounded-lg shadow-md p-4 flex-1">
-            <h3 className="text-[13px] font-[700] mb-2">Total Transactions</h3>
+            <h3 className="text-[20px] font-[700] mb-2">Total Transactions</h3>
             <p className="text-[10px] font-[600]">
-              <span className="text-[#00000080] font-normal">Total Gain: </span>$50,000
+              <span className="text-[#00000080] font-normal">Total Gain: </span>
+              $50,000
             </p>
             <div>
               <img
@@ -139,7 +218,7 @@ const ReportsAndAnalytics = ({ setSelectedPage, authorization, showSidebar }) =>
 
           {/* Statistics Graph  Card*/}
           <div className="bg-white rounded-lg shadow-md p-4 flex-1">
-            <h3 className="text-[13px] font-[700] mb-2">Statistics</h3>
+            <h3 className="text-[20px] font-[700] mb-2">Statistics</h3>
             <div className="flex justify-between pt-5">
               <div className="">
                 <p className="text-[13px]">Daily Conversions</p>

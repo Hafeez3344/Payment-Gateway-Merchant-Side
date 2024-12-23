@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const BACKEND_URL = "http://192.168.1.21:8888";
-export const PDF_READ_URL = "http://127.0.0.1:5000/parse-statement"
+export const PDF_READ_URL = "http://192.168.1.5:5001/parse-statement"
 
 // ------------------------------------- Merchant Login api------------------------------------
 export const fn_loginMerchantApi = async (data) => {
@@ -262,6 +262,43 @@ export const fn_getAllTransactionApi = async () => {
 };
 
 export const fn_compareTransactions = async (data) => {
+    try {
+      const token = Cookies.get("merchantToken");
+  
+      const response = await axios.post(
+        `${BACKEND_URL}/ledger/compare`, 
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      // Log the response from the compare API call
+      console.log("Compare API Response:", response?.data);
+  
+      return {
+        status: true,
+        message: "Transaction Verified",
+        data: response.data?.data,
+      };
+    } catch (error) {
+      if (error?.response) {
+        console.error("Error during compare API:", error?.response?.data);
+        return {
+          status: false,
+          message: error?.response?.data?.message || "An error occurred",
+        };
+      }
+      console.error("Network Error during compare API:", error);
+      return { status: false, message: "Network Error" };
+    }
+  };
+  
+
+export const fn_uploadTransactions = async (data) => {
     try {
         const token = Cookies.get("merchantToken");
         const response = await axios.post(`${BACKEND_URL}/ledger/compare`, data,
