@@ -120,7 +120,7 @@ const SideBar = ({
             navigate("/system-configuration");
             if (isMobile()) fn_controlSidebar();
           }}
-          label="Setting"
+          label="Settings"
           name="setting"
           selectedPage={selectedPage}
           icon={<IoSettingsOutline className="text-[20px]" />}

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import DatePicker from "react-datepicker";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification } from "antd";
@@ -9,7 +10,7 @@ import { FiUpload } from "react-icons/fi";
 import { GoCircleSlash } from "react-icons/go";
 import { FiEdit, FiEye, FiTrash2 } from "react-icons/fi";
 
-import BACKEND_URL, { fn_compareTransactions, fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi, PDF_READ_URL } from '../../api/api';
+import BACKEND_URL, { fn_compareTransactions, fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi, PDF_READ_URL,fn_crateTransactionSlip, fn_showTransactionSlipData } from '../../api/api';
 import { FaIndianRupeeSign } from 'react-icons/fa6';
 import { FaRegEdit } from 'react-icons/fa';
 import { RiFindReplaceLine } from 'react-icons/ri';
@@ -29,29 +30,45 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-
+  
   const handleFileUpload = async (event) => {
     try {
       const fileInput = event.target;
+  
       const file = event.target.files[0];
+  
+      if (!file) {
+        console.error("No file selected or invalid event target");
+        return;
+      }
+  
       const formData = new FormData();
       formData.append('file', file);
-
+      
       const response = await axios.post(PDF_READ_URL, formData);
-      console.log("data ", response?.data?.data);
 
-      //console pdf
-      // console array
-      //req {pdfname, data : array} ==> console
+      const data = {
+        pdfName: file.name,
+        data: response?.data?.data,
+        merchant: Cookies.get('merchantId')
+      }
 
       const transactionPromises = response?.data?.data?.map(async (item) => {
         item.total = item.deposit;
         await fn_compareTransactions(item);
       });
-
+  
       await Promise.all(transactionPromises);
+      const response2 = await fn_crateTransactionSlip(data)
+      if (!response2?.status){
+        return notification.error({
+          message: "Error",
+          description: response2?.message,
+          placement: "topRight",
+        });
+      }
       fileInput.value = "";
-      fetchTransactions(currentPage)
+      fetchTransactions(currentPage);
       notification.success({
         message: "Success",
         description: "Transactions Updated!",
@@ -61,7 +78,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
       console.error("Error during file upload:", error);
     }
   };
-
+ 
   const fetchTransactions = async (pageNumber) => {
     try {
       const result = await fn_getAllMerchantApi(null, pageNumber);
@@ -161,7 +178,6 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
               Please Upload your Statement Here
             </p>
             <div className="flex items-center mb-2">
-              {/* Upload File Button with Label */}
               <label
                 htmlFor="file-upload"
                 className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
@@ -170,7 +186,6 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                 Choose a file
               </label>
 
-              {/* Hidden file input */}
               <input
                 id="file-upload"
                 type="file"
@@ -197,6 +212,12 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                   <th className="p-4">DATE</th>
                   <th className="p-4">TOTAL AMOUNT</th>
                   <th className="p-4">UTR#</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 cursor-pointer">Action</th>
+
+                  <th className="p-4">ID</th>
+                  <th className="p-4">PDF NAME</th>
+                  <th className="p-4">DATE</th>
                   <th className="p-4">Status</th>
                   <th className="p-4 cursor-pointer">Action</th>
                 </tr>
@@ -458,7 +479,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                 ) : (
                   <tr>
                     <td colSpan="8" className="p-4 text-center text-gray-500">
-                      No Transactions found.
+                      No Transaction Slip Uploaded
                     </td>
                   </tr>
                 )}
