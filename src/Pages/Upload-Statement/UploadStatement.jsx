@@ -176,7 +176,6 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
               Please Upload your Statement Here
             </p>
             <div className="flex items-center mb-2">
-              {/* Upload File Button with Label */}
               <label
                 htmlFor="file-upload"
                 className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
@@ -185,7 +184,6 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                 Choose a file
               </label>
 
-              {/* Hidden file input */}
               <input
                 id="file-upload"
                 type="file"

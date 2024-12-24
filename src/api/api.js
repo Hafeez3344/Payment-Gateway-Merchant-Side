@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const BACKEND_URL = "http://192.168.1.21:8888";
+const BACKEND_URL = "https://backend.royal247.org";
 export const PDF_READ_URL = "http://192.168.1.5:5001/parse-statement"
 
 // ------------------------------------- Merchant Login api------------------------------------
@@ -276,9 +276,8 @@ export const fn_compareTransactions = async (data) => {
         }
       );
   
-      // Log the response from the compare API call
       console.log("Compare API Response:", response?.data);
-  
+
       return {
         status: true,
         message: "Transaction Verified",
@@ -323,6 +322,7 @@ export const fn_uploadTransactions = async (data) => {
         return { status: false, message: "Network Error" };
     }
 };
+
 
 export const fn_deleteTransactionApi = async (id) => {
     try {
