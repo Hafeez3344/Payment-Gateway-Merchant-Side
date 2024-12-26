@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const BACKEND_URL = "https://backend.royal247.org";
-export const PDF_READ_URL = "http://192.168.1.5:5001/parse-statement"
+export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 
 // ------------------------------------- Merchant Login api------------------------------------
 export const fn_loginMerchantApi = async (data) => {
