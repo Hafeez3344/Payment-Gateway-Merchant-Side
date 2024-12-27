@@ -154,7 +154,7 @@ export const fn_getAllMerchantApi = async (status, pageNumber) => {
                     "Content-Type": "application/json",
                 },
             });
-        console.log(response);
+        // console.log(response);
         return {
             status: true,
             message: "Merchants show successfully",
