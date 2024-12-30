@@ -6,8 +6,8 @@ import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification } from "antd";
 import { FiUpload } from "react-icons/fi";
-import { GoCircleSlash } from "react-icons/go";
 import { FiEye, FiTrash2 } from "react-icons/fi";
+import { MagnifyingGlass } from "react-loader-spinner";
 
 import BACKEND_URL, {
   fn_compareTransactions,
@@ -18,10 +18,6 @@ import BACKEND_URL, {
   fn_crateTransactionSlip,
   fn_showTransactionSlipData,
 } from "../../api/api";
-import { FaIndianRupeeSign } from "react-icons/fa6";
-import { FaRegEdit } from "react-icons/fa";
-import { RiFindReplaceLine } from "react-icons/ri";
-import { IoMdCheckmark } from "react-icons/io";
 
 const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
@@ -35,56 +31,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [slipData, setSlipData] = useState([]);
-
-  // const handleFileUpload = async (event) => {
-  //   try {
-  //     const fileInput = event.target;
-  //     const file = event.target.files[0];
-
-  //     if (!file) {
-  //       console.error("No file selected");
-  //       return;
-  //     }
-
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-
-  //     const response = await axios.post(PDF_READ_URL, formData);
-
-  //     const data = {
-  //       pdfName: file.name,
-  //       data: response?.data?.data,
-  //       merchant: Cookies.get("merchantId"),
-  //     };
-
-  //     const transactionPromises = response?.data?.data?.map(async (item) => {
-  //       item.total = item.deposit;
-  //       await fn_compareTransactions(item);
-  //     });
-
-  //     await Promise.all(transactionPromises);
-  //     const response2 = await fn_crateTransactionSlip(data);
-
-  //     if (!response2?.status) {
-  //       return notification.error({
-  //         message: "Error",
-  //         description: response2?.message,
-  //         placement: "topRight",
-  //       });
-  //     }
-
-  //     fileInput.value = "";
-  //     fetchTransactions(currentPage);
-
-  //     notification.success({
-  //       message: "Success",
-  //       description: "Transactions Updated!",
-  //       placement: "topRight",
-  //     });
-  //   } catch (error) {
-  //     console.error("Error during file upload:", error);
-  //   }
-  // };
+  const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (event) => {
     try {
@@ -106,52 +53,89 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
         return;
       }
 
-      const transactions = response.data.data
-        .map((item) => {
-          if (item?.type === "CR") {
+      const transactions = response.data.data.map((item) => {
+          const getTransactionData = (item) => {
+            const dummyUTR = "12345";
+            const hasValidRef =
+              item?.refNo || item?.reference_number || item?.reference_no;
+
+            if (!hasValidRef && item?.description) {
+              const patterns = [
+                /UPI\/(\d+)\//,
+                /IMPS-IN\/(\d+)\//,
+                /[^\d](\d{16,})[^\d]/,
+                /[^\d](\d{10,})[^\d]/,
+                /(\d{14,}):/,
+                /(\d{12}):Int\.Pd/,
+                /(\d{9,}):Int\.Pd/,
+                /(\d{9,}):[^\/\s]+/,
+              ];
+
+              if (item.description.includes("BY CASH")) {
+                return {
+                  date: item?.date || "",
+                  utr: "",
+                  description: item?.description || "",
+                  total: item?.amount || item?.deposit || item?.credit || "",
+                };
+              }
+
+              const exactMatch = item.description.match(/134001510478:Int\.Pd/);
+              if (exactMatch) {
+                return {
+                  date: item?.date || "",
+                  utr: "134001510478",
+                  description: item?.description || "",
+                  total: item?.amount || item?.deposit || item?.credit || "",
+                };
+              }
+
+              for (const pattern of patterns) {
+                const match = item.description.match(pattern);
+                if (match && match[1]) {
+                  return {
+                    date: item?.date || "",
+                    utr: match[1],
+                    description: item?.description || "",
+                    total: item?.amount || item?.deposit || item?.credit || "",
+                  };
+                }
+              }
+            }
+
             return {
               date: item?.date || "",
-              utr: item?.refNo || "",
+              utr: hasValidRef || dummyUTR,
               description: item?.description || "",
-              total: item?.amount || "",
+              total: item?.amount || item?.deposit || item?.credit || "",
             };
+          };
+          if (item?.type === "CR") {
+            return getTransactionData(item);
           } else if (item?.type === "DR") {
             return null;
           } else {
-            if (item?.deposit !== "" && item?.deposit !== undefined && item?.deposit !== null) {
-              return {
-                date: item?.date || "",
-                utr: item?.refNo || item?.reference_number || "",
-                description: item?.description || "",
-                total: item?.amount || item?.deposit || "",
-              };
+            if (
+              item?.deposit !== "" &&
+              item?.deposit !== undefined &&
+              item?.deposit !== null
+            ) {
+              return getTransactionData(item);
             } else if (item?.deposit === "") {
               return null;
             } else {
               if (item?.credit !== "") {
-                return {
-                  date: item?.date || "",
-                  utr: item?.refNo || item?.reference_no || "",
-                  description: item?.description || "",
-                  total: item?.amount || item?.deposit || item?.credit || "",
-                };
+                return getTransactionData(item);
               } else if (item?.credit === "") {
                 return null;
               } else {
-                return {
-                  date: item?.date || "",
-                  utr: item?.refNo || item?.reference_no || "",
-                  description: item?.description || "",
-                  total: item?.amount || item?.deposit || item?.credit || "",
-                }
-              };
+                return getTransactionData(item);
+              }
             }
           }
-        })
-        ?.filter((data) => data !== null);
-
+        })?.filter((data) => data !== null);
       console.log("Uploaded Transaction Details:", transactions);
-      
+
       const data = {
         pdfName: file.name,
         data: transactions,
@@ -289,13 +273,31 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
     fetchTransactions(currentPage);
   }, [authorization, setSelectedPage, currentPage]);
 
+  console.log(selectedTransaction);
+
   return (
+    
     <div
+    
       className={`bg-gray-100 transition-all duration-500 ${
         showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
       }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
+       {loading && (
+      <div className="loader-wrapper">
+        <MagnifyingGlass
+          visible={true}
+          height="80"
+          width="80"
+          ariaLabel="magnifying-glass-loading"
+          wrapperStyle={{}}
+          wrapperClass="magnifying-glass-wrapper"
+          glassColor="#c0efff"
+          color="#e15b64"
+        />
+      </div>
+    )}
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Upload Statement</h1>
@@ -353,7 +355,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                           {transaction?.pdfName}
                         </span>
                       </td>
-                      <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap">
+                      <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
                         {new Date(transaction?.createdAt).toDateString()},
                         {new Date(transaction?.createdAt).toLocaleTimeString()}
                       </td>
@@ -369,11 +371,13 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                           centered
                           footer={null}
                           width={900}
-                          style={{ fontFamily: "sans-serif", padding: "20px" }}
+                          style={{ fontFamily: "sans-serif", padding: "10px" }}
                           title={
-                            <p className="text-[16px] font-[700] text-center">
-                               {transaction?.pdfName} | {""}
-                               {new Date(transaction?.createdAt).toDateString()},
+                            <p className="text-[20px] font-[600] text-center font-sans">
+                              {selectedTransaction?.pdfName} | {""}
+                              {new Date(
+                                selectedTransaction?.createdAt
+                              ).toDateString()}
                             </p>
                           }
                           open={open}
@@ -386,12 +390,61 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                             setIsEdit(false);
                           }}
                         >
-                          {selectedTransaction && (
-                            <div className="flex flex-col md:flex-row">
-                            
-                             
-                            </div>
-                          )}
+                          <div
+                            style={{ maxHeight: "400px", overflowY: "auto" }}
+                          >
+                            {/* Slip File Upload Table  */}
+                            <table className="min-w-full border">
+                              <thead>
+                                <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
+                                  <th className="p-4">S_ID</th>
+                                  <th className="p-4">Date</th>
+                                  <th className="p-4">UTR</th>
+                                  <th className="p-4">Deposit</th>
+                                  <th className="p-4">Description</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {selectedTransaction?.data?.map(
+                                  (transaction, index) => (
+                                    <tr
+                                      key={index}
+                                      className="text-gray-800 text-sm border-b"
+                                    >
+                                      <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
+                                        {index + 1}
+                                      </td>
+                                      <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
+                                        {transaction?.date}
+                                      </td>
+                                      <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
+                                        {transaction?.utr}
+                                      </td>
+                                      <td className="p-4 text-[12px] font-[700] text-[#000000B2]">
+                                        {transaction?.total}
+                                      </td>
+                                      <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
+                                        {transaction?.description}
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <span className="text-[15px] font-[600] mt-8 block font-sans">
+                            Upload Time: {""}
+                            <span className="text-[13px] font-[600] text-gray-600">
+                              {new Date(transaction?.createdAt).toDateString()}
+                            </span>
+                            , {""}
+                            <span className="text-[13px] font-[600] text-gray-600">
+                              {new Date(
+                                transaction?.createdAt
+                              ).toLocaleTimeString()}
+                            </span>
+                          </span>
+                      
                         </Modal>
 
                         <button
