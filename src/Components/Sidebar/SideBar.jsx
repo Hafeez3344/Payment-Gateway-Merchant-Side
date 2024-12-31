@@ -1,6 +1,6 @@
 import React from "react";
 import Cookies from "js-cookie";
-import logo from "../../assets/logo.png";
+import Royal247Logo from "../../assets/Royal247Logo.png"
 import { LuLogOut } from "react-icons/lu";
 import { PiNotebook } from "react-icons/pi";
 import { TbBookUpload } from "react-icons/tb";
@@ -44,9 +44,8 @@ const SideBar = ({
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
         <div>
-          <img className="w-8 h-8" src={logo} alt="" />
+          <img className="w-[180px]" src={Royal247Logo} alt="" />
         </div>
-        <div className="font-roboto text-[20px] font-[600]">BetPay</div>
         <button
           className="bg-gray-200 h-[25px] w-[25px] rounded-sm flex md:hidden justify-center ml-20 items-center"
           onClick={fn_controlSidebar}
