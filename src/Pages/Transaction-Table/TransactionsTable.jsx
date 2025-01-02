@@ -98,7 +98,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
     const response = await fn_updateTransactionStatusApi(id, {
       status: status,
       total: parseInt(amount),
-      utr: utr
+      utr: utr,
     });
     if (response.status) {
       fetchTransactions(currentPage);
@@ -236,7 +236,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                         {transaction?.trnNo}
                       </td>
                       <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
-                        {transaction?.username &&  transaction?.username !== "" ?  transaction?.username : "GUEST"}
+                        {transaction?.username && transaction?.username !== ""
+                          ? transaction?.username
+                          : "GUEST"}
                       </td>
                       <td className="p-4 flex items-center">
                         <img
@@ -382,7 +384,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                               ...prev,
                                               total: e.target.value,
                                             }));
-                                          }else{
+                                          } else {
                                             setSelectedTransaction((prev) => ({
                                               ...prev,
                                               utr: e.target.value,
@@ -421,9 +423,40 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                     <GoCircleSlash className="mt-[3px] mr-[6px]" />
                                     Decline TR
                                   </button>
-
                                   {/* Edit Button */}
-                                  <button
+                                      {/* {(selectedTransaction?.status ===
+                                    "Unverified" ||
+                                    selectedTransaction?.status ===
+                                      "Manual Verified") && (
+                                    <button
+                                      className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
+                                      onClick={() => {
+                                        if (!isEdit) {
+                                          setIsEdit(true);
+                                        } else {
+                                          handleEditTransactionAction(
+                                            "Manual Verified",
+                                            selectedTransaction._id,
+                                            selectedTransaction?.total,
+                                            selectedTransaction?.utr
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      {!isEdit ? (
+                                        <>
+                                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                                          Edit TR
+                                        </>
+                                      ) : (
+                                        <>
+                                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                                          Update TR
+                                        </>
+                                      )}
+                                    </button>
+                                  )} */}
+                                  {/* <button
                                     className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
                                     onClick={() => {
                                       if (!isEdit) {
@@ -449,7 +482,38 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                         Update TR
                                       </>
                                     )}
-                                  </button>
+                                  </button> */}
+
+                                  {selectedTransaction?.status ===
+                                    "Unverified" && (
+                                    <button
+                                      className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
+                                      onClick={() => {
+                                        if (!isEdit) {
+                                          setIsEdit(true);
+                                        } else {
+                                          handleEditTransactionAction(
+                                            "Manual Verified",
+                                            selectedTransaction._id,
+                                            selectedTransaction?.total,
+                                            selectedTransaction?.utr
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      {!isEdit ? (
+                                        <>
+                                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                                          Edit TR
+                                        </>
+                                      ) : (
+                                        <>
+                                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                                          Update TR
+                                        </>
+                                      )}
+                                    </button>
+                                  )}
                                 </div>
 
                                 {/* Bottom Divider and Activity */}
@@ -490,12 +554,6 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                             </div>
                           )}
                         </Modal>
-                        <button
-                          className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
-                          title="Edit"
-                        >
-                          <FiEdit />
-                        </button>
                         <button
                           className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
                           title="Delete"

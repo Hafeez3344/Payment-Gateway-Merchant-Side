@@ -1,8 +1,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-// const BACKEND_URL = "https://backend.royal247.org";
-const BACKEND_URL = "http://46.202.166.64:8000";
+const BACKEND_URL = "https://backend.royal247.org";
+// const BACKEND_URL = "http://46.202.166.64:8000";
 export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 
 // ------------------------------------- Merchant Login api------------------------------------
@@ -167,7 +167,7 @@ export const fn_getAllMerchantApi = async (status, pageNumber) => {
         if (error?.response) {
             return {
                 status: false,
-                message: error?.response?.data?.message || "An error occurred",
+                message: error?.response?.data?.message || "No transaction found",
             };
         }
         return { status: false, message: "Network Error" };
@@ -233,6 +233,7 @@ export const fn_getAllVerifiedTransactionApi = async (status) => {
     }
 };
 
+// -----------------------------------Get All Transactions api---------------------------------
 export const fn_getAllTransactionApi = async () => {
     try {
         const token = Cookies.get("merchantToken");

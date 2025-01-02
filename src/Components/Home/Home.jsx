@@ -1,23 +1,12 @@
+import { Bar } from "react-chartjs-2";
 import { GoDotFill } from "react-icons/go";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  fn_getAllMerchantApi,
-  fn_getAllTransactionApi,
-  fn_getAllVerifiedTransactionApi,
-} from "../../api/api";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-import { Bar } from "react-chartjs-2";
-
+import { FaCircleExclamation } from "react-icons/fa6";
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getAllVerifiedTransactionApi } from "../../api/api";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+
 
 const Home = ({ setSelectedPage, authorization, showSidebar }) => {
   const navigate = useNavigate();
@@ -25,12 +14,11 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
   const [loading, setLoading] = useState(true);
   const containerHeight = window.innerHeight - 105;
   const [transactions, setTransactions] = useState([]);
+  const [totalTransaction, setTotalTransactions] = useState(0);
+  const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
-  const [manualVerifiedTransactions, setManualVerifiedTransactions] =
-    useState(0);
-  const [declineTransactions, setDeclineTransactions] = useState(0);
-  const [totalTransaction, setTotalTransactions] = useState(0);
+  const [manualVerifiedTransactions, setManualVerifiedTransactions] = useState(0);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -120,7 +108,6 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
           5300, 7400,
         ],
         backgroundColor: "#0C67E9",
-      
       },
       {
         label: "Pending",
@@ -129,7 +116,6 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
           5900, 3300,
         ],
         backgroundColor: "#F67A03",
-  
       },
       {
         label: "Faild",
@@ -138,7 +124,6 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
           18800,
         ],
         backgroundColor: "#FF3E5E",
-    
       },
     ],
   };
@@ -278,7 +263,10 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
             {loading ? (
               <p>Loading...</p>
             ) : error ? (
-              <p className="text-red-500">{error}</p>
+              <div className="flex items-center space-x-2 mt-2 text-gray-500">
+                <FaCircleExclamation className="text-gray-500" />
+                <p>{error}</p>
+              </div>
             ) : (
               <div>
                 {transactions.length > 0 ? (
@@ -320,12 +308,11 @@ const Stat = ({ label, value, color }) => (
   <div>
     <p className="text-[15px] font-[700]">₹ {value}</p>
     <div className="flex pt-1 gap-1 items-center">
-      <GoDotFill style={{ color }} /> 
+      <GoDotFill style={{ color }} />
       <p className="text-[12px] font-[500]">{label}</p>
     </div>
   </div>
 );
-
 
 const RecentTransaction = ({ name, utrId, status, color, amount }) => {
   const statusColor = {
