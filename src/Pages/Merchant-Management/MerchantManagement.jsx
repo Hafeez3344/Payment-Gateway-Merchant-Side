@@ -39,6 +39,8 @@ const MerchantManagement = ({
     bank: "",
   });
   const [selectedBank, setSelectedBank] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editAccountId, setEditAccountId] = useState(null);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -56,32 +58,17 @@ const MerchantManagement = ({
     }
   }, [state.bank]);
 
-  // const handleInputChange = (evt) => {
-  //   const { name, value } = evt.target;
-  //   // setState((prev) => ({ ...prev, [name]: value }));
-  //   setState((prev) => {
-  //     const updateState = { ...prev, [name]: value};
-
-  //     if (name === 'bank') {
-  //       setData((prevData) => ({
-  //         ...prevData,
-  //         bankName: value,
-  //       }));
-  //     }
-  //     return updateState;
-  //   })
-  // };
   const handleInputChange = (evt) => {
     const { name, value } = evt.target;
     setState((prev) => {
       const updateState = { ...prev, [name]: value };
-      if (name === 'bank') {
+      if (name === "bank") {
         setData((prevData) => {
           const updatedData = {
             ...prevData,
             bankName: value,
           };
-          console.log('Updated Data:', updatedData);
+          console.log("Updated Data:", updatedData);
           return updatedData;
         });
       }
@@ -98,6 +85,35 @@ const MerchantManagement = ({
         setBanksData(response?.data?.data);
       }
     }
+  };
+
+  const handleEdit = (account) => {
+    setData({
+      image: account.image,
+      bankName: account.bankName,
+      accountNo: account.accountNo,
+      iban: account.iban,
+      accountLimit: account.accountLimit,
+      accountHolderName: account.accountHolderName,
+    });
+    setEditAccountId(account._id);
+    setIsEditMode(true);
+    setOpen(true);
+  };
+
+  const handleAddAccount = () => {
+    setData({
+      image: null,
+      bankName: "",
+      accountNo: "",
+      accountType: "",
+      iban: "",
+      accountLimit: "",
+      accountHolderName: "",
+    });
+    setIsEditMode(false);
+    setEditAccountId(null);
+    setOpen(true);
   };
 
   const fn_submit = async () => {
@@ -175,20 +191,31 @@ const MerchantManagement = ({
         formData.append("block", true);
       }
       const token = Cookies.get("merchantToken");
-      const response = await axios.post(
-        `${BACKEND_URL}/bank/create`,
-        formData,
-        {
+      let response;
+      if (isEditMode) {
+        response = await axios.put(
+          `${BACKEND_URL}/bank/update/${editAccountId}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } else {
+        response = await axios.post(`${BACKEND_URL}/bank/create`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        });
+      }
       if (response?.status === 200) {
         setOpen(false);
         notification.success({
           message: "Success",
-          description: "Bank Created Successfully!",
+          description: isEditMode
+            ? "Bank Updated Successfully!"
+            : "Bank Created Successfully!",
           placement: "topRight",
         });
         setData({
@@ -199,6 +226,8 @@ const MerchantManagement = ({
           accountLimit: "",
           accountHolderName: "",
         });
+        setIsEditMode(false);
+        setEditAccountId(null);
         fn_getBankByAccountType();
       }
     } catch (error) {
@@ -333,7 +362,7 @@ const MerchantManagement = ({
               </div>
 
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-                <Button type="primary" onClick={() => setOpen(true)}>
+                <Button type="primary" onClick={handleAddAccount}>
                   Add Account
                 </Button>
                 <Modal
@@ -342,7 +371,9 @@ const MerchantManagement = ({
                   style={{ fontFamily: "sans-serif" }}
                   title={
                     <p className="text-[16px] font-[700]">
-                      Add New Bank Account
+                      {isEditMode
+                        ? "Edit Your Bank Account"
+                        : "Add New Bank Account"}
                     </p>
                   }
                   footer={
@@ -382,7 +413,7 @@ const MerchantManagement = ({
                           <p className="text-[12px] font-[500] pb-1">
                             Bank Name <span className="text-[#D50000]">*</span>
                           </p>
-                            <select
+                          <select
                             name="bank"
                             value={data?.bankName || ""}
                             onChange={handleInputChange}
@@ -514,7 +545,9 @@ const MerchantManagement = ({
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#ECF0FA]">
                   <tr>
-                    <th className="p-3 text-[13px] font-[600]">Bank Name</th>
+                    <th className="p-3 text-[13px] font-[600] text-nowrap">
+                      Bank Name
+                    </th>
                     <th className="p-5 text-[13px] font-[600]">
                       {activeTab === "upi" ? "UPI ID" : "IBAN"}
                     </th>
@@ -522,7 +555,7 @@ const MerchantManagement = ({
                       Account Title
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Limit</th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="p-5 text-[13px] font-[600] text-nowrap">
                       Remaining Limit
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
@@ -543,7 +576,12 @@ const MerchantManagement = ({
                             {activeTab === "bank" ? (
                               <div className="flex items-center gap-[3px]">
                                 <img
-                                  src={Banks?.find((bank) => bank?.title === account?.bankName)?.img}
+                                  src={
+                                    Banks?.find(
+                                      (bank) =>
+                                        bank?.title === account?.bankName
+                                    )?.img
+                                  }
                                   alt=""
                                   className="w-[50px]"
                                 />
@@ -572,10 +610,10 @@ const MerchantManagement = ({
                           {account.accountHolderName}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                        ₹ {account.accountLimit}
+                          ₹ {account.accountLimit}
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                        ₹ {account.remainingLimit}
+                          ₹ {account.remainingLimit}
                         </td>
                         <td className="text-center">
                           <button
@@ -595,7 +633,13 @@ const MerchantManagement = ({
                               checked={!account?.block}
                               onChange={async (checked) => {
                                 const newStatus = checked;
-
+                                // if(newStatus === false){
+                                //   return notification.error({
+                                //     message: "Atleast one account is selected",
+                                //     description: `You can't deactivate all accounts.`,
+                                //     placement: "topRight",
+                                //   });
+                                // }
                                 const response = await fn_BankUpdate(
                                   account?._id,
                                   {
@@ -608,7 +652,7 @@ const MerchantManagement = ({
                                   fn_getBankByAccountType();
                                   notification.success({
                                     message: "Status Updated",
-                                    description: `Bank Status Updated!  ${newStatus}.`,
+                                    description: `Bank Status Updated!.`,
                                     placement: "topRight",
                                   });
                                 } else {
@@ -622,12 +666,13 @@ const MerchantManagement = ({
                                 }
                               }}
                             />
-                            <button
+                            <Button
                               className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
                               title="Edit"
+                              onClick={() => handleEdit(account)}
                             >
                               <FiEdit />
-                            </button>
+                            </Button>
                           </div>
                         </td>
                       </tr>
