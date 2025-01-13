@@ -441,8 +441,8 @@
 //                                                 }
 //                                                 className="w-full text-[12px]"
 //                                                 placeholder={`${activeTab === "bank"
-//                                                         ? "Enter IBAN Number"
-//                                                         : "Enter UPI ID"
+//                                                     ? "Enter IBAN Number"
+//                                                     : "Enter UPI ID"
 //                                                     }`}
 //                                             />
 //                                         </div>
@@ -576,8 +576,8 @@
 //                                                 <td className="text-center">
 //                                                     <button
 //                                                         className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
-//                                                                 ? "bg-[#10CB0026] text-[#0DA000]"
-//                                                                 : "bg-[#FF173D33] text-[#D50000]"
+//                                                             ? "bg-[#10CB0026] text-[#0DA000]"
+//                                                             : "bg-[#FF173D33] text-[#D50000]"
 //                                                             }`}
 //                                                     >
 //                                                         {!account?.block ? "Active" : "Inactive"}
@@ -642,5 +642,3 @@
 
 
 
-
-// i want in the last in FiEdit button to perform functionality i want to when i click in the edit button so open the model like the above add acount model exit like the add account model  for editing to edit the data which data user add in the add account model i mean when user add wrong data and then want to edit the data so the edit model data is editable for user

@@ -3,7 +3,9 @@
   --grayBg: #F3F3F3;
   --bred:#F15A29;
 }
-
+body{
+  overflow-x: hidden;
+}
 .input-placeholder-black::placeholder {
   color: black; /* Placeholder color */
 }

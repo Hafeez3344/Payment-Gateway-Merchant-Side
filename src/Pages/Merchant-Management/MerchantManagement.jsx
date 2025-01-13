@@ -87,6 +87,7 @@ const MerchantManagement = ({
     }
   };
 
+  /*changes for edit model */
   const handleEdit = (account) => {
     setData({
       image: account.image,
@@ -164,14 +165,6 @@ const MerchantManagement = ({
         });
         return;
       }
-      if (!data?.image) {
-        notification.error({
-          message: "Error",
-          description: "Update Image",
-          placement: "topRight",
-        });
-        return;
-      }
       const formData = new FormData();
       if (activeTab === "bank") {
         formData.append("image", data?.image);
@@ -226,8 +219,8 @@ const MerchantManagement = ({
           accountLimit: "",
           accountHolderName: "",
         });
-        setIsEditMode(false);
-        setEditAccountId(null);
+        setIsEditMode(false); /*changes for edit model */
+        setEditAccountId(null); /*changes for edit model */
         fn_getBankByAccountType();
       }
     } catch (error) {
@@ -521,7 +514,6 @@ const MerchantManagement = ({
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
                         {activeTab === "upi" ? "UPI" : "Bank"} QR Code
-                        <span className="text-[#D50000]">*</span>
                       </p>
                       <Input
                         type="file"
@@ -548,7 +540,7 @@ const MerchantManagement = ({
                     <th className="p-3 text-[13px] font-[600] text-nowrap">
                       Bank Name
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">
+                    <th className="pl-20 text-[13px] font-[600] text-nowrap">
                       {activeTab === "upi" ? "UPI ID" : "IBAN"}
                     </th>
                     <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
@@ -559,7 +551,7 @@ const MerchantManagement = ({
                       Remaining Limit
                     </th>
                     <th className="p-5 text-[13px] font-[600]">Status</th>
-                    <th className="p-5 text-[13px] font-[600]">Action</th>
+                    <th className="p-5 text-[13px] font-[600] pl-10">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -595,29 +587,32 @@ const MerchantManagement = ({
                           </div>
                         </td>
                         <td className="p-3 text-[13px]">
-                          {activeTab === "upi" ? (
-                            <>
-                              <div>{account.iban}</div>
+                          <div className="ml-14">
+                            {" "}
+                            <span className="whitespace-nowrap">
+                              {account.iban}
+                            </span>
+                            {activeTab === "upi" && (
                               <div className="text-[12px] text-gray-600 mt-1">
                                 {account.UPIID}
                               </div>
-                            </>
-                          ) : (
-                            account.iban
-                          )}
+                            )}
+                          </div>
                         </td>
                         <td className="p-3 text-[13px] whitespace-nowrap">
-                          {account.accountHolderName}
+                          <div className="ml-2">
+                            {account.accountHolderName}
+                          </div>
+                        </td>
+                        <td className="p-3 text-[13px] font-[400] text-nowrap">
+                          <div className="ml-1">₹ {account.accountLimit}</div>
                         </td>
                         <td className="p-3 text-[13px] font-[400]">
-                          ₹ {account.accountLimit}
-                        </td>
-                        <td className="p-3 text-[13px] font-[400]">
-                          ₹ {account.remainingLimit}
+                          <div className="ml-3">₹ {account.remainingLimit}</div>
                         </td>
                         <td className="text-center">
                           <button
-                            className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
+                            className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
                               account?.block === false
                                 ? "bg-[#10CB0026] text-[#0DA000]"
                                 : "bg-[#FF173D33] text-[#D50000]"
@@ -627,7 +622,7 @@ const MerchantManagement = ({
                           </button>
                         </td>
                         <td className="p-3 text-center">
-                          <div className="flex justify-center items-center">
+                          <div className="flex justify-center items-center ml-6">
                             <Switch
                               size="small"
                               checked={!account?.block}
