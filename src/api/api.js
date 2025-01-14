@@ -263,6 +263,7 @@ export const fn_getAllTransactionApi = async () => {
     }
 };
 
+//----------------------------------Compare Transaction api---------------------------------------
 export const fn_compareTransactions = async (data) => {
     try {
         const token = Cookies.get("merchantToken");
@@ -297,8 +298,7 @@ export const fn_compareTransactions = async (data) => {
         return { status: false, message: "Network Error" };
     }
 };
-
-
+//----------------------------------Delete Transaction api---------------------------------------
 export const fn_deleteTransactionApi = async (id) => {
     try {
         const token = Cookies.get("merchantToken");
@@ -323,7 +323,7 @@ export const fn_deleteTransactionApi = async (id) => {
         return { status: false, message: "Network Error" };
     }
 };
-
+//----------------------------------Delete Transacion Slip Data api---------------------------------------
 export const fn_deleteTransactionSlipApi = async (id) => {
     try {
         const token = Cookies.get("merchantToken");
@@ -349,7 +349,7 @@ export const fn_deleteTransactionSlipApi = async (id) => {
     }
 };
 
-
+//----------------------------------Create Transactio slip api---------------------------------------
 export const fn_crateTransactionSlip = async (data) => {
     try {
         const response = await axios.post(`${BACKEND_URL}/slip/create`, data);
@@ -368,7 +368,7 @@ export const fn_crateTransactionSlip = async (data) => {
     }
 };
 
-
+//----------------------------------Show Transaction Slip api---------------------------------------
 export const fn_showTransactionSlipData = async () => {
     try {
         const id = Cookies.get("merchantId");
@@ -388,6 +388,48 @@ export const fn_showTransactionSlipData = async () => {
     }
 };
 
+//----------------------------------Get Merchant Data api---------------------------------------
+// export const fn_getMerchantData = async (merchantId) => {
+//     try {
+//         const token = Cookies.get("merchantToken");
+//         const response = await axios.get(`${BACKEND_URL}/merchant/get/${merchantId}`, {
+//             headers: {
+//                 Authorization: `Bearer ${token}`,
+//                 "Content-Type": "application/json",
+//             },
+//         });
+//         return {
+//             status: true,
+//             data: response.data,
+//         };
+//     } catch (error) {
+//         if (error?.response) {
+//             return {
+//                 status: false,
+//                 message: error?.response?.data?.message || "An error occurred",
+//             };
+//         }
+//         return { status: false, message: "Network Error" };
+//     }
+// };
 
+export const fn_getMerchantData = async () => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const merchantId = Cookies.get("merchantId");
+        const response = await axios.get(`${BACKEND_URL}/merchant/get/${merchantId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return { status: false, message: "Network Error" };
+    }
+};
 
 export default BACKEND_URL;

@@ -10,6 +10,7 @@ import mehtaLogo from "../../assets/mehtaLogo.png";
 import BACKEND_URL, {
   fn_BankUpdate,
   fn_getBankByAccountTypeApi,
+  fn_getMerchantData,
 } from "../../api/api";
 import { Banks } from "../../json-data/banks";
 
@@ -20,10 +21,11 @@ const MerchantManagement = ({
 }) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
-
   const [open, setOpen] = React.useState(false);
   const [banksData, setBanksData] = useState([]);
   const [activeTab, setActiveTab] = useState("bank");
+
+  const [merchantData, setMerchantData] = useState(null);
 
   const [data, setData] = useState({
     image: null,
@@ -57,6 +59,22 @@ const MerchantManagement = ({
       setSelectedBank(bank);
     }
   }, [state.bank]);
+
+  useEffect(() => {
+    const fetchMerchantData = async () => {
+      const token = Cookies.get("merchantToken");
+      if (token) {
+        const result = await fn_getMerchantData();
+        if (result.status) {
+          setMerchantData(result.data?.data);
+        } else {
+          console.error(result.message);
+        }
+      }
+    };
+
+    fetchMerchantData();
+  }, []);
 
   const handleInputChange = (evt) => {
     const { name, value } = evt.target;
@@ -233,7 +251,7 @@ const MerchantManagement = ({
     }
   };
 
-  console.log("selectedBank ", selectedBank?.title);
+  console.log("merchantData ", merchantData);
 
   return (
     <div
@@ -251,7 +269,7 @@ const MerchantManagement = ({
           </p>
         </div>
         <div className="flex flex-col gap-7 md:flex-row bg-gray-100 ">
-          {/* Left side card */}
+          {/* Left side card section */}
           <div className="w-full md:w-2/6 bg-white rounded-lg lg:min-h-[550px] shadow-md border">
             <div className="flex flex-col z-[-1] items-center">
               <img
@@ -263,61 +281,41 @@ const MerchantManagement = ({
                 className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9]"
                 style={{ boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)" }}
               >
-                <img src={mehtaLogo} alt="logo" className="w-[75px]" />
+                <img
+                  src={`${BACKEND_URL}/${merchantData?.image}`}
+                  alt="logo"
+                  className="w-[75px]"
+                />
               </div>
             </div>
-            <h2 className="text-[18px] font-[600] mt-4 text-center">
-              Mehta & Mehta
-            </h2>
-            <p className="text-gray-500 text-[13px] text-center">@mehta823</p>
+            <p className="text-gray-500 text-[19px] font-[600] text-center mt-4">
+              {merchantData?.merchantName}
+            </p>
             <div className="m-3 mt-6">
               <h3 className="text-[16px] font-[600] border-b pb-2">
                 Personal Info
               </h3>
               <div className="space-y-3 pt-3">
+                {/* <div className="flex">
+                  <span className="text-[12px]">{merchantData?.name}</span>
+                </div> */}
                 <div className="flex">
-                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
-                    Full Name:
-                  </span>
-                  <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    Mehta & Mehta
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
+                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px] ">
                     Email:
                   </span>
-                  <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    willjontoax@gmail.com
-                  </span>
+                  <span className="text-[12px]">{merchantData?.email}</span>
                 </div>
                 <div className="flex">
                   <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
-                    Phone Number:
+                    Phone:
                   </span>
-                  <span className="text-[12px] font-[600] text-left text-[#505050] w-full">
-                    (1) 2536 2561 2365
-                  </span>
+                  <span className="text-[12px]">{merchantData?.phone}</span>
                 </div>
                 <div className="flex">
                   <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
                     Website:
                   </span>
-                  <a
-                    href=": www.mehta&mehta.com"
-                    className="text-[12px] font-[600] text-left text-[#505050] w-full"
-                  >
-                    www.betpay.com
-                  </a>
-                </div>
-                <div className="flex">
-                  <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
-                    Bio:
-                  </span>
-                  <span className="text-[12px] font-[600] text-[#505050] w-full">
-                    Lorem Ipsum is simply dummy text of the printing and
-                    typesetting industry.
-                  </span>
+                  <span className="text-[12px]">{merchantData?.website}</span>
                 </div>
               </div>
             </div>
@@ -444,12 +442,12 @@ const MerchantManagement = ({
                     </>
                   )}
                   <div className="flex gap-4">
-                    {/* IBAN No. */}
+                    {/* IFCS No. */}
                     <div className="flex-1 my-2">
                       <p className="text-[12px] font-[500] pb-1">
                         {activeTab === "bank" ? (
                           <>
-                            IBAN No. <span className="text-[#D50000]">*</span>
+                            IFSC No. <span className="text-[#D50000]">*</span>
                           </>
                         ) : (
                           <>
@@ -468,7 +466,7 @@ const MerchantManagement = ({
                         className="w-full text-[12px]"
                         placeholder={`${
                           activeTab === "bank"
-                            ? "Enter IBAN Number"
+                            ? "Enter IFSC Number"
                             : "Enter UPI ID"
                         }`}
                       />
@@ -541,7 +539,7 @@ const MerchantManagement = ({
                       Bank Name
                     </th>
                     <th className="pl-20 text-[13px] font-[600] text-nowrap">
-                      {activeTab === "upi" ? "UPI ID" : "IBAN"}
+                      {activeTab === "upi" ? "UPI ID" : "IFSC"}
                     </th>
                     <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
                       Account Title

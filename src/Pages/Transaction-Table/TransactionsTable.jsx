@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification } from "antd";
-
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
 import { RiFindReplaceLine } from "react-icons/ri";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
-
+import { Banks } from "../../json-data/banks";
 import BACKEND_URL, {
   fn_deleteTransactionApi,
   fn_getAllMerchantApi,
@@ -215,12 +214,12 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                  <th className="p-4">TRN-ID</th>
-                  <th className="p-4">User Name</th>
-                  <th className="p-4">BANK NAME</th>
+                  <th className="p-4 text-nowrap">TRN-ID</th>
+                  <th className="p-4 text-nowrap">User Name</th>
+                  <th className="p-4 text-nowrap">BANK NAME</th>
                   <th className="p-4">DATE</th>
-                  <th className="p-4">TOTAL AMOUNT</th>
-                  <th className="p-4">UTR#</th>
+                  <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
+                  <th className="p-4 ">UTR#</th>
                   <th className="p-4">Status</th>
                   <th className="p-4 cursor-pointer">Action</th>
                 </tr>
@@ -240,15 +239,30 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                           ? transaction?.username
                           : "GUEST"}
                       </td>
-                      <td className="p-4 flex items-center">
-                        <img
-                          src={`${BACKEND_URL}/${transaction?.bankId?.image}`}
-                          alt={`Logo`}
-                          className="w-6 h-6 rounded-full mr-2"
-                        />
-                        <span className="text-[13px] font-[700] text-black whitespace-nowrap">
-                          {transaction?.bankId?.bankName || "UPI"}
-                        </span>
+                      <td className="p-4">
+                        {transaction?.bankId?.bankName ? (
+                          <div className="">
+                            {/* <img
+                              src={`${BACKEND_URL}/${transaction?.bankId?.image}`}
+                              alt={`Logo`}
+                              className="w-6 h-6 rounded-full mr-2"
+                            /> */}
+                            <span className="text-[13px] font-[700] text-black whitespace-nowrap">
+                              {transaction?.bankId?.bankName}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="">
+                            {/* <img
+                              src={`${BACKEND_URL}/${transaction?.image}`} 
+                              alt="UPI Logo"
+                              className="w-6 h-6 rounded-full mr-2"
+                            /> */}
+                            <p className="text-[14px] font-[700] text-black ">
+                              UPI
+                            </p>
+                          </div>
+                        )}
                       </td>
                       <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
                         {new Date(transaction?.createdAt).toDateString()},{" "}
@@ -424,7 +438,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                     Decline TR
                                   </button>
                                   {/* Edit Button */}
-                                      {/* {(selectedTransaction?.status ===
+                                  {/* {(selectedTransaction?.status ===
                                     "Unverified" ||
                                     selectedTransaction?.status ===
                                       "Manual Verified") && (
@@ -524,9 +538,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                     {selectedTransaction.trnNo}
                                   </span>
                                 </p>
-                                <p className="text-[14px] font-[700]">
+                                {/* <p className="text-[14px] font-[700]">
                                   Activity
-                                </p>
+                                </p> */}
                               </div>
                               {/* Right side with border and image */}
                               <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
@@ -538,7 +552,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
 
                                 <div className="flex">
                                   <button
-                                    className="mt-4 border flex border-black px-1 py-1 rounded"
+                                    className="mt-12 border flex border-black px-1 py-1 rounded"
                                     onClick={() => {
                                       const input =
                                         document.createElement("input");
