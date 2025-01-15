@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
+import { FaPeopleGroup } from "react-icons/fa6";
 
 const SideBar = ({
   merchantVerified,
@@ -125,17 +126,30 @@ const SideBar = ({
           icon={<IoSettingsOutline className="text-[20px]" />}
         />
         {merchantVerified && (
-          <Menu
-            onClick={() => {
-              setSelectedPage("upload-statement");
-              navigate("/upload-statement");
-              if (isMobile()) fn_controlSidebar();
-            }}
-            label="Upload Statement"
-            name="upload-statement"
-            selectedPage={selectedPage}
-            icon={<TbBookUpload className="text-[20px]" />}
-          />
+          <>
+            <Menu
+              onClick={() => {
+                setSelectedPage("upload-statement");
+                navigate("/upload-statement");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Upload Statement"
+              name="upload-statement"
+              selectedPage={selectedPage}
+              icon={<TbBookUpload className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("staff");
+                navigate("/staff");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Staff"
+              name="staff"
+              selectedPage={selectedPage}
+              icon={<FaPeopleGroup className="text-[20px]" />}
+            />
+          </>
         )}
       </div>
       <div

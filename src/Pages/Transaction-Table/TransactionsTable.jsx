@@ -1,8 +1,15 @@
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification } from "antd";
+import {
+  Pagination,
+  Modal,
+  Input,
+  notification,
+  DatePicker,
+  Space,
+} from "antd";
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
@@ -10,6 +17,7 @@ import { RiFindReplaceLine } from "react-icons/ri";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 import { Banks } from "../../json-data/banks";
+
 import BACKEND_URL, {
   fn_deleteTransactionApi,
   fn_getAllMerchantApi,
@@ -32,6 +40,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const { RangePicker } = DatePicker;
 
   const fetchTransactions = async (pageNumber) => {
     try {
@@ -148,39 +157,17 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
               </p>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-              <div className="flex border border-gray-300 items-center bg-white rounded">
-                {/* 2px border radius */}
-                <DatePicker
-                  selected={startDate}
-                  onChange={(date) => setStartDate(date)}
-                  selectsStart
-                  startDate={startDate}
-                  endDate={endDate}
-                  className="border-none text-[11px] pl-1 p-1  w-14 text-gray-700 focus:outline-none rounded-l"
-                  placeholderText="Start Date"
-                  dateFormat="yyyy-MM-dd"
-                />
-                <span className="mt-[4px] text-[11px] font-[600] mr-1">To</span>
-                <DatePicker
-                  selected={endDate}
-                  onChange={(date) => setEndDate(date)}
-                  selectsEnd
-                  startDate={startDate}
-                  endDate={endDate}
-                  minDate={startDate}
-                  className="border-none text-[11px] w-12  text-gray-700 focus:outline-none rounded-r"
-                  placeholderText="End Date"
-                  dateFormat="yyyy-MM-dd"
-                />
-              </div>
+              <Space direction="vertical" size={10}>
+                <RangePicker />
+              </Space>
               {/* Search Input */}
               <div className="flex flex-col w-full md:w-40">
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search by UTR"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border w-full border-gray-300 rounded py-1 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
               {/* Merchant Filter */}
@@ -188,7 +175,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                 <select
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}
-                  className="border border-gray-300 rounded py-1 text-[12px] cursor-pointer text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border border-gray-300 rounded py-1.5 text-[12px] cursor-pointer text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option className="text-[10px] text-gray-400" value="">
                     Merchant
@@ -254,7 +241,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                         ) : (
                           <div className="">
                             {/* <img
-                              src={`${BACKEND_URL}/${transaction?.image}`} 
+                              src={`${BACKEND_URL}/${transaction?.image}`}
                               alt="UPI Logo"
                               className="w-6 h-6 rounded-full mr-2"
                             /> */}
