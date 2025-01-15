@@ -9,13 +9,17 @@ import { useNavigate } from "react-router-dom";
 const { useBreakpoint } = Grid;
 const { Text, Title, Link } = Typography;
 
-const MerchantLogin = ({authorization, setAuthorization, setMerchantVerified}) => {
+const MerchantLogin = ({
+  authorization,
+  setAuthorization,
+  setMerchantVerified,
+}) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
   const [loginType, setLoginType] = useState("merchant");
 
   useEffect(() => {
-    if(authorization){
+    if (authorization) {
       navigate("/");
     }
   }, []);
@@ -36,7 +40,7 @@ const MerchantLogin = ({authorization, setAuthorization, setMerchantVerified}) =
         Cookies.set("merchantId", response?.id);
         Cookies.set("merchantToken", response?.token);
         setMerchantVerified(response?.merchantVerified);
-        localStorage.setItem('merchantVerified', response?.merchantVerified)
+        localStorage.setItem("merchantVerified", response?.merchantVerified);
         navigate("/");
         setAuthorization(true);
       } else {
@@ -54,6 +58,14 @@ const MerchantLogin = ({authorization, setAuthorization, setMerchantVerified}) =
         description: "An unexpected error occurred. Please try again later.",
         placement: "topRight",
       });
+    }
+  };
+
+  const handleCheckboxChange = (checkedValues) => {
+    if (checkedValues.length > 1) {
+      setLoginType(checkedValues[1]);
+    } else {
+      setLoginType(checkedValues[0]);
     }
   };
 
@@ -116,7 +128,8 @@ const MerchantLogin = ({authorization, setAuthorization, setMerchantVerified}) =
           <img src={logo} alt="Logo" style={styles.logo} />
           <Title style={styles.title}>Merchant Login</Title>
           <Text style={styles.text}>
-            Welcome back! Please enter your details below to log in as an Merchant.
+            Welcome back! Please enter your details below to log in as an
+            Merchant.
           </Text>
         </div>
         <Form
@@ -128,22 +141,15 @@ const MerchantLogin = ({authorization, setAuthorization, setMerchantVerified}) =
           layout="vertical"
           requiredMark="optional"
         >
-          <Form.Item style={styles.checkboxGroup}>
-            <Checkbox
-              value="merchant"
-              checked={loginType === "merchant"}
-              onChange={handleLoginTypeChange}
+          <Form.Item>
+            <Checkbox.Group
+              style={{ width: '100%' }}
+              value={[loginType]}
+              onChange={handleCheckboxChange}
             >
-              Login as Merchant
-            </Checkbox>
-            <Checkbox
-              value="staff"
-              checked={loginType === "staff"}
-              onChange={handleLoginTypeChange}
-              style={styles.checkbox}
-            >
-              Login as Staff
-            </Checkbox>
+              <Checkbox value="merchant" style={{ marginRight: '10px' }}>Login as Merchant</Checkbox>
+              <Checkbox value="staff">Login as Staff</Checkbox>
+            </Checkbox.Group>
           </Form.Item>
           <Form.Item
             name="email"
