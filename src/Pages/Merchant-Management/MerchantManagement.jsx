@@ -161,7 +161,7 @@ const MerchantManagement = ({
         notification.error({
           message: "Error",
           description: `Enter ${
-            activeTab === "bank" ? "IBAN Number" : "UPI ID"
+            activeTab === "bank" ? "IFSC Number" : "UPI ID"
           }`,
           placement: "topRight",
         });
@@ -522,7 +522,7 @@ const MerchantManagement = ({
                           }));
                         }}
                         className="w-full text-[12px]"
-                        placeholder="Enter IBAN Number "
+                        placeholder="Enter IFSC Number "
                       />
                     </div>
                   </div>

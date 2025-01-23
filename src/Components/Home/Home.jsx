@@ -3,12 +3,28 @@ import { GoDotFill } from "react-icons/go";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCircleExclamation } from "react-icons/fa6";
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
-import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getAllVerifiedTransactionApi } from "../../api/api";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import {
+  fn_getAllMerchantApi,
+  fn_getAllTransactionApi,
+  fn_getAllVerifiedTransactionApi,
+} from "../../api/api";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-
-const Home = ({ setSelectedPage, authorization, showSidebar }) => {
+const Home = ({
+  setSelectedPage,
+  authorization,
+  showSidebar,
+  loginType,
+  permissionsData,
+}) => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -18,7 +34,8 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
-  const [manualVerifiedTransactions, setManualVerifiedTransactions] = useState(0);
+  const [manualVerifiedTransactions, setManualVerifiedTransactions] =
+    useState(0);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -106,6 +123,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
         data: [
           15300, 5200, 17300, 18500, 5300, 17200, 12400, 7100, 14300, 13500,
           5300, 7400,
+          
         ],
         backgroundColor: "#0C67E9",
       },
@@ -235,14 +253,23 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
                 <div className="grid grid-cols-2 gap-4 md:flex md:gap-12 mt-3">
                   <Stat
                     label="System Verified"
-                    value="120,750"
+                    value={verifiedTransactions}
                     color="#029868"
                   />
-                  <Stat label="Declined" value="56,108" color="#FF3E5E" />
-                  <Stat label="Unverified" value="32,894" color="#F67A03" />
+                  <Stat
+                    label="Declined"
+                    value={declineTransactions}
+                    color="#FF3E5E"
+                  />
+                  <Stat
+                    label="Unverified"
+                    value={unverifiedTransactions}
+                    color="#F67A03"
+                  />
+
                   <Stat
                     label="Manual Verified"
-                    value="51,235"
+                    value={manualVerifiedTransactions}
                     color="#0C67E9"
                   />
                 </div>
@@ -260,28 +287,34 @@ const Home = ({ setSelectedPage, authorization, showSidebar }) => {
               services, and the process has evolved to include real-time
               tracking.
             </p>
-            {loading ? (
-              <p>Loading...</p>
-            ) : error ? (
-              <div className="flex items-center space-x-2 mt-2 text-gray-500">
-                <FaCircleExclamation className="text-gray-500" />
-                <p>{error}</p>
-              </div>
-            ) : (
-              <div>
-                {transactions.length > 0 ? (
-                  transactions.map((transaction, index) => (
-                    <RecentTransaction
-                      name={transaction?.bankId?.bankName || "UPI"}
-                      utrId={transaction?.utr}
-                      status={transaction?.status}
-                      amount={`₹${transaction?.amount}`}
-                    />
-                  ))
+            {(loginType === "merchant" ||
+              (loginType === "staff" && permissionsData?.merchantProfile)) && (
+              <>
+                {loading ? (
+                  <p>Loading...</p>
+                ) : error ? (
+                  <div className="flex items-center space-x-2 mt-2 text-gray-500">
+                    <FaCircleExclamation className="text-gray-500" />
+                    <p>{error}</p>
+                  </div>
                 ) : (
-                  <p>No transactions found.</p>
+                  <div>
+                    {transactions && transactions.length > 0 ? (
+                      transactions.map((transaction, index) => (
+                        <RecentTransaction
+                          key={index}
+                          name={transaction?.bankId?.bankName || "UPI"}
+                          utrId={transaction?.utr}
+                          status={transaction?.status}
+                          amount={`₹${transaction?.amount}`}
+                        />
+                      ))
+                    ) : (
+                      <p>No transactions found.</p>
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>

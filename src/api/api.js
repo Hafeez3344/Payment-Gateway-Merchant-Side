@@ -28,6 +28,37 @@ export const fn_loginMerchantApi = async (data) => {
     }
 };
 
+
+// ------------------------------------- staff Login api------------------------------------
+export const fn_loginStaffApi = async (data) => {
+    try {
+        const response = await axios.post(`${BACKEND_URL}/staff/login`, data);
+        console.log(response)
+        const token = response?.data?.token;
+        const id = response?.data?.data?.merchantId;
+        if(response?.data?.data?.block){
+            return {
+                status: false,
+                message: "Staff is blocked by merchat",
+            }; 
+        }
+        const merchantVerified = true;
+        return {
+            status: true,
+            message: "Staff Logged in successfully",
+            token: token,
+            id: id,
+            merchantVerified: merchantVerified,
+            data: response?.data?.data
+        };
+    } catch (error) {
+        if (error?.response?.status === 400) {
+            return { status: false, message: error?.response?.data?.message };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
 // ------------------------------------- Merchant Login History api----------------------------
 export const fn_getMerchantLoginHistoryApi = async (MerchantId) => {
     try {
@@ -368,7 +399,7 @@ export const fn_crateTransactionSlip = async (data) => {
     }
 };
 
-//----------------------------------Show Transaction Slip api---------------------------------------
+//----------------------------------Show Transaction Slip api----------------------------------------
 export const fn_showTransactionSlipData = async () => {
     try {
         const id = Cookies.get("merchantId");
@@ -388,31 +419,7 @@ export const fn_showTransactionSlipData = async () => {
     }
 };
 
-//----------------------------------Get Merchant Data api---------------------------------------
-// export const fn_getMerchantData = async (merchantId) => {
-//     try {
-//         const token = Cookies.get("merchantToken");
-//         const response = await axios.get(`${BACKEND_URL}/merchant/get/${merchantId}`, {
-//             headers: {
-//                 Authorization: `Bearer ${token}`,
-//                 "Content-Type": "application/json",
-//             },
-//         });
-//         return {
-//             status: true,
-//             data: response.data,
-//         };
-//     } catch (error) {
-//         if (error?.response) {
-//             return {
-//                 status: false,
-//                 message: error?.response?.data?.message || "An error occurred",
-//             };
-//         }
-//         return { status: false, message: "Network Error" };
-//     }
-// };
-
+//----------------------------------Get Merchant Data api--------------------------------------------
 export const fn_getMerchantData = async () => {
     try {
         const token = Cookies.get("merchantToken");
@@ -428,6 +435,120 @@ export const fn_getMerchantData = async () => {
             data: response.data,
         };
     } catch (error) {
+        return { status: false, message: "Network Error" };
+    }
+};
+
+//------------------------------------Create Staff Api-----------------------------------------------
+export const fn_createStaffApi = async (formdata) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.post(`${BACKEND_URL}/staff/create`,
+            formdata,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response?.status !== 500) {
+            return {
+                status: false,
+                message: error?.response?.data?.message
+            };
+        }
+        return {
+            status: false,
+            message: "Network Error"
+        };
+    }
+};
+
+//------------------------------------Get Staff Api-----------------------------------------------
+export const fn_getStaffApi = async () => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(`${BACKEND_URL}/staff/getAll`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log("response ", response)
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response?.status !== 500) {
+            return {
+                status: false,
+                message: error?.response?.data?.message,
+            };
+        }
+        return {
+            status: false,
+            message: "Network Error",
+        };
+    }
+};
+
+//------------------------------------Update Staff Api-----------------------------------------------
+export const fn_updateStaffApi = async (staffId, formData) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.put(
+            `${BACKEND_URL}/staff/update/${staffId}`,
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        if (error?.response?.status !== 500) {
+            return {
+                status: false,
+                message: error?.response?.data?.message,
+            };
+        }
+        return {
+            status: false,
+            message: "Network Error",
+        };
+    }
+};
+
+//------------------------------------Delete Staff Api-----------------------------------------------
+export const fn_deleteStaffApi = async (id) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.delete(`${BACKEND_URL}/staff/delete/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            message: "Staff Deleted Successfully",
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
         return { status: false, message: "Network Error" };
     }
 };

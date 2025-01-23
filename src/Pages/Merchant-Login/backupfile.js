@@ -1,17 +1,31 @@
-import React, { useEffect } from "react";
-import { Button, Checkbox, Form, Grid, Input, Typography, notification, } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+    Button,
+    Checkbox,
+    Form,
+    Grid,
+    Input,
+    Typography,
+    notification,
+} from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
-import { fn_loginMerchantApi } from "../../api/api";
+import { fn_loginMerchantApi, fn_loginStaffApi } from "../../api/api";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
 const { useBreakpoint } = Grid;
 const { Text, Title, Link } = Typography;
 
-const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified }) => {
+const MerchantLogin = ({
+    authorization,
+    setAuthorization,
+    setMerchantVerified,
+    setGlobalLoginType
+}) => {
     const navigate = useNavigate();
     const screens = useBreakpoint();
+    const [loginType, setLoginType] = useState("merchant");
 
     useEffect(() => {
         if (authorization) {
@@ -19,28 +33,61 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified })
         }
     }, []);
 
+    const handleLoginTypeChange = (e) => {
+        setLoginType(e.target.value);
+    };
+
     const onFinish = async (values) => {
         try {
-            const response = await fn_loginMerchantApi(values);
-            if (response?.status) {
-                notification.success({
-                    message: "Login Successful",
-                    description: "You have successfully logged in!",
-                    placement: "topRight",
-                });
-                Cookies.set("merchantId", response?.id);
-                Cookies.set("merchantToken", response?.token);
-                setMerchantVerified(response?.merchantVerified);
-                localStorage.setItem('merchantVerified', response?.merchantVerified)
-                navigate("/");
-                setAuthorization(true);
+            console.log("loginType  ", loginType);
+            if (loginType === "merchant") {
+                setGlobalLoginType("merchant");
+                Cookies.set("loginType", "merchant")
+                const response = await fn_loginMerchantApi(values);
+                if (response?.status) {
+                    notification.success({
+                        message: "Login Successful",
+                        description: "You have successfully logged in!",
+                        placement: "topRight",
+                    });
+                    Cookies.set("merchantId", response?.id);
+                    Cookies.set("merchantToken", response?.token);
+                    setMerchantVerified(response?.merchantVerified);
+                    localStorage.setItem("merchantVerified", response?.merchantVerified);
+                    navigate("/");
+                    setAuthorization(true);
+                } else {
+                    notification.error({
+                        message: "Login Failed",
+                        description:
+                            response?.message || "Invalid credentials. Please try again.",
+                        placement: "topRight",
+                    });
+                }
             } else {
-                notification.error({
-                    message: "Login Failed",
-                    description:
-                        response?.message || "Invalid credentials. Please try again.",
-                    placement: "topRight",
-                });
+                setGlobalLoginType("staff")
+                Cookies.set("loginType", "staff")
+                const response = await fn_loginStaffApi(values);
+                if (response?.status) {
+                    notification.success({
+                        message: "Login Successful",
+                        description: "You have successfully logged in!",
+                        placement: "topRight",
+                    });
+                    Cookies.set("merchantId", response?.id);
+                    Cookies.set("merchantToken", response?.token);
+                    setMerchantVerified(response?.merchantVerified);
+                    localStorage.setItem("merchantVerified", response?.merchantVerified);
+                    navigate("/");
+                    setAuthorization(true);
+                } else {
+                    notification.error({
+                        message: "Login Failed",
+                        description:
+                            response?.message || "Invalid credentials. Please try again.",
+                        placement: "topRight",
+                    });
+                }
             }
         } catch (error) {
             console.error("Login error: ", error);
@@ -49,6 +96,14 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified })
                 description: "An unexpected error occurred. Please try again later.",
                 placement: "topRight",
             });
+        }
+    };
+
+    const handleCheckboxChange = (checkedValues) => {
+        if (checkedValues.length > 1) {
+            setLoginType(checkedValues[1]);
+        } else {
+            setLoginType(checkedValues[0]);
         }
     };
 
@@ -94,6 +149,14 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified })
             width: "80px",
             height: "auto",
         },
+        checkboxGroup: {
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+        },
+        checkbox: {
+            marginLeft: "20px",
+        },
     };
 
     return (
@@ -103,7 +166,8 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified })
                     <img src={logo} alt="Logo" style={styles.logo} />
                     <Title style={styles.title}>Merchant Login</Title>
                     <Text style={styles.text}>
-                        Welcome back! Please enter your details below to log in as an Merchant.
+                        Welcome back! Please enter your details below to log in as an
+                        Merchant.
                     </Text>
                 </div>
                 <Form
@@ -115,6 +179,18 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified })
                     layout="vertical"
                     requiredMark="optional"
                 >
+                    <Form.Item>
+                        <Checkbox.Group
+                            style={{ width: "100%" }}
+                            value={[loginType]}
+                            onChange={handleCheckboxChange}
+                        >
+                            <Checkbox value="merchant" style={{ marginRight: "10px" }}>
+                                Login as Merchant
+                            </Checkbox>
+                            <Checkbox value="staff">Login as Staff</Checkbox>
+                        </Checkbox.Group>
+                    </Form.Item>
                     <Form.Item
                         name="email"
                         rules={[

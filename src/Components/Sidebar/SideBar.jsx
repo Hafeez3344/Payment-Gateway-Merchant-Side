@@ -1,12 +1,12 @@
 import React from "react";
 import Cookies from "js-cookie";
-import Royal247Logo from "../../assets/Royal247Logo.png"
+import Royal247Logo from "../../assets/Royal247Logo.png";
 import { LuLogOut } from "react-icons/lu";
 import { PiNotebook } from "react-icons/pi";
 import { TbBookUpload } from "react-icons/tb";
 import { IoAnalytics } from "react-icons/io5";
 import { FaHeadphones } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
@@ -20,6 +20,8 @@ const SideBar = ({
   selectedPage,
   setSelectedPage,
   setMerchantVerified,
+  loginType,
+  permissionsData
 }) => {
   const navigate = useNavigate();
   const isMobile = () => window.innerWidth < 1024;
@@ -30,7 +32,9 @@ const SideBar = ({
   const fn_logout = () => {
     Cookies.remove("merchantId");
     Cookies.remove("merchantToken");
+    Cookies.remove("loginType");
     localStorage.removeItem("merchantVerified");
+    localStorage.removeItem("permissionsData");
     setAuthorization(false);
     setMerchantVerified(true);
     navigate("/login");
@@ -79,76 +83,88 @@ const SideBar = ({
               selectedPage={selectedPage}
               icon={<PiNotebook className="text-[20px]" />}
             />
-            <Menu
-              onClick={() => {
-                setSelectedPage("merchant-profile");
-                navigate("/merchant-management");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Merchant Profile"
-              name="merchant-profile"
-              selectedPage={selectedPage}
-              icon={<FaRegCircleUser className="text-[20px]" />}
-            />
-            <Menu
-              onClick={() => {
-                setSelectedPage("reports-and-analytics");
-                navigate("/reports-and-analytics");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Reports & Analytics"
-              name="reports-and-analytics"
-              selectedPage={selectedPage}
-              icon={<IoAnalytics className="text-[20px]" />}
-            />
-            <Menu
-              onClick={() => {
-                setSelectedPage("help-center");
-                navigate("/support-help-center");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Support / Help Center"
-              name="help-center"
-              selectedPage={selectedPage}
-              icon={<FaHeadphones className="text-[20px]" />}
-            />
+            {(loginType === "merchant") || (loginType === "staff" && permissionsData?.merchantProfile) && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("merchant-profile");
+                  navigate("/merchant-management");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Merchant Profile"
+                name="merchant-profile"
+                selectedPage={selectedPage}
+                icon={<FaRegCircleUser className="text-[20px]" />}
+              />
+            )}
+            {loginType === "merchant" && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("reports-and-analytics");
+                  navigate("/reports-and-analytics");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Reports & Analytics"
+                name="reports-and-analytics"
+                selectedPage={selectedPage}
+                icon={<IoAnalytics className="text-[20px]" />}
+              />
+            )}
+            {loginType === "merchant" && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("help-center");
+                  navigate("/support-help-center");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Support / Help Center"
+                name="help-center"
+                selectedPage={selectedPage}
+                icon={<FaHeadphones className="text-[20px]" />}
+              />
+            )}
           </>
         )}
-        <Menu
-          onClick={() => {
-            setSelectedPage("setting");
-            navigate("/system-configuration");
-            if (isMobile()) fn_controlSidebar();
-          }}
-          label="Settings"
-          name="setting"
-          selectedPage={selectedPage}
-          icon={<IoSettingsOutline className="text-[20px]" />}
-        />
+        {loginType === "merchant" && (
+          <Menu
+            onClick={() => {
+              setSelectedPage("setting");
+              navigate("/system-configuration");
+              if (isMobile()) fn_controlSidebar();
+            }}
+            label="Settings"
+            name="setting"
+            selectedPage={selectedPage}
+            icon={<IoSettingsOutline className="text-[20px]" />}
+          />
+        )}
         {merchantVerified && (
           <>
-            <Menu
-              onClick={() => {
-                setSelectedPage("upload-statement");
-                navigate("/upload-statement");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Upload Statement"
-              name="upload-statement"
-              selectedPage={selectedPage}
-              icon={<TbBookUpload className="text-[20px]" />}
-            />
-            <Menu
-              onClick={() => {
-                setSelectedPage("staff");
-                navigate("/staff");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Staff"
-              name="staff"
-              selectedPage={selectedPage}
-              icon={<FaPeopleGroup className="text-[20px]" />}
-            />
+            {(loginType === "merchant") || (loginType === "staff" && permissionsData?.uploadStatement) && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("upload-statement");
+                  navigate("/upload-statement");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Upload Statement"
+                name="upload-statement"
+                selectedPage={selectedPage}
+                icon={<TbBookUpload className="text-[20px]" />}
+              />
+            )}
+            {loginType === "merchant" && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("staff");
+                  navigate("/staff");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Staff"
+                name="staff"
+                selectedPage={selectedPage}
+                icon={<FaPeopleGroup className="text-[20px]" />}
+              />
+            )}
           </>
         )}
       </div>

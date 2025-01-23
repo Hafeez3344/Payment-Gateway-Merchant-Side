@@ -23,6 +23,9 @@ import Staff from "./Pages/Staff-Page/Staff";
 
 function App() {
   const [selectedPage, setSelectedPage] = useState("");
+  const [permissionsData, setPermissionsData] = useState(JSON.parse(localStorage.getItem("permissionsData")) || {});
+  const [loginType, setLoginType] = useState(Cookies.get("loginType") || "");
+
   const [showSidebar, setShowSide] = useState(
     window.innerWidth > 760 ? true : false
   );
@@ -43,6 +46,8 @@ function App() {
     }
   }, []);
 
+  console.log("permissionsData ", permissionsData);
+
   return (
     <>
       {!merchantVerified && <NotVerfiedBar />}
@@ -55,6 +60,8 @@ function App() {
           selectedPage={selectedPage}
           setSelectedPage={setSelectedPage}
           setMerchantVerified={setMerchantVerified}
+          loginType={loginType}
+          permissionsData={permissionsData}
         />
       )}
       <div>
@@ -69,6 +76,9 @@ function App() {
                 authorization={authorization}
                 setAuthorization={setAuthorization}
                 setMerchantVerified={setMerchantVerified}
+                loginType={loginType}
+                setGlobalLoginType={setLoginType}
+                setPermissionsData={setPermissionsData}
               />
             }
           />
@@ -80,6 +90,8 @@ function App() {
                 setSelectedPage={setSelectedPage}
                 authorization={authorization}
                 showSidebar={showSidebar}
+                permissionsData={permissionsData}
+                loginType={loginType}
               />
             }
           />
@@ -91,6 +103,8 @@ function App() {
                 setSelectedPage={setSelectedPage}
                 authorization={authorization}
                 showSidebar={showSidebar}
+                permissionsData={permissionsData}
+                loginType={loginType}
               />
             }
           />

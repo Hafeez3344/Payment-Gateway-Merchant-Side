@@ -1,7 +1,13 @@
-// import DatePicker from "react-datepicker";
+import { FaRegEdit } from "react-icons/fa";
+import { Banks } from "../../json-data/banks";
+import { IoMdCheckmark } from "react-icons/io";
+import { GoCircleSlash } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
+import { RiFindReplaceLine } from "react-icons/ri";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
+import { FaIndianRupeeSign } from "react-icons/fa6";
+import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
 import {
   Pagination,
   Modal,
@@ -10,13 +16,6 @@ import {
   DatePicker,
   Space,
 } from "antd";
-import { FaRegEdit } from "react-icons/fa";
-import { IoMdCheckmark } from "react-icons/io";
-import { GoCircleSlash } from "react-icons/go";
-import { RiFindReplaceLine } from "react-icons/ri";
-import { FaIndianRupeeSign } from "react-icons/fa6";
-import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
-import { Banks } from "../../json-data/banks";
 
 import BACKEND_URL, {
   fn_deleteTransactionApi,
@@ -24,23 +23,27 @@ import BACKEND_URL, {
   fn_updateTransactionStatusApi,
 } from "../../api/api";
 
-const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
+const TransactionsTable = ({
+  setSelectedPage,
+  authorization,
+  showSidebar,
+  permissionsData,
+  loginType,
+}) => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-
   const [open, setOpen] = useState(false);
   const status = searchParams.get("status");
   const [isEdit, setIsEdit] = useState(false);
   const [merchant, setMerchant] = useState("");
-  const [endDate, setEndDate] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
-  const [startDate, setStartDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const { RangePicker } = DatePicker;
+  const [dateRange, setDateRange] = useState([null, null]);
 
   const fetchTransactions = async (pageNumber) => {
     try {
@@ -72,11 +75,24 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
     fetchTransactions(currentPage);
   }, [currentPage]);
 
-  const filteredTransactions = transactions.filter(
-    (transaction) =>
+  const filteredTransactions = transactions.filter((transaction) => {
+    const transactionDate = new Date(transaction.createdAt);
+
+    const adjustedEndDate = dateRange[1] ? new Date(dateRange[1]) : null;
+    if (adjustedEndDate) {
+      adjustedEndDate.setHours(23, 59, 59, 999);
+    }
+
+    const isWithinDateRange =
+      (!dateRange[0] || transactionDate >= dateRange[0]) &&
+      (!adjustedEndDate || transactionDate <= adjustedEndDate);
+
+    return (
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (merchant === "" || transaction?.merchantName === merchant)
-  );
+      (merchant === "" || transaction?.merchantName === merchant) &&
+      isWithinDateRange
+    );
+  });
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -158,7 +174,12 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
               <Space direction="vertical" size={10}>
-                <RangePicker />
+                <RangePicker
+                  value={dateRange}
+                  onChange={(dates) => {
+                    setDateRange(dates);
+                  }}
+                />
               </Space>
               {/* Search Input */}
               <div className="flex flex-col w-full md:w-40">
@@ -170,30 +191,6 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                   className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
-              {/* Merchant Filter */}
-              <div className="flex flex-col w-full md:w-40">
-                <select
-                  value={merchant}
-                  onChange={(e) => setMerchant(e.target.value)}
-                  className="border border-gray-300 rounded py-1.5 text-[12px] cursor-pointer text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option className="text-[10px] text-gray-400" value="">
-                    Merchant
-                  </option>
-                  <option
-                    className="text-[10px] text-gray-400"
-                    value="Shubh Exchange"
-                  >
-                    Shubh Exchange
-                  </option>
-                  <option
-                    className="text-[10px] text-gray-400"
-                    value="Book Fair"
-                  >
-                    Book Fair
-                  </option>
-                </select>
-              </div>
             </div>
           </div>
           <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
@@ -203,11 +200,15 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4 text-nowrap">TRN-ID</th>
                   <th className="p-4 text-nowrap">User Name</th>
-                  <th className="p-4 text-nowrap">BANK NAME</th>
+                  {loginType === "merchant" ||
+                    (loginType === "staff" &&
+                      permissionsData?.merchantProfile && (
+                        <th className="p-4 text-nowrap">BANK NAME</th>
+                      ))}
                   <th className="p-4">DATE</th>
                   <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
                   <th className="p-4 ">UTR#</th>
-                  <th className="p-4">Status</th>
+                  <th className="pl-8">Status</th>
                   <th className="p-4 cursor-pointer">Action</th>
                 </tr>
               </thead>
@@ -226,31 +227,36 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                           ? transaction?.username
                           : "GUEST"}
                       </td>
-                      <td className="p-4">
-                        {transaction?.bankId?.bankName ? (
-                          <div className="">
-                            {/* <img
-                              src={`${BACKEND_URL}/${transaction?.bankId?.image}`}
-                              alt={`Logo`}
-                              className="w-6 h-6 rounded-full mr-2"
-                            /> */}
-                            <span className="text-[13px] font-[700] text-black whitespace-nowrap">
-                              {transaction?.bankId?.bankName}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="">
-                            {/* <img
-                              src={`${BACKEND_URL}/${transaction?.image}`}
-                              alt="UPI Logo"
-                              className="w-6 h-6 rounded-full mr-2"
-                            /> */}
-                            <p className="text-[14px] font-[700] text-black ">
-                              UPI
-                            </p>
-                          </div>
-                        )}
-                      </td>
+                      {loginType === "merchant" ||
+                        (loginType === "staff" &&
+                          permissionsData?.merchantProfile && (
+                            <td className="p-4">
+                              {transaction?.bankId?.bankName ? (
+                                <div className="">
+                                  {/* <img
+                          src={`${BACKEND_URL}/${transaction?.bankId?.image}`}
+                          alt={`Logo`}
+                          className="w-6 h-6 rounded-full mr-2"
+                        /> */}
+                                  <span className="text-[13px] font-[700] text-black whitespace-nowrap">
+                                    {transaction?.bankId?.bankName}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="">
+                                  {/* <img
+                          src={`${BACKEND_URL}/${transaction?.image}`}
+                          alt="UPI Logo"
+                          className="w-6 h-6 rounded-full mr-2"
+                        /> */}
+                                  <p className="text-[14px] font-[700] text-black ">
+                                    UPI
+                                  </p>
+                                </div>
+                              )}
+                            </td>
+                          ))}
+
                       <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
                         {new Date(transaction?.createdAt).toDateString()},{" "}
                         {new Date(transaction?.createdAt).toLocaleTimeString()}
@@ -424,67 +430,6 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar }) => {
                                     <GoCircleSlash className="mt-[3px] mr-[6px]" />
                                     Decline TR
                                   </button>
-                                  {/* Edit Button */}
-                                  {/* {(selectedTransaction?.status ===
-                                    "Unverified" ||
-                                    selectedTransaction?.status ===
-                                      "Manual Verified") && (
-                                    <button
-                                      className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                                      onClick={() => {
-                                        if (!isEdit) {
-                                          setIsEdit(true);
-                                        } else {
-                                          handleEditTransactionAction(
-                                            "Manual Verified",
-                                            selectedTransaction._id,
-                                            selectedTransaction?.total,
-                                            selectedTransaction?.utr
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      {!isEdit ? (
-                                        <>
-                                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                                          Edit TR
-                                        </>
-                                      ) : (
-                                        <>
-                                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                                          Update TR
-                                        </>
-                                      )}
-                                    </button>
-                                  )} */}
-                                  {/* <button
-                                    className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                                    onClick={() => {
-                                      if (!isEdit) {
-                                        setIsEdit(true);
-                                      } else {
-                                        handleEditTransactionAction(
-                                          "Manual Verified",
-                                          selectedTransaction._id,
-                                          selectedTransaction?.total,
-                                          selectedTransaction?.utr
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    {!isEdit ? (
-                                      <>
-                                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                                        Edit TR
-                                      </>
-                                    ) : (
-                                      <>
-                                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                                        Update TR
-                                      </>
-                                    )}
-                                  </button> */}
-
                                   {selectedTransaction?.status ===
                                     "Unverified" && (
                                     <button

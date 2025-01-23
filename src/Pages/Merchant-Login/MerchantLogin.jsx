@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
-import {Button,Checkbox,Form,Grid,Input,Typography,notification,} from "antd";
+import {
+  Button,
+  Checkbox,
+  Form,
+  Grid,
+  Input,
+  Typography,
+  notification,
+} from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
-import { fn_loginMerchantApi } from "../../api/api";
+import { fn_loginMerchantApi, fn_loginStaffApi } from "../../api/api";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +21,8 @@ const MerchantLogin = ({
   authorization,
   setAuthorization,
   setMerchantVerified,
+  setGlobalLoginType,
+  setPermissionsData,
 }) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
@@ -30,26 +40,62 @@ const MerchantLogin = ({
 
   const onFinish = async (values) => {
     try {
-      const response = await fn_loginMerchantApi(values);
-      if (response?.status) {
-        notification.success({
-          message: "Login Successful",
-          description: "You have successfully logged in!",
-          placement: "topRight",
-        });
-        Cookies.set("merchantId", response?.id);
-        Cookies.set("merchantToken", response?.token);
-        setMerchantVerified(response?.merchantVerified);
-        localStorage.setItem("merchantVerified", response?.merchantVerified);
-        navigate("/");
-        setAuthorization(true);
+      if (loginType === "merchant") {
+        setGlobalLoginType("merchant");
+        Cookies.set("loginType", "merchant");
+        const response = await fn_loginMerchantApi(values);
+        if (response?.status) {
+          notification.success({
+            message: "Login Successful",
+            description: "You have successfully logged in!",
+            placement: "topRight",
+          });
+          Cookies.set("merchantId", response?.id);
+          Cookies.set("merchantToken", response?.token);
+          setMerchantVerified(response?.merchantVerified);
+          localStorage.setItem("merchantVerified", response?.merchantVerified);
+          navigate("/");
+          setAuthorization(true);
+        } else {
+          notification.error({
+            message: "Login Failed",
+            description:
+              response?.message || "Invalid credentials. Please try again.",
+            placement: "topRight",
+          });
+        }
       } else {
-        notification.error({
-          message: "Login Failed",
-          description:
-            response?.message || "Invalid credentials. Please try again.",
-          placement: "topRight",
-        });
+        setGlobalLoginType("staff");
+        Cookies.set("loginType", "staff");
+        const response = await fn_loginStaffApi(values);
+        if (response?.status) {
+          notification.success({
+            message: "Login Successful",
+            description: "You have successfully logged in!",
+            placement: "topRight",
+          });
+          Cookies.set("merchantId", response?.id);
+          Cookies.set("merchantToken", response?.token);
+          setMerchantVerified(response?.merchantVerified);
+          localStorage.setItem("merchantVerified", response?.merchantVerified);
+          navigate("/");
+          setAuthorization(true);
+          setPermissionsData(() => ({
+            uploadStatement: response?.data?.uploadStatement,
+            merchantProfile: response?.data?.merchantProfile,
+          }));
+          localStorage.setItem("permissionsData", JSON.stringify({
+            uploadStatement: response?.data?.uploadStatement,
+            merchantProfile: response?.data?.merchantProfile,
+          }));
+        } else {
+          notification.error({
+            message: "Login Failed",
+            description:
+              response?.message || "Invalid credentials. Please try again.",
+            placement: "topRight",
+          });
+        }
       }
     } catch (error) {
       console.error("Login error: ", error);
@@ -143,11 +189,13 @@ const MerchantLogin = ({
         >
           <Form.Item>
             <Checkbox.Group
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
               value={[loginType]}
               onChange={handleCheckboxChange}
             >
-              <Checkbox value="merchant" style={{ marginRight: '10px' }}>Login as Merchant</Checkbox>
+              <Checkbox value="merchant" style={{ marginRight: "10px" }}>
+                Login as Merchant
+              </Checkbox>
               <Checkbox value="staff">Login as Staff</Checkbox>
             </Checkbox.Group>
           </Form.Item>
@@ -202,5 +250,3 @@ const MerchantLogin = ({
 };
 
 export default MerchantLogin;
-
-
