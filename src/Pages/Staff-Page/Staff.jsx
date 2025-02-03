@@ -23,6 +23,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
     permissions: [],
     merchantProfile: false,
     uploadStatement: false,
+    type: ""
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const [editStaffId, setEditStaffId] = useState(null);
@@ -35,6 +36,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       password: "",
       merchantProfile: false,
       uploadStatement: false,
+      type: ""
     });
     setErrors({});
     setIsEditMode(false);
@@ -88,6 +90,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
     submitData.append("password", formData.password);
     submitData.append("uploadStatement", formData.uploadStatement);
     submitData.append("merchantProfile", formData.merchantProfile);
+    submitData.append("type", formData.type);
 
     try {
       let response;
@@ -151,7 +154,6 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       });
     }
   };
-  
 
   const handleStatusChange = async (staffId, checked) => {
     try {
@@ -159,7 +161,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       if (!currentStaff) return;
 
       const response = await fn_updateStaffApi(staffId, {
-        block: !checked, 
+        block: !checked,
         status: checked ? "Active" : "Inactive",
       });
 
@@ -169,7 +171,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
             staff._id === staffId
               ? {
                   ...staff,
-                  block: !checked, 
+                  block: !checked,
                   status: checked ? "Active" : "Inactive",
                 }
               : staff
@@ -242,6 +244,15 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
   useEffect(() => {
     fetchStaffList();
   }, []);
+
+  const fn_changeStaff = (value) => {
+    if(value !== ""){
+      setFormData((prev) => ({ ...prev, type: value, merchantProfile: false, uploadStatement: false }));
+    };
+    if(value === formData.type){
+      setFormData((prev) => ({ ...prev, type: "", merchantProfile: false, uploadStatement: false }));
+    }
+  };
 
   return (
     <div
@@ -432,11 +443,12 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
 
             <div>
               <p className="text-sm font-medium mb-1">Permissions</p>
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col items-start">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="upload-statement"
+                    disabled={formData?.type !== ""}
                     checked={formData?.uploadStatement}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -444,14 +456,15 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                         uploadStatement: e.target.checked,
                       }))
                     }
-                    className="mr-2"
+                    className="mr-2 cursor-pointer"
                   />
-                  <label htmlFor="upload-statement">Upload Statement</label>
+                  <label htmlFor="upload-statement" className="cursor-pointer">Upload Statement</label>
                 </div>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="merchant-profile"
+                    disabled={formData?.type !== ""}
                     checked={formData?.merchantProfile}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -459,9 +472,29 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                         merchantProfile: e.target.checked,
                       }))
                     }
-                    className="mr-2"
+                    className="mr-2 cursor-pointer"
                   />
-                  <label htmlFor="merchant-profile">Merchant Profile</label>
+                  <label htmlFor="merchant-profile" className="cursor-pointer">Merchant Profile</label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="major-staff"
+                    checked={formData?.type === "major"}
+                    onChange={() => fn_changeStaff("major")}
+                    className="mr-2 cursor-pointer"
+                  />
+                  <label htmlFor="major-staff" className="cursor-pointer">Major Staff</label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="minor-staff"
+                    checked={formData?.type === "minor"}
+                    onChange={() => fn_changeStaff("minor")}
+                    className="mr-2 cursor-pointer"
+                  />
+                  <label htmlFor="minor-staff" className="cursor-pointer">Minor Staff</label>
                 </div>
               </div>
             </div>

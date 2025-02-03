@@ -179,7 +179,36 @@ export const fn_BankUpdate = async (id, data) => {
 export const fn_getAllMerchantApi = async (status, pageNumber) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}`,
+        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=manual`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+        // console.log(response);
+        return {
+            status: true,
+            message: "Merchants show successfully",
+            data: response.data,
+        };
+    } catch (error) {
+        console.error(error);
+
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "No transaction found",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getAllDirectPaymentApi = async (status, pageNumber) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=direct`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -7,23 +7,22 @@ import Home from "./Components/Home/Home";
 import NavBar from "./Components/NabBar/NavBar";
 import Footer from "./Components/Footer/Footer";
 import SideBar from "./Components/Sidebar/SideBar";
-import NotVerfiedBar from "./Components/NotVerifiedBar/page";
 import MerchantLogin from "./Pages/Merchant-Login/MerchantLogin";
 import UploadStatement from "./Pages/Upload-Statement/UploadStatement";
 import TransactionsTable from "./Pages/Transaction-Table/TransactionsTable";
 import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
 import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import ReportsAndAnalytics from "./Pages/Reports-&-Analytics/ReportsAndAnalytics";
-import DeclinedTransactions from "./Pages/Declined-Transactions/DeclinedTransactions";
-import VerifiedTransactions from "./Pages/Verified-Transactions/VerifiedTransactions";
-import UnverifiedTransactions from "./Pages/Unverified-Transactions/UnverifiedTransactions";
-import ManualVerifiedTransactions from "./Pages/Manual-Verified-Transactions/ManualVerifiedTransactions";
 import SystemConfigurationIntegration from "./Pages/System-Configuration-Integration/SystemConfigurationIntegration";
 import Staff from "./Pages/Staff-Page/Staff";
+import DirectPaymentPage from "./Pages/Direct-Payment-Page/DirectPaymentPage";
+import NotVerfiedBar from "./Components/NotVerifiedBar/page";
 
 function App() {
   const [selectedPage, setSelectedPage] = useState("");
-  const [permissionsData, setPermissionsData] = useState(JSON.parse(localStorage.getItem("permissionsData")) || {});
+  const [permissionsData, setPermissionsData] = useState(
+    JSON.parse(localStorage.getItem("permissionsData")) || {}
+  );
   const [loginType, setLoginType] = useState(Cookies.get("loginType") || "");
 
   const [showSidebar, setShowSide] = useState(
@@ -45,8 +44,6 @@ function App() {
       setMerchantVerified(true);
     }
   }, []);
-
-  console.log("permissionsData ", permissionsData);
 
   return (
     <>
@@ -108,51 +105,6 @@ function App() {
               />
             }
           />
-
-          <Route
-            path="/verified-transactions"
-            element={
-              <VerifiedTransactions
-                setSelectedPage={setSelectedPage}
-                authorization={authorization}
-                showSidebar={showSidebar}
-              />
-            }
-          />
-
-          <Route
-            path="/manual-verified"
-            element={
-              <ManualVerifiedTransactions
-                setSelectedPage={setSelectedPage}
-                authorization={authorization}
-                showSidebar={showSidebar}
-              />
-            }
-          />
-
-          <Route
-            path="/unverified-transactions"
-            element={
-              <UnverifiedTransactions
-                setSelectedPage={setSelectedPage}
-                authorization={authorization}
-                showSidebar={showSidebar}
-              />
-            }
-          />
-
-          <Route
-            path="/declined-transactions"
-            element={
-              <DeclinedTransactions
-                setSelectedPage={setSelectedPage}
-                authorization={authorization}
-                showSidebar={showSidebar}
-              />
-            }
-          />
-
           <Route
             path="/merchant-management"
             element={
@@ -216,6 +168,18 @@ function App() {
                 setSelectedPage={setSelectedPage}
                 authorization={authorization}
                 showSidebar={showSidebar}
+              />
+            }
+          />
+          <Route
+            path="/direct-payment-page"
+            element={
+              <DirectPaymentPage
+                setSelectedPage={setSelectedPage}
+                authorization={authorization}
+                showSidebar={showSidebar}
+                permissionsData={permissionsData}
+                loginType={loginType}
               />
             }
           />

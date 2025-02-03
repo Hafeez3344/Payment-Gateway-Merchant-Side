@@ -11,6 +11,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineDashboard } from "react-icons/md";
 import { FaPeopleGroup } from "react-icons/fa6";
+import { MdPayments } from "react-icons/md";
 
 const SideBar = ({
   merchantVerified,
@@ -21,7 +22,7 @@ const SideBar = ({
   setSelectedPage,
   setMerchantVerified,
   loginType,
-  permissionsData
+  permissionsData,
 }) => {
   const navigate = useNavigate();
   const isMobile = () => window.innerWidth < 1024;
@@ -33,6 +34,7 @@ const SideBar = ({
     Cookies.remove("merchantId");
     Cookies.remove("merchantToken");
     Cookies.remove("loginType");
+    Cookies.remove("website");
     localStorage.removeItem("merchantVerified");
     localStorage.removeItem("permissionsData");
     setAuthorization(false);
@@ -42,9 +44,8 @@ const SideBar = ({
 
   return (
     <div
-      className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${
-        showSidebar ? "left-0" : "left-[-270px]"
-      }`}
+      className={`fixed w-[270px] h-[100vh] bg-white border-r transition-all duration-500 ${showSidebar ? "left-0" : "left-[-270px]"
+        }`}
       style={{ zIndex: 999 }}
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
@@ -59,17 +60,21 @@ const SideBar = ({
         </button>
       </div>
       <div className="mt-[10px]">
-        <Menu
-          onClick={() => {
-            setSelectedPage("dashboard");
-            navigate("/");
-            if (isMobile()) fn_controlSidebar();
-          }}
-          label="Dashboard"
-          name="dashboard"
-          selectedPage={selectedPage}
-          icon={<MdOutlineDashboard className="text-[20px]" />}
-        />
+        {/* dashboard */}
+        {(permissionsData?.type !== "major" && permissionsData?.type !== "minor") && (
+          <Menu
+            onClick={() => {
+              setSelectedPage("dashboard");
+              navigate("/");
+              if (isMobile()) fn_controlSidebar();
+            }}
+            label="Dashboard"
+            name="dashboard"
+            selectedPage={selectedPage}
+            icon={<MdOutlineDashboard className="text-[20px]" />}
+          />
+        )}
+        {/* transaction-history && direct-payment */}
         {merchantVerified && (
           <>
             <Menu
@@ -83,47 +88,71 @@ const SideBar = ({
               selectedPage={selectedPage}
               icon={<PiNotebook className="text-[20px]" />}
             />
-            {(loginType === "merchant") || (loginType === "staff" && permissionsData?.merchantProfile) && (
-              <Menu
-                onClick={() => {
-                  setSelectedPage("merchant-profile");
-                  navigate("/merchant-management");
-                  if (isMobile()) fn_controlSidebar();
-                }}
-                label="Merchant Profile"
-                name="merchant-profile"
-                selectedPage={selectedPage}
-                icon={<FaRegCircleUser className="text-[20px]" />}
-              />
-            )}
-            {loginType === "merchant" && (
-              <Menu
-                onClick={() => {
-                  setSelectedPage("reports-and-analytics");
-                  navigate("/reports-and-analytics");
-                  if (isMobile()) fn_controlSidebar();
-                }}
-                label="Reports & Analytics"
-                name="reports-and-analytics"
-                selectedPage={selectedPage}
-                icon={<IoAnalytics className="text-[20px]" />}
-              />
-            )}
-            {loginType === "merchant" && (
-              <Menu
-                onClick={() => {
-                  setSelectedPage("help-center");
-                  navigate("/support-help-center");
-                  if (isMobile()) fn_controlSidebar();
-                }}
-                label="Support / Help Center"
-                name="help-center"
-                selectedPage={selectedPage}
-                icon={<FaHeadphones className="text-[20px]" />}
-              />
-            )}
+            <Menu
+              onClick={() => {
+                setSelectedPage("direct-payment");
+                navigate("/direct-payment-page");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Direct Payment"
+              name="direct-payment"
+              selectedPage={selectedPage}
+              icon={<MdPayments className="text-[20px]" />}
+            />
           </>
         )}
+        {/* merchant-profile & reposts/analytics */}
+        {loginType === "staff" && permissionsData?.type !== "major" && permissionsData?.type !== "minor" && permissionsData?.merchantProfile && (
+          <Menu
+            onClick={() => {
+              setSelectedPage("merchant-profile");
+              navigate("/merchant-management");
+              if (isMobile()) fn_controlSidebar();
+            }}
+            label="Merchant Profile"
+            name="merchant-profile"
+            selectedPage={selectedPage}
+            icon={<FaRegCircleUser className="text-[20px]" />}
+          />
+        )}
+        {loginType === "merchant" && merchantVerified && (
+          <>
+            <Menu
+              onClick={() => {
+                setSelectedPage("merchant-profile");
+                navigate("/merchant-management");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Merchant Profile"
+              name="merchant-profile"
+              selectedPage={selectedPage}
+              icon={<FaRegCircleUser className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("reports-and-analytics");
+                navigate("/reports-and-analytics");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Reports & Analytics"
+              name="reports-and-analytics"
+              selectedPage={selectedPage}
+              icon={<IoAnalytics className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("help-center");
+                navigate("/support-help-center");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Support / Help Center"
+              name="help-center"
+              selectedPage={selectedPage}
+              icon={<FaHeadphones className="text-[20px]" />}
+            />
+          </>
+        )}
+        {/* settings */}
         {loginType === "merchant" && (
           <Menu
             onClick={() => {
@@ -137,34 +166,44 @@ const SideBar = ({
             icon={<IoSettingsOutline className="text-[20px]" />}
           />
         )}
-        {merchantVerified && (
+        {/* upload-statement && staff */}
+        {loginType === "staff" && permissionsData?.type !== "major" && permissionsData?.type !== "minor" && permissionsData?.uploadStatement && (
+          <Menu
+            onClick={() => {
+              setSelectedPage("upload-statement");
+              navigate("/upload-statement");
+              if (isMobile()) fn_controlSidebar();
+            }}
+            label="Upload Statement"
+            name="upload-statement"
+            selectedPage={selectedPage}
+            icon={<TbBookUpload className="text-[20px]" />}
+          />
+        )}
+        {loginType === "merchant" && merchantVerified && (
           <>
-            {(loginType === "merchant") || (loginType === "staff" && permissionsData?.uploadStatement) && (
-              <Menu
-                onClick={() => {
-                  setSelectedPage("upload-statement");
-                  navigate("/upload-statement");
-                  if (isMobile()) fn_controlSidebar();
-                }}
-                label="Upload Statement"
-                name="upload-statement"
-                selectedPage={selectedPage}
-                icon={<TbBookUpload className="text-[20px]" />}
-              />
-            )}
-            {loginType === "merchant" && (
-              <Menu
-                onClick={() => {
-                  setSelectedPage("staff");
-                  navigate("/staff");
-                  if (isMobile()) fn_controlSidebar();
-                }}
-                label="Staff"
-                name="staff"
-                selectedPage={selectedPage}
-                icon={<FaPeopleGroup className="text-[20px]" />}
-              />
-            )}
+            <Menu
+              onClick={() => {
+                setSelectedPage("upload-statement");
+                navigate("/upload-statement");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Upload Statement"
+              name="upload-statement"
+              selectedPage={selectedPage}
+              icon={<TbBookUpload className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("staff");
+                navigate("/staff");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Staff"
+              name="staff"
+              selectedPage={selectedPage}
+              icon={<FaPeopleGroup className="text-[20px]" />}
+            />
           </>
         )}
       </div>
@@ -186,9 +225,8 @@ export default SideBar;
 const Menu = ({ label, name, icon, onClick, selectedPage }) => {
   return (
     <div
-      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${
-        name === selectedPage && "bg-blue-50"
-      }`}
+      className={`flex border-b gap-[15px] items-center py-[14px] px-[20px] cursor-pointer ${name === selectedPage && "bg-blue-50"
+        }`}
       onClick={onClick}
     >
       <div className="text-[rgba(105,155,247,1)]">{icon}</div>

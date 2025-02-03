@@ -3,6 +3,7 @@ import { GoDotFill } from "react-icons/go";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCircleExclamation } from "react-icons/fa6";
+import { Modal, Button, Input, notification } from "antd";
 import {
   Chart as ChartJS,
   BarElement,
@@ -36,6 +37,14 @@ const Home = ({
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
   const [manualVerifiedTransactions, setManualVerifiedTransactions] =
     useState(0);
+  const [open, setOpen] = React.useState(false);
+  const [transactionData, setTransactionData] = useState({
+    amount: "",
+    username: "",
+  });
+  // const [formStep, setFormStep] = useState(1); // Add this state
+  const [generatedLink, setGeneratedLink] = useState(""); // Add this state
+  const [showLinkField, setShowLinkField] = useState(false);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -90,6 +99,66 @@ const Home = ({
     fetchVerifiedTransactions();
   }, [authorization, navigate, setSelectedPage]);
 
+  const handleCreateTransaction = async () => {
+    try {
+      if (!transactionData.amount) {
+        return notification.error({
+          message: "Error",
+          description: "Please enter amount",
+          placement: "topRight",
+        });
+      }
+      if (!transactionData.username) {
+        return notification.error({
+          message: "Error",
+          description: "Please enter username",
+          placement: "topRight",
+        });
+      }
+
+      // Generate payment link
+      const baseUrl = window.location.origin;
+      const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}`;
+      setGeneratedLink(link);
+      setShowLinkField(true);
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error.message || "Failed to create transaction",
+        placement: "topRight",
+      });
+    }
+  };
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(generatedLink);
+    notification.success({
+      message: "Success",
+      description: "Link copied to clipboard!",
+      placement: "topRight",
+    });
+  };
+
+  const shareLink = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Payment Link",
+          text: "Here is your payment link",
+          url: generatedLink,
+        });
+      } else {
+        notification.info({
+          message: "Info",
+          description: "Web Share API is not supported in your browser",
+          placement: "topRight",
+        });
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
   const data = {
     labels: [
       "Jan",
@@ -123,7 +192,6 @@ const Home = ({
         data: [
           15300, 5200, 17300, 18500, 5300, 17200, 12400, 7100, 14300, 13500,
           5300, 7400,
-          
         ],
         backgroundColor: "#0C67E9",
       },
@@ -181,10 +249,10 @@ const Home = ({
     >
       <div className="p-7">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
+        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-1">
           <h1 className="text-[25px] font-[500]">Merchant Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
-            <button className="text-white bg-[#0864E8] border w-[70px] sm:w-[70px] p-1 rounded">
+            <button className="text-white bg-[#0864E8] border w-[70px] sm:w-[70px] p-1.5 rounded">
               ALL
             </button>
             <button className="text-black border w-[70px] sm:w-[70px] p-1 rounded">
@@ -198,6 +266,129 @@ const Home = ({
             </button>
           </div>
         </div>
+
+        <div className="flex justify-center md:justify-end mb-2">
+          {loginType === "merchant" && (
+            <button
+              className="text-white bg-[#0864E8] border min-w-[160px] sm:min-w-[190px] px-4 py-1 rounded text-nowrap"
+              onClick={() => setOpen(true)}
+            >
+              Create Transaction Link
+            </button>
+          )}
+        </div>
+
+        <Modal
+          centered
+          width={600}
+          style={{ fontFamily: "sans-serif" }}
+          title={
+            <p className="text-[16px] font-[700]">
+              {showLinkField
+                ? "Generated Payment Link"
+                : "Create New Transaction"}
+            </p>
+          }
+          open={open}
+          onCancel={() => {
+            setOpen(false);
+            setShowLinkField(false);
+            setGeneratedLink("");
+            setTransactionData({ amount: "", username: "" });
+          }}
+          footer={
+            <div className="flex gap-4">
+              {!showLinkField ? (
+                <Button
+                  className="flex start px-10 text-[12px]"
+                  type="primary"
+                  onClick={handleCreateTransaction}
+                >
+                  Create
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    className="flex items-center px-6 text-[12px]"
+                    type="primary"
+                    onClick={copyLink}
+                  >
+                    Copy Link
+                  </Button>
+                  <Button
+                    className="flex items-center px-6 text-[12px]"
+                    type="primary"
+                    onClick={shareLink}
+                  >
+                    Share Link
+                  </Button>
+                </div>
+              )}
+              <Button
+                className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
+                onClick={() => {
+                  setOpen(false);
+                  setShowLinkField(false);
+                  setGeneratedLink("");
+                  setTransactionData({ amount: "", username: "" });
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            {!showLinkField ? (
+              <>
+                <div className="flex-1 my-2">
+                  <p className="text-[12px] font-[500] pb-1">
+                    Amount <span className="text-[#D50000]">*</span>
+                  </p>
+                  <Input
+                    value={transactionData.amount}
+                    onChange={(e) =>
+                      setTransactionData((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
+                    }
+                    className="w-full text-[12px]"
+                    placeholder="Enter Amount"
+                    type="number"
+                  />
+                </div>
+                <div className="flex-1 my-2">
+                  <p className="text-[12px] font-[500] pb-1">
+                    Username <span className="text-[#D50000]">*</span>
+                  </p>
+                  <Input
+                    value={transactionData.username}
+                    onChange={(e) =>
+                      setTransactionData((prev) => ({
+                        ...prev,
+                        username: e.target.value,
+                      }))
+                    }
+                    className="w-full text-[12px]"
+                    placeholder="Enter Username"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">Payment Link</p>
+                <Input.TextArea
+                  value={generatedLink}
+                  className="border-none"
+                  readOnly
+                  autoSize={{ minRows: 2, maxRows: 5 }}
+                  style={{ border: "none", boxShadow: "none" }}
+                />
+              </div>
+            )}
+          </div>
+        </Modal>
 
         {/* Boxes Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7">

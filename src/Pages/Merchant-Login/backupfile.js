@@ -1,4 +1,9 @@
+import Cookies from "js-cookie";
+import logo from "../../assets/logo.png";
+import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import { fn_loginMerchantApi, fn_loginStaffApi } from "../../api/api";
 import {
     Button,
     Checkbox,
@@ -8,11 +13,6 @@ import {
     Typography,
     notification,
 } from "antd";
-import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import logo from "../../assets/logo.png";
-import { fn_loginMerchantApi, fn_loginStaffApi } from "../../api/api";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
 
 const { useBreakpoint } = Grid;
 const { Text, Title, Link } = Typography;
@@ -21,7 +21,8 @@ const MerchantLogin = ({
     authorization,
     setAuthorization,
     setMerchantVerified,
-    setGlobalLoginType
+    setGlobalLoginType,
+    setPermissionsData,
 }) => {
     const navigate = useNavigate();
     const screens = useBreakpoint();
@@ -39,10 +40,9 @@ const MerchantLogin = ({
 
     const onFinish = async (values) => {
         try {
-            console.log("loginType  ", loginType);
             if (loginType === "merchant") {
                 setGlobalLoginType("merchant");
-                Cookies.set("loginType", "merchant")
+                Cookies.set("loginType", "merchant");
                 const response = await fn_loginMerchantApi(values);
                 if (response?.status) {
                     notification.success({
@@ -65,8 +65,8 @@ const MerchantLogin = ({
                     });
                 }
             } else {
-                setGlobalLoginType("staff")
-                Cookies.set("loginType", "staff")
+                setGlobalLoginType("staff");
+                Cookies.set("loginType", "staff");
                 const response = await fn_loginStaffApi(values);
                 if (response?.status) {
                     notification.success({
@@ -80,6 +80,14 @@ const MerchantLogin = ({
                     localStorage.setItem("merchantVerified", response?.merchantVerified);
                     navigate("/");
                     setAuthorization(true);
+                    setPermissionsData(() => ({
+                        uploadStatement: response?.data?.uploadStatement,
+                        merchantProfile: response?.data?.merchantProfile,
+                    }));
+                    localStorage.setItem("permissionsData", JSON.stringify({
+                        uploadStatement: response?.data?.uploadStatement,
+                        merchantProfile: response?.data?.merchantProfile,
+                    }));
                 } else {
                     notification.error({
                         message: "Login Failed",

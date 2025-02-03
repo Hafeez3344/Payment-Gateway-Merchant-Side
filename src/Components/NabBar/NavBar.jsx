@@ -5,29 +5,36 @@ import { MdOutlineNotificationsNone } from "react-icons/md";
 import { MdOutlineFullscreen } from "react-icons/md";
 import { FaRegUser } from "react-icons/fa6";
 
-const NavBar = ({setShowSide, showSidebar}) => {
+const NavBar = ({ setShowSide, showSidebar }) => {
   const fn_controlSidebar = () => {
-    setShowSide(!showSidebar)
-  }
+    setShowSide(!showSidebar);
+  };
   return (
-    <div className={`h-[55px]  flex justify-between transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"}`}>
+    <div
+      className={`h-[55px]  flex justify-between transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
+    >
       <div className="flex w-full justify-between items-center pl-7">
         <div className="text-[20px]">
-          <FaBarsStaggered onClick={fn_controlSidebar} className="cursor-pointer" />
+          <FaBarsStaggered
+            onClick={fn_controlSidebar}
+            className="cursor-pointer"
+          />
         </div>
         <div className="flex items-center gap-7 pr-7">
-        <div className="text-[25px] cursor-pointer">
-          <RiMessageLine />
-        </div>
-        <div className="text-[25px] cursor-pointer">
-          <MdOutlineNotificationsNone />
-        </div>
-        <div className="text-[26px] cursor-pointer">
-          <MdOutlineFullscreen />
-        </div>
-        <div className="text-[20px] cursor-pointer">
-          <FaRegUser />
-        </div>
+          <div className="text-[25px] cursor-pointer">
+            <RiMessageLine />
+          </div>
+          <div className="text-[25px] cursor-pointer">
+            <MdOutlineNotificationsNone />
+          </div>
+          <div className="text-[26px] cursor-pointer">
+            <MdOutlineFullscreen />
+          </div>
+          <div className="text-[20px] cursor-pointer">
+            <FaRegUser />
+          </div>
         </div>
       </div>
     </div>

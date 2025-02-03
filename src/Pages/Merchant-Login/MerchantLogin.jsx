@@ -1,4 +1,9 @@
+import Cookies from "js-cookie";
+import logo from "../../assets/logo.png";
+import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import { fn_loginMerchantApi, fn_loginStaffApi } from "../../api/api";
 import {
   Button,
   Checkbox,
@@ -8,15 +13,9 @@ import {
   Typography,
   notification,
 } from "antd";
-import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import logo from "../../assets/logo.png";
-import { fn_loginMerchantApi, fn_loginStaffApi } from "../../api/api";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
 
 const { useBreakpoint } = Grid;
 const { Text, Title, Link } = Typography;
-
 const MerchantLogin = ({
   authorization,
   setAuthorization,
@@ -27,7 +26,6 @@ const MerchantLogin = ({
   const navigate = useNavigate();
   const screens = useBreakpoint();
   const [loginType, setLoginType] = useState("merchant");
-
   useEffect(() => {
     if (authorization) {
       navigate("/");
@@ -52,6 +50,7 @@ const MerchantLogin = ({
           });
           Cookies.set("merchantId", response?.id);
           Cookies.set("merchantToken", response?.token);
+          Cookies.set("website", response?.website);
           setMerchantVerified(response?.merchantVerified);
           localStorage.setItem("merchantVerified", response?.merchantVerified);
           navigate("/");
@@ -76,18 +75,40 @@ const MerchantLogin = ({
           });
           Cookies.set("merchantId", response?.id);
           Cookies.set("merchantToken", response?.token);
+          // Cookies.set("website", response?.website);
           setMerchantVerified(response?.merchantVerified);
           localStorage.setItem("merchantVerified", response?.merchantVerified);
-          navigate("/");
           setAuthorization(true);
-          setPermissionsData(() => ({
-            uploadStatement: response?.data?.uploadStatement,
-            merchantProfile: response?.data?.merchantProfile,
-          }));
-          localStorage.setItem("permissionsData", JSON.stringify({
-            uploadStatement: response?.data?.uploadStatement,
-            merchantProfile: response?.data?.merchantProfile,
-          }));
+          if (
+            response?.data?.type === "major" ||
+            response?.data?.type === "minor"
+          ) {
+            localStorage.setItem(
+              "permissionsData",
+              JSON.stringify({
+                type: response?.data?.type,
+              })
+            );
+            setPermissionsData(() => ({
+              type: response?.data?.type,
+            }));
+            navigate("/transactions-table");
+          } else {
+            setPermissionsData(() => ({
+              uploadStatement: response?.data?.uploadStatement,
+              merchantProfile: response?.data?.merchantProfile,
+              type: response?.data?.type,
+            }));
+            localStorage.setItem(
+              "permissionsData",
+              JSON.stringify({
+                uploadStatement: response?.data?.uploadStatement,
+                merchantProfile: response?.data?.merchantProfile,
+                type: response?.data?.type,
+              })
+            );
+            navigate("/");
+          }
         } else {
           notification.error({
             message: "Login Failed",

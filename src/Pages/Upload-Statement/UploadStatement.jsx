@@ -93,7 +93,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                 const match = item.description.match(pattern);
                 if (match && match[1]) {
                   return {
-                    date: item?.date || "",
+                    date: item?.date || item?.value_date || "",
                     utr: match[1],
                     description: item?.description || "",
                     total: item?.amount || item?.deposit || item?.credit || "",
@@ -109,9 +109,12 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
               total: item?.amount || item?.deposit || item?.credit || "",
             };
           };
-          if (item?.type === "CR") {
+          if (item?.type === "CR" || item?.type === "Credit") {
+            console.log("Line no 113");
+            
             return getTransactionData(item);
-          } else if (item?.type === "DR") {
+          } else if (item?.type === "DR" || item?.type === "Debit") {
+            console.log("Line no 117");
             return null;
           } else {
             if (
@@ -119,15 +122,26 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
               item?.deposit !== undefined &&
               item?.deposit !== null
             ) {
+              console.log("Line no 125");
+              
               return getTransactionData(item);
             } else if (item?.deposit === "") {
+              console.log("Line no 129");
+              
               return null;
             } else {
-              if (item?.credit !== "") {
+              
+              if (item?.credit !== "" && item?.credit > 0) {
+                console.log("Line no 135");
+                
                 return getTransactionData(item);
-              } else if (item?.credit === "") {
+              } else if (item?.credit === "" || item?.credit === 0) {
+                console.log("Line no 136");
+                
                 return null;
               } else {
+                console.log("Line no 143");
+                
                 return getTransactionData(item);
               }
             }
@@ -389,8 +403,16 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                                       <td className="p-4 text-[12px] font-[700] text-[#000000B2]">
                                         {transaction?.total}
                                       </td>
-                                      <td className="p-4 text-[12px] font-[600] text-[#000000B2]" title={transaction?.description}>
-                                        {transaction?.description?.substring(0, 60)}{transaction?.description?.length > 60 && "..."}
+                                      <td
+                                        className="p-4 text-[12px] font-[600] text-[#000000B2]"
+                                        title={transaction?.description}
+                                      >
+                                        {transaction?.description?.substring(
+                                          0,
+                                          60
+                                        )}
+                                        {transaction?.description?.length >
+                                          60 && "..."}
                                       </td>
                                     </tr>
                                   )

@@ -19,11 +19,11 @@ import {
 
 import BACKEND_URL, {
   fn_deleteTransactionApi,
-  fn_getAllMerchantApi,
+  fn_getAllDirectPaymentApi,
   fn_updateTransactionStatusApi,
 } from "../../api/api";
 
-const TransactionsTable = ({
+const DirectPaymentPage = ({
   setSelectedPage,
   authorization,
   showSidebar,
@@ -47,7 +47,7 @@ const TransactionsTable = ({
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      const result = await fn_getAllMerchantApi(status || null, pageNumber);
+      const result = await fn_getAllDirectPaymentApi(status || null, pageNumber);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -68,15 +68,12 @@ const TransactionsTable = ({
       navigate("/login");
       return;
     }
-    setSelectedPage("transaction-history");
+    setSelectedPage("direct-payment");
   }, []);
 
   useEffect(() => {
     fetchTransactions(currentPage);
   }, [currentPage]);
-
-  console.log("loginType", loginType);
-  console.log("permissionsData", permissionsData);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = new Date(transaction.createdAt);
@@ -202,9 +199,12 @@ const TransactionsTable = ({
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4 text-nowrap">TRN-ID</th>
                   <th className="p-4 text-nowrap">User Name</th>
-                  {loginType === "merchant" || (loginType === "staff" && permissionsData?.merchantProfile) && (
-                    <th className="p-4 text-nowrap">BANK NAME</th>
-                  )}
+                  <th className="p-4 text-nowrap">Website URL</th>
+                  {loginType === "merchant" ||
+                    (loginType === "staff" &&
+                      permissionsData?.merchantProfile && (
+                        <th className="p-4 text-nowrap">BANK NAME</th>
+                      ))}
                   <th className="p-4">DATE</th>
                   <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
                   <th className="p-4 ">UTR#</th>
@@ -227,23 +227,38 @@ const TransactionsTable = ({
                           ? transaction?.username
                           : "GUEST"}
                       </td>
-                      {loginType === "merchant" || (loginType === "staff" && permissionsData?.merchantProfile) && (
-                        <td className="p-4">
-                          {transaction?.bankId?.bankName ? (
-                            <div className="">
-                              <span className="text-[13px] font-[700] text-black whitespace-nowrap">
-                                {transaction?.bankId?.bankName}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="">
-                              <p className="text-[14px] font-[700] text-black ">
-                                UPI
-                              </p>
-                            </div>
-                          )}
-                        </td>
-                      )}
+                      <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
+                        {transaction?.site}
+                      </td>
+                      {loginType === "merchant" ||
+                        (loginType === "staff" &&
+                          permissionsData?.merchantProfile && (
+                            <td className="p-4">
+                              {transaction?.bankId?.bankName ? (
+                                <div className="">
+                                  {/* <img
+                          src={`${BACKEND_URL}/${transaction?.bankId?.image}`}
+                          alt={`Logo`}
+                          className="w-6 h-6 rounded-full mr-2"
+                        /> */}
+                                  <span className="text-[13px] font-[700] text-black whitespace-nowrap">
+                                    {transaction?.bankId?.bankName}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="">
+                                  {/* <img
+                          src={`${BACKEND_URL}/${transaction?.image}`}
+                          alt="UPI Logo"
+                          className="w-6 h-6 rounded-full mr-2"
+                        /> */}
+                                  <p className="text-[14px] font-[700] text-black ">
+                                    UPI
+                                  </p>
+                                </div>
+                              )}
+                            </td>
+                          ))}
 
                       <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
                         {new Date(transaction?.createdAt).toDateString()},{" "}
@@ -389,7 +404,7 @@ const TransactionsTable = ({
                                   </div>
                                 ))}
                                 <div className="flex gap-2 mt-4">
-                                  {/* Approve Button and decline button */}
+                                  {/* Approve Button & Decline Button */}
                                   {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major")) && (
                                     <>
                                       <button
@@ -400,7 +415,6 @@ const TransactionsTable = ({
                                             selectedTransaction?._id
                                           )
                                         }
-                                        disabled
                                       >
                                         <IoMdCheckmark className="mt-[3px] mr-[6px]" />
                                         Approve Transaction
@@ -420,8 +434,7 @@ const TransactionsTable = ({
                                     </>
                                   )}
 
-
-                                  {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major") && selectedTransaction?.status === "Unverified") && (
+                                  {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major")) && selectedTransaction?.status === "Unverified" && (
                                     <button
                                       className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
                                       onClick={() => {
@@ -527,4 +540,4 @@ const TransactionsTable = ({
   );
 };
 
-export default TransactionsTable;
+export default DirectPaymentPage;
