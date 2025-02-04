@@ -40,7 +40,7 @@ const SideBar = ({
     setAuthorization(false);
     setMerchantVerified(true);
     navigate("/login");
-    window.location.reload();
+    
   };
 
   return (
@@ -76,38 +76,19 @@ const SideBar = ({
           />
         )}
         {/* transaction-history && direct-payment */}
-        {merchantVerified && loginType === "merchant" && (
-          <>
-            <Menu
-              onClick={() => {
-                setSelectedPage("transaction-history");
-                navigate("/transactions-table");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Transaction History"
-              name="transaction-history"
-              selectedPage={selectedPage}
-              icon={<PiNotebook className="text-[20px]" />}
-            />
-          </>
-        )}
-        {merchantVerified && loginType === "staff" && permissionsData?.type !== "major" && permissionsData?.type !== "minor" && (
-          <>
-            <Menu
-              onClick={() => {
-                setSelectedPage("transaction-history");
-                navigate("/transactions-table");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Transaction History"
-              name="transaction-history"
-              selectedPage={selectedPage}
-              icon={<PiNotebook className="text-[20px]" />}
-            />
-          </>
-        )}
         {merchantVerified && (
           <>
+            <Menu
+              onClick={() => {
+                setSelectedPage("transaction-history");
+                navigate("/transactions-table");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Transaction History"
+              name="transaction-history"
+              selectedPage={selectedPage}
+              icon={<PiNotebook className="text-[20px]" />}
+            />
             <Menu
               onClick={() => {
                 setSelectedPage("direct-payment");
@@ -159,11 +140,6 @@ const SideBar = ({
               selectedPage={selectedPage}
               icon={<IoAnalytics className="text-[20px]" />}
             />
-          </>
-        )}
-        {/* settings */}
-        {loginType === "merchant" || (loginType === "staff" && permissionsData?.type !== "major" && permissionsData?.type !== "minor" && permissionsData?.settings) && (
-          <>
             <Menu
               onClick={() => {
                 setSelectedPage("help-center");
@@ -175,18 +151,21 @@ const SideBar = ({
               selectedPage={selectedPage}
               icon={<FaHeadphones className="text-[20px]" />}
             />
-            <Menu
-              onClick={() => {
-                setSelectedPage("setting");
-                navigate("/system-configuration");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Settings"
-              name="setting"
-              selectedPage={selectedPage}
-              icon={<IoSettingsOutline className="text-[20px]" />}
-            />
           </>
+        )}
+        {/* settings */}
+        {loginType === "merchant" && (
+          <Menu
+            onClick={() => {
+              setSelectedPage("setting");
+              navigate("/system-configuration");
+              if (isMobile()) fn_controlSidebar();
+            }}
+            label="Settings"
+            name="setting"
+            selectedPage={selectedPage}
+            icon={<IoSettingsOutline className="text-[20px]" />}
+          />
         )}
         {/* upload-statement && staff */}
         {loginType === "staff" && permissionsData?.type !== "major" && permissionsData?.type !== "minor" && permissionsData?.uploadStatement && (

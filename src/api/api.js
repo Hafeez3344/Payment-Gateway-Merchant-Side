@@ -36,11 +36,11 @@ export const fn_loginStaffApi = async (data) => {
         console.log(response)
         const token = response?.data?.token;
         const id = response?.data?.data?.merchantId;
-        if(response?.data?.data?.block){
+        if (response?.data?.data?.block) {
             return {
                 status: false,
                 message: "Staff is blocked by merchat",
-            }; 
+            };
         }
         const merchantVerified = true;
         return {

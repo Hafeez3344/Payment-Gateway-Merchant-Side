@@ -37,13 +37,12 @@ const Home = ({
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
   const [manualVerifiedTransactions, setManualVerifiedTransactions] =
     useState(0);
-  const [open, setOpen] = React.useState(false);
   const [transactionData, setTransactionData] = useState({
     amount: "",
     username: "",
   });
   // const [formStep, setFormStep] = useState(1); // Add this state
-  const [generatedLink, setGeneratedLink] = useState(""); // Add this state
+  const [generatedLink, setGeneratedLink] = useState(""); 
   const [showLinkField, setShowLinkField] = useState(false);
 
   useEffect(() => {
@@ -242,9 +241,8 @@ const Home = ({
   };
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -266,129 +264,6 @@ const Home = ({
             </button>
           </div>
         </div>
-
-        <div className="flex justify-center md:justify-end mb-2">
-          {loginType === "merchant" && (
-            <button
-              className="text-white bg-[#0864E8] border min-w-[160px] sm:min-w-[190px] px-4 py-1 rounded text-nowrap"
-              onClick={() => setOpen(true)}
-            >
-              Create Transaction Link
-            </button>
-          )}
-        </div>
-
-        <Modal
-          centered
-          width={600}
-          style={{ fontFamily: "sans-serif" }}
-          title={
-            <p className="text-[16px] font-[700]">
-              {showLinkField
-                ? "Generated Payment Link"
-                : "Create New Transaction"}
-            </p>
-          }
-          open={open}
-          onCancel={() => {
-            setOpen(false);
-            setShowLinkField(false);
-            setGeneratedLink("");
-            setTransactionData({ amount: "", username: "" });
-          }}
-          footer={
-            <div className="flex gap-4">
-              {!showLinkField ? (
-                <Button
-                  className="flex start px-10 text-[12px]"
-                  type="primary"
-                  onClick={handleCreateTransaction}
-                >
-                  Create
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    className="flex items-center px-6 text-[12px]"
-                    type="primary"
-                    onClick={copyLink}
-                  >
-                    Copy Link
-                  </Button>
-                  <Button
-                    className="flex items-center px-6 text-[12px]"
-                    type="primary"
-                    onClick={shareLink}
-                  >
-                    Share Link
-                  </Button>
-                </div>
-              )}
-              <Button
-                className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
-                onClick={() => {
-                  setOpen(false);
-                  setShowLinkField(false);
-                  setGeneratedLink("");
-                  setTransactionData({ amount: "", username: "" });
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          }
-        >
-          <div className="flex flex-col gap-4">
-            {!showLinkField ? (
-              <>
-                <div className="flex-1 my-2">
-                  <p className="text-[12px] font-[500] pb-1">
-                    Amount <span className="text-[#D50000]">*</span>
-                  </p>
-                  <Input
-                    value={transactionData.amount}
-                    onChange={(e) =>
-                      setTransactionData((prev) => ({
-                        ...prev,
-                        amount: e.target.value,
-                      }))
-                    }
-                    className="w-full text-[12px]"
-                    placeholder="Enter Amount"
-                    type="number"
-                  />
-                </div>
-                <div className="flex-1 my-2">
-                  <p className="text-[12px] font-[500] pb-1">
-                    Username <span className="text-[#D50000]">*</span>
-                  </p>
-                  <Input
-                    value={transactionData.username}
-                    onChange={(e) =>
-                      setTransactionData((prev) => ({
-                        ...prev,
-                        username: e.target.value,
-                      }))
-                    }
-                    className="w-full text-[12px]"
-                    placeholder="Enter Username"
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 my-2">
-                <p className="text-[12px] font-[500] pb-1">Payment Link</p>
-                <Input.TextArea
-                  value={generatedLink}
-                  className="border-none"
-                  readOnly
-                  autoSize={{ minRows: 2, maxRows: 5 }}
-                  style={{ border: "none", boxShadow: "none" }}
-                />
-              </div>
-            )}
-          </div>
-        </Modal>
 
         {/* Boxes Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
@@ -480,33 +355,33 @@ const Home = ({
             </p>
             {(loginType === "merchant" ||
               (loginType === "staff" && permissionsData?.merchantProfile)) && (
-              <>
-                {loading ? (
-                  <p>Loading...</p>
-                ) : error ? (
-                  <div className="flex items-center space-x-2 mt-2 text-gray-500">
-                    <FaCircleExclamation className="text-gray-500" />
-                    <p>{error}</p>
-                  </div>
-                ) : (
-                  <div>
-                    {transactions && transactions.length > 0 ? (
-                      transactions.map((transaction, index) => (
-                        <RecentTransaction
-                          key={index}
-                          name={transaction?.bankId?.bankName || "UPI"}
-                          utrId={transaction?.utr}
-                          status={transaction?.status}
-                          amount={`₹${transaction?.amount}`}
-                        />
-                      ))
-                    ) : (
-                      <p>No transactions found.</p>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
+                <>
+                  {loading ? (
+                    <p>Loading...</p>
+                  ) : error ? (
+                    <div className="flex items-center space-x-2 mt-2 text-gray-500">
+                      <FaCircleExclamation className="text-gray-500" />
+                      <p>{error}</p>
+                    </div>
+                  ) : (
+                    <div>
+                      {transactions && transactions.length > 0 ? (
+                        transactions.map((transaction, index) => (
+                          <RecentTransaction
+                            key={index}
+                            name={transaction?.bankId?.bankName || "UPI"}
+                            utrId={transaction?.utr}
+                            status={transaction?.status}
+                            amount={`₹${transaction?.amount}`}
+                          />
+                        ))
+                      ) : (
+                        <p>No transactions found.</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
           </div>
         </div>
       </div>

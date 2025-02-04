@@ -25,99 +25,50 @@ const MerchantLogin = ({
 }) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
-  const [loginType, setLoginType] = useState("merchant");
+  // const [loginType, setLoginType] = useState("merchant");
   useEffect(() => {
     if (authorization) {
       navigate("/");
     }
   }, []);
 
-  const handleLoginTypeChange = (e) => {
-    setLoginType(e.target.value);
-  };
+  // const handleLoginTypeChange = (e) => {
+  //   setLoginType(e.target.value);
+  // };
 
   const onFinish = async (values) => {
     try {
-      if (loginType === "merchant") {
-        setGlobalLoginType("merchant");
-        Cookies.set("loginType", "merchant");
-        const response = await fn_loginMerchantApi(values);
-        if (response?.status) {
-          notification.success({
-            message: "Login Successful",
-            description: "You have successfully logged in!",
-            placement: "topRight",
-          });
-          Cookies.set("merchantId", response?.id);
-          Cookies.set("merchantToken", response?.token);
-          Cookies.set("website", response?.website);
-          setMerchantVerified(response?.merchantVerified);
-          localStorage.setItem("merchantVerified", response?.merchantVerified);
-          navigate("/");
-          setAuthorization(true);
-        } else {
-          notification.error({
-            message: "Login Failed",
-            description:
-              response?.message || "Invalid credentials. Please try again.",
-            placement: "topRight",
-          });
-        }
+      // Always treat as merchant login
+      setGlobalLoginType("merchant");
+      Cookies.set("loginType", "merchant");
+      const response = await fn_loginMerchantApi(values);
+      if (response?.status) {
+        notification.success({
+          message: "Login Successful",
+          description: "You have successfully logged in!",
+          placement: "topRight",
+        });
+        Cookies.set("merchantId", response?.id);
+        Cookies.set("merchantToken", response?.token);
+        Cookies.set("website", response?.website);
+        setMerchantVerified(response?.merchantVerified);
+        localStorage.setItem("merchantVerified", response?.merchantVerified);
+        navigate("/");
+        setAuthorization(true);
       } else {
-        setGlobalLoginType("staff");
-        Cookies.set("loginType", "staff");
-        const response = await fn_loginStaffApi(values);
-        if (response?.status) {
-          notification.success({
-            message: "Login Successful",
-            description: "You have successfully logged in!",
-            placement: "topRight",
-          });
-          Cookies.set("merchantId", response?.id);
-          Cookies.set("merchantToken", response?.token);
-          // Cookies.set("website", response?.website);
-          setMerchantVerified(response?.merchantVerified);
-          localStorage.setItem("merchantVerified", response?.merchantVerified);
-          setAuthorization(true);
-          if (
-            response?.data?.type === "major" ||
-            response?.data?.type === "minor"
-          ) {
-            localStorage.setItem(
-              "permissionsData",
-              JSON.stringify({
-                type: response?.data?.type,
-              })
-            );
-            setPermissionsData(() => ({
-              type: response?.data?.type,
-            }));
-            navigate("/transactions-table");
-          } else {
-            setPermissionsData(() => ({
-              uploadStatement: response?.data?.uploadStatement,
-              merchantProfile: response?.data?.merchantProfile,
-              type: response?.data?.type,
-            }));
-            localStorage.setItem(
-              "permissionsData",
-              JSON.stringify({
-                uploadStatement: response?.data?.uploadStatement,
-                merchantProfile: response?.data?.merchantProfile,
-                type: response?.data?.type,
-              })
-            );
-            navigate("/");
-          }
-        } else {
-          notification.error({
-            message: "Login Failed",
-            description:
-              response?.message || "Invalid credentials. Please try again.",
-            placement: "topRight",
-          });
-        }
+        notification.error({
+          message: "Login Failed",
+          description:
+            response?.message || "Invalid credentials. Please try again.",
+          placement: "topRight",
+        });
       }
+      
+      // Comment out staff login logic
+      /* else {
+        setGlobalLoginType("staff");
+        // ... rest of staff login code ...
+      } */
     } catch (error) {
       console.error("Login error: ", error);
       notification.error({
@@ -128,13 +79,13 @@ const MerchantLogin = ({
     }
   };
 
-  const handleCheckboxChange = (checkedValues) => {
-    if (checkedValues.length > 1) {
-      setLoginType(checkedValues[1]);
-    } else {
-      setLoginType(checkedValues[0]);
-    }
-  };
+  // const handleCheckboxChange = (checkedValues) => {
+  //   if (checkedValues.length > 1) {
+  //     setLoginType(checkedValues[1]);
+  //   } else {
+  //     setLoginType(checkedValues[0]);
+  //   }
+  // };
 
   const styles = {
     container: {
@@ -208,6 +159,7 @@ const MerchantLogin = ({
           layout="vertical"
           requiredMark="optional"
         >
+          {/* Comment out login type selection
           <Form.Item>
             <Checkbox.Group
               style={{ width: "100%" }}
@@ -220,6 +172,8 @@ const MerchantLogin = ({
               <Checkbox value="staff">Login as Staff</Checkbox>
             </Checkbox.Group>
           </Form.Item>
+          */}
+          
           <Form.Item
             name="email"
             rules={[

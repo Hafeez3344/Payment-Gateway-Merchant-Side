@@ -1,7 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Input, notification, Switch } from "antd";
-import { fn_createStaffApi, fn_getStaffApi } from "../../api/api";
+import {
+  fn_createStaffApi,
+  fn_getStaffApi,
+  fn_updateStaffApi,
+  fn_deleteStaffApi,
+} from "../../api/api";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
@@ -18,7 +23,11 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
     permissions: [],
     merchantProfile: false,
     uploadStatement: false,
+    type: ""
   });
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editStaffId, setEditStaffId] = useState(null);
+  const [staffStatuses, setStaffStatuses] = useState({});
 
   const resetForm = () => {
     setFormData({
@@ -27,12 +36,28 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       password: "",
       merchantProfile: false,
       uploadStatement: false,
+      type: ""
     });
     setErrors({});
+    setIsEditMode(false);
+    setEditStaffId(null);
   };
 
   const handleAddStaff = () => {
     resetForm();
+    setOpen(true);
+  };
+
+  const handleEdit = (staff) => {
+    setFormData({
+      userName: staff.userName,
+      email: staff.email,
+      password: staff.password,
+      merchantProfile: staff.merchantProfile || false,
+      uploadStatement: staff.uploadStatement || false,
+    });
+    setEditStaffId(staff._id);
+    setIsEditMode(true);
     setOpen(true);
   };
 
@@ -55,34 +80,43 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
   };
 
   const handleSubmit = async () => {
-    // Validate form
     if (!validateForm()) {
       return;
     }
 
-    // Create FormData
     const submitData = new FormData();
     submitData.append("userName", formData.userName);
     submitData.append("email", formData.email);
     submitData.append("password", formData.password);
     submitData.append("uploadStatement", formData.uploadStatement);
     submitData.append("merchantProfile", formData.merchantProfile);
+    submitData.append("type", formData.type);
 
     try {
-      const response = await fn_createStaffApi(submitData);
+      let response;
+      if (isEditMode) {
+        response = await fn_updateStaffApi(editStaffId, submitData);
+      } else {
+        response = await fn_createStaffApi(submitData);
+      }
 
       if (response?.status) {
         notification.success({
           message: "Success",
-          description: "Staff created successfully!",
+          description: isEditMode
+            ? "Staff updated successfully!"
+            : "Staff created successfully!",
           placement: "topRight",
         });
         setOpen(false);
         resetForm();
+        fetchStaffList();
       } else {
         notification.error({
           message: "Error",
-          description: response?.message || "Failed to create staff",
+          description:
+            response?.message ||
+            `Failed to ${isEditMode ? "update" : "create"} staff`,
           placement: "topRight",
         });
       }
@@ -90,6 +124,80 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       notification.error({
         message: "Error",
         description: "An unexpected error occurred",
+        placement: "topRight",
+      });
+    }
+  };
+
+  const handleDeleteStaff = async (staffId) => {
+    try {
+      const response = await fn_deleteStaffApi(staffId);
+      if (response?.status) {
+        notification.success({
+          message: "Success",
+          description: "Staff Deleted Successfully!",
+          placement: "topRight",
+        });
+        fetchStaffList();
+      } else {
+        notification.error({
+          message: "Error",
+          description: response?.message || "Failed to delete staff",
+          placement: "topRight",
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "An unexpected error occurred while deleting staff",
+        placement: "topRight",
+      });
+    }
+  };
+
+  const handleStatusChange = async (staffId, checked) => {
+    try {
+      const currentStaff = staffList.find((staff) => staff._id === staffId);
+      if (!currentStaff) return;
+
+      const response = await fn_updateStaffApi(staffId, {
+        block: !checked,
+        status: checked ? "Active" : "Inactive",
+      });
+
+      if (response?.status) {
+        setStaffList((prev) =>
+          prev.map((staff) =>
+            staff._id === staffId
+              ? {
+                  ...staff,
+                  block: !checked,
+                  status: checked ? "Active" : "Inactive",
+                }
+              : staff
+          )
+        );
+
+        notification.success({
+          message: "Status Updated",
+          description: `Staff ${
+            checked ? "activated" : "deactivated"
+          } successfully!`,
+          placement: "topRight",
+        });
+
+        await fetchStaffList();
+      } else {
+        notification.error({
+          message: "Error",
+          description: response?.message || "Failed to update staff status",
+          placement: "topRight",
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to update staff status",
         placement: "topRight",
       });
     }
@@ -108,6 +216,15 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       const result = await fn_getStaffApi();
       if (result.status) {
         setStaffList(result?.data?.data);
+        setStaffStatuses(
+          result?.data?.data.reduce(
+            (acc, staff) => ({
+              ...acc,
+              [staff._id]: staff.status !== "Inactive",
+            }),
+            {}
+          )
+        );
       } else {
         notification.error({
           message: "Error",
@@ -127,6 +244,15 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
   useEffect(() => {
     fetchStaffList();
   }, []);
+
+  const fn_changeStaff = (value) => {
+    if(value !== ""){
+      setFormData((prev) => ({ ...prev, type: value, merchantProfile: false, uploadStatement: false }));
+    };
+    if(value === formData.type){
+      setFormData((prev) => ({ ...prev, type: "", merchantProfile: false, uploadStatement: false }));
+    }
+  };
 
   return (
     <div
@@ -158,13 +284,13 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="min-w-full border">
               <thead className="bg-[#ECF0FA]">
-                <tr>
+                <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-3 text-[13px] font-[600]">Sr No.</th>
                   <th className="p-3 text-[13px] font-[600]">Name</th>
                   <th className="p-3 text-[13px] font-[600]">Email</th>
-                  <th className="p-3 text-[13px] font-[600]">Status</th>
+                  <th className="pl-7 text-[13px] font-[600]">Status</th>
                   <th className="p-3 text-[13px] font-[600] text-center">
                     Actions
                   </th>
@@ -173,19 +299,19 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
               <tbody>
                 {staffList.length > 0 ? (
                   staffList.map((staff, index) => (
-                    <tr key={staff.id} className="border-t">
-                      <td className="p-3">{index + 1}</td>
-                      <td className="p-3">{staff.userName}</td>
-                      <td className="p-3">{staff.email}</td>
+                    <tr key={staff.id} className="border">
+                      <td className="p-3 text-[13px]">{index + 1}</td>
+                      <td className="p-3 text-[13px]">{staff.userName}</td>
+                      <td className="p-3 text-[13px]">{staff.email}</td>
                       <td className="p-3">
                         <button
                           className={`px-3 py-[5px] rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                            staff.status !== "Inactive"
+                            !staff.block
                               ? "bg-[#10CB0026] text-[#0DA000]"
                               : "bg-[#FF173D33] text-[#D50000]"
                           }`}
                         >
-                          {staff.status !== "Inactive" ? "Active" : "Inactive"}
+                          {!staff.block ? "Active" : "Inactive"}
                         </button>
                       </td>
                       <td className="p-3">
@@ -193,40 +319,22 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                           <Switch
                             size="small"
                             className="min-w-[28px]"
-                            checked={staff.status !== "Inactive"}
-                            onChange={async (checked) => {
-                              try {
-                                // Here you would call your API to update the staff status
-                                // const response = await fn_updateStaffStatus(staff._id, { status: checked ? "Active" : "Inactive" });
-
-                                // For now, just show a notification
-                                notification.success({
-                                  message: "Status Updated",
-                                  description: `Staff status updated successfully!`,
-                                  placement: "topRight",
-                                });
-
-                                // Refresh the staff list
-                                // await fetchStaffList();
-                              } catch (error) {
-                                notification.error({
-                                  message: "Error",
-                                  description: "Failed to update staff status",
-                                  placement: "topRight",
-                                });
-                              }
-                            }}
+                            checked={!staff.block}
+                            onChange={(checked) =>
+                              handleStatusChange(staff._id, checked)
+                            }
                           />
                           <Button
                             className="bg-green-100 hover:bg-green-200 text-green-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                             title="Edit"
+                            onClick={() => handleEdit(staff)}
                           >
                             <FiEdit size={16} />
                           </Button>
                           <Button
                             className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                             title="Delete"
-                            onClick={() => handleDeleteStaff(staff?._id)}
+                            onClick={() => handleDeleteStaff(staff._id)}
                           >
                             <FiTrash2 size={16} />
                           </Button>
@@ -246,7 +354,11 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
           </div>
         </div>
         <Modal
-          title="Add New Staff"
+          title={
+            <p className="text-[20px] font-[600]">
+              {isEditMode ? "Edit Staff" : "Add New Staff"}
+            </p>
+          }
           open={open}
           onCancel={() => {
             setOpen(false);
@@ -310,7 +422,8 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
 
             <div>
               <p className="text-sm font-medium mb-1">
-                Password <span className="text-red-500">*</span>
+                Password{" "}
+                {!isEditMode && <span className="text-red-500">*</span>}
               </p>
               <Input.Password
                 value={formData.password}
@@ -330,11 +443,12 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
 
             <div>
               <p className="text-sm font-medium mb-1">Permissions</p>
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col items-start">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="upload-statement"
+                    disabled={formData?.type !== ""}
                     checked={formData?.uploadStatement}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -342,14 +456,15 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                         uploadStatement: e.target.checked,
                       }))
                     }
-                    className="mr-2"
+                    className="mr-2 cursor-pointer"
                   />
-                  <label htmlFor="upload-statement">Upload Statement</label>
+                  <label htmlFor="upload-statement" className="cursor-pointer">Upload Statement</label>
                 </div>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="merchant-profile"
+                    disabled={formData?.type !== ""}
                     checked={formData?.merchantProfile}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -357,9 +472,29 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                         merchantProfile: e.target.checked,
                       }))
                     }
-                    className="mr-2"
+                    className="mr-2 cursor-pointer"
                   />
-                  <label htmlFor="merchant-profile">Merchant Profile</label>
+                  <label htmlFor="merchant-profile" className="cursor-pointer">Merchant Profile</label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="major-staff"
+                    checked={formData?.type === "major"}
+                    onChange={() => fn_changeStaff("major")}
+                    className="mr-2 cursor-pointer"
+                  />
+                  <label htmlFor="major-staff" className="cursor-pointer">Major Staff</label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="minor-staff"
+                    checked={formData?.type === "minor"}
+                    onChange={() => fn_changeStaff("minor")}
+                    className="mr-2 cursor-pointer"
+                  />
+                  <label htmlFor="minor-staff" className="cursor-pointer">Minor Staff</label>
                 </div>
               </div>
             </div>

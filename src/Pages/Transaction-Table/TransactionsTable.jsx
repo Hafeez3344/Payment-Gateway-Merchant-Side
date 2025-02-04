@@ -1,3 +1,4 @@
+import { Button } from "antd";
 import { FaRegEdit } from "react-icons/fa";
 import { Banks } from "../../json-data/banks";
 import { IoMdCheckmark } from "react-icons/io";
@@ -8,6 +9,8 @@ import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
+import { FcCancel } from "react-icons/fc";
+
 import {
   Pagination,
   Modal,
@@ -44,6 +47,7 @@ const TransactionsTable = ({
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const { RangePicker } = DatePicker;
   const [dateRange, setDateRange] = useState([null, null]);
+  const [showPopup, setShowPopup] = useState(false);
 
   const fetchTransactions = async (pageNumber) => {
     try {
@@ -209,7 +213,7 @@ const TransactionsTable = ({
                   <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
                   <th className="p-4 ">UTR#</th>
                   <th className="pl-8">Status</th>
-                  <th className="p-4 cursor-pointer">Action</th>
+                  <th className="pl-7 cursor-pointer">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,6 +284,51 @@ const TransactionsTable = ({
                         >
                           <FiEye />
                         </button>
+                        {loginType === "staff" && permissionsData?.type === "minor" && (
+                          <div className="flex items-center space-x-4">
+                            <input
+                              type="checkbox"
+                              className="cursor-pointer"
+                              style={{ width: 22, height: 22 }}
+                            />
+                            <Button
+                              key="cancel"
+                              className="bg-blue-600 text-white px-3 py-1 h-8 text-xs"
+                              onClick={() => setShowPopup(true)}
+                            >
+                              Cancel
+                            </Button>
+
+                            {/* Popup Modal */}
+                            {showPopup && (
+                              <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                                <div className="bg-white p-5 rounded-lg shadow-lg w-80">
+                                  <h3 className="text-lg font-bold mb-4">Select Reason</h3>
+                                  <div className="space-y-3">
+                                    <label className="flex items-center space-x-3 bg-gray-200 py-2 px-3 rounded-lg hover:bg-gray-300 cursor-pointer">
+                                      <input type="checkbox" className="w-5 h-5 cursor-pointer" />
+                                      <span>Game Name Incorrect</span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 bg-gray-200 py-2 px-3 rounded-lg hover:bg-gray-300 cursor-pointer">
+                                      <input type="checkbox" className="w-5 h-5 cursor-pointer" />
+                                      <span>User ID Incorrect</span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 bg-gray-200 py-2 px-3 rounded-lg hover:bg-gray-300 cursor-pointer">
+                                      <input type="checkbox" className="w-5 h-5 cursor-pointer" />
+                                      <span>Both Incorrect</span>
+                                    </label>
+                                  </div>
+                                  <button
+                                    className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                                    onClick={() => setShowPopup(false)}
+                                  >
+                                    Close
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <Modal
                           centered
                           footer={null}
@@ -490,6 +539,8 @@ const TransactionsTable = ({
                             </div>
                           )}
                         </Modal>
+
+
                         {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major")) && (
                           <button
                             className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
@@ -499,6 +550,7 @@ const TransactionsTable = ({
                             <FiTrash2 />
                           </button>
                         )}
+
                       </td>
                     </tr>
                   ))
