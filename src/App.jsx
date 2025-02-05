@@ -17,6 +17,7 @@ import SystemConfigurationIntegration from "./Pages/System-Configuration-Integra
 import Staff from "./Pages/Staff-Page/Staff";
 import DirectPaymentPage from "./Pages/Direct-Payment-Page/DirectPaymentPage";
 import NotVerfiedBar from "./Components/NotVerifiedBar/page";
+import ApprovalPoints from "./Pages/ApprovalPoints/ApprovalPoints";
 
 function App() {
   const [selectedPage, setSelectedPage] = useState("");
@@ -175,6 +176,18 @@ function App() {
             path="/direct-payment-page"
             element={
               <DirectPaymentPage
+                setSelectedPage={setSelectedPage}
+                authorization={authorization}
+                showSidebar={showSidebar}
+                permissionsData={permissionsData}
+                loginType={loginType}
+              />
+            }
+          />
+          <Route
+            path="/approval-points"
+            element={
+              <ApprovalPoints
                 setSelectedPage={setSelectedPage}
                 authorization={authorization}
                 showSidebar={showSidebar}

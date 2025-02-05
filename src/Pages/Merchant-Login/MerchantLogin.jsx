@@ -39,12 +39,10 @@ const MerchantLogin = ({
   const onFinish = async (values) => {
     try {
       // Always treat as merchant login
-      setGlobalLoginType("merchant");
-      Cookies.set("loginType", "merchant");
       const response = await fn_loginMerchantApi(values);
       if (response?.status) {
         notification.success({
-          message: "Login Successful",
+          message: response?.message || "Login Successfull",
           description: "You have successfully logged in!",
           placement: "topRight",
         });
@@ -53,6 +51,9 @@ const MerchantLogin = ({
         Cookies.set("website", response?.website);
         setMerchantVerified(response?.merchantVerified);
         localStorage.setItem("merchantVerified", response?.merchantVerified);
+        setGlobalLoginType(response?.type);
+        Cookies.set("loginType", response?.type);
+        // localStorage.setItem("merchant", response?.id);
         navigate("/");
         setAuthorization(true);
       } else {

@@ -3,16 +3,16 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Switch, Button, Modal, Input, notification } from "antd";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiCamera } from "react-icons/fi"; 
 import upilogo2 from "../../assets/upilogo2.svg";
 import Rectangle from "../../assets/Rectangle.jpg";
-import mehtaLogo from "../../assets/mehtaLogo.png";
 import BACKEND_URL, {
   fn_BankUpdate,
   fn_getBankByAccountTypeApi,
   fn_getMerchantData,
 } from "../../api/api";
 import { Banks } from "../../json-data/banks";
+
 
 const MerchantManagement = ({
   setSelectedPage,
@@ -24,9 +24,7 @@ const MerchantManagement = ({
   const [open, setOpen] = React.useState(false);
   const [banksData, setBanksData] = useState([]);
   const [activeTab, setActiveTab] = useState("bank");
-
   const [merchantData, setMerchantData] = useState(null);
-
   const [data, setData] = useState({
     image: null,
     bankName: "",
@@ -36,7 +34,6 @@ const MerchantManagement = ({
     accountLimit: "",
     accountHolderName: "",
   });
-
   const [state, setState] = useState({
     bank: "",
   });
@@ -105,7 +102,6 @@ const MerchantManagement = ({
     }
   };
 
-  /*changes for edit model */
   const handleEdit = (account) => {
     setData({
       image: account.image,
@@ -137,6 +133,15 @@ const MerchantManagement = ({
 
   const fn_submit = async () => {
     try {
+      if (activeTab === "upi" && !data?.image) {
+        notification.error({
+          message: "Error",
+          description: "QR Code is required",
+          placement: "topRight",
+        });
+        return;
+      }
+
       if (data?.bankName === "") {
         if (activeTab === "bank") {
           notification.error({
@@ -185,7 +190,10 @@ const MerchantManagement = ({
       }
       const formData = new FormData();
       if (activeTab === "bank") {
-        formData.append("image", data?.image);
+        // Bank account - QR is optional
+        if (data?.image) {
+          formData.append("image", data?.image);
+        }
         formData.append("bankName", data?.bankName);
         formData.append("accountNo", data?.accountNo);
         formData.append("accountType", activeTab);
@@ -194,6 +202,8 @@ const MerchantManagement = ({
         formData.append("accountHolderName", data?.accountHolderName);
         formData.append("block", true);
       } else {
+        // UPI account - QR is mandatory
+        if (!data?.image) return;
         formData.append("image", data?.image);
         formData.append("accountType", activeTab);
         formData.append("iban", data?.iban);
@@ -237,8 +247,8 @@ const MerchantManagement = ({
           accountLimit: "",
           accountHolderName: "",
         });
-        setIsEditMode(false); /*changes for edit model */
-        setEditAccountId(null); /*changes for edit model */
+        setIsEditMode(false); 
+        setEditAccountId(null); 
         fn_getBankByAccountType();
       }
     } catch (error) {
@@ -246,6 +256,42 @@ const MerchantManagement = ({
       notification.error({
         message: "Error",
         description: errorMessage,
+        placement: "topRight",
+      });
+    }
+  };
+
+  const handleProfileImageUpdate = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const token = Cookies.get("merchantToken");
+      const response = await axios.put(
+        `${BACKEND_URL}/merchant/update/${merchantData?._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.status === 200) {
+        notification.success({
+          message: "Success",
+          description: "Profile image updated successfully!",
+          placement: "topRight",
+        });
+        const result = await fn_getMerchantData();
+        if (result.status) {
+          setMerchantData(result.data?.data);
+        }
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error?.response?.data?.message || "Failed to update profile image",
         placement: "topRight",
       });
     }
@@ -278,19 +324,36 @@ const MerchantManagement = ({
                 className="h-[130px] object-cover w-full rounded-t-lg"
               />
               <div
-                className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9]"
+                className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9] relative"
                 style={{ boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)" }}
               >
                 <img
                   src={`${BACKEND_URL}/${merchantData?.image}`}
                   alt="logo"
-                  className="w-[75px]"
+                  className="w-[100px]"
                 />
+                <div 
+                  className="absolute bottom-2 right-2 w-[35px] h-[35px] bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = async (e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        await handleProfileImageUpdate(file);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  <FiCamera className="text-gray-600 text-xl" />
+                </div>
               </div>
             </div>
             <p className="text-gray-500 text-[19px] font-[600] text-center mt-4">
               {merchantData?.merchantName}
-            </p>
+            </p>      
             <div className="m-3 mt-6">
               <h3 className="text-[16px] font-[600] border-b pb-2">
                 Personal Info
@@ -508,23 +571,26 @@ const MerchantManagement = ({
                         placeholder="Account Limit "
                       />
                     </div>
-                    {/* Account QR Code */}
-                    <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
-                        {activeTab === "upi" ? "UPI" : "Bank"} QR Code
-                      </p>
-                      <Input
-                        type="file"
-                        onChange={(e) => {
-                          setData((prev) => ({
-                            ...prev,
-                            image: e.target.files[0],
-                          }));
-                        }}
-                        className="w-full text-[12px]"
-                        placeholder="Enter IFSC Number "
-                      />
-                    </div>
+                    {/* Account QR Code - only show for UPI */}
+                    {activeTab === "upi" && (
+                      <div className="flex-1 my-2">
+                        <p className="text-[12px] font-[500] pb-1">
+                          UPI QR Code <span className="text-[#D50000]">*</span>
+                        </p>
+                        <Input
+                          type="file"
+                          required
+                          onChange={(e) => {
+                            setData((prev) => ({
+                              ...prev,
+                              image: e.target.files[0],
+                            }));
+                          }}
+                          className="w-full text-[12px]"
+                          placeholder="Select QR Code"
+                        />
+                      </div>
+                    )}
                   </div>
                 </Modal>
               </div>

@@ -9,17 +9,33 @@ export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 export const fn_loginMerchantApi = async (data) => {
     try {
         const response = await axios.post(`${BACKEND_URL}/merchant/login`, data);
-        console.log(response)
+        console.log(response);
         const token = response?.data?.token;
-        const id = response?.data?.data?._id;
-        const merchantVerified = response?.data?.data?.verify;
-        return {
-            status: true,
-            message: "Merchant Logged in successfully",
-            token: token,
-            id: id,
-            merchantVerified: merchantVerified
-        };
+        if (response?.data?.type === "merchant") {
+            const id = response?.data?.data?._id;
+            const merchantVerified = response?.data?.data?.verify;
+            return {
+                status: true,
+                type: "merchant",
+                message: "Merchant Logged in successfully",
+                token: token,
+                id: id,
+                merchantVerified: merchantVerified,
+                website: response?.data?.data?.website,
+            };
+        } else {
+            const id = response?.data?.data?.merchantId?._id;
+            const merchantVerified = response?.data?.data?.merchantId?.verify;
+            return {
+                status: true,
+                type: response?.data?.data?.type,
+                message: "Staff Logged in successfully",
+                token: token,
+                id: id,
+                merchantVerified: merchantVerified,
+                website: response?.data?.data?.merchantId?.website,
+            };
+        }
     } catch (error) {
         if (error?.response?.status === 400) {
             return { status: false, message: error?.response?.data?.message };
@@ -209,6 +225,35 @@ export const fn_getAllDirectPaymentApi = async (status, pageNumber) => {
     try {
         const token = Cookies.get("merchantToken");
         const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=direct`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+        // console.log(response);
+        return {
+            status: true,
+            message: "Merchants show successfully",
+            data: response.data,
+        };
+    } catch (error) {
+        console.error(error);
+
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "No transaction found",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getAllPointsPaymentApi = async (status, pageNumber) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(`${BACKEND_URL}/approval/getAllMerchant`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

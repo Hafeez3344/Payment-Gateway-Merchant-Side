@@ -1,7 +1,7 @@
 import React from "react";
 import Cookies from "js-cookie";
 import Royal247Logo from "../../assets/Royal247Logo.png";
-import { LuLogOut } from "react-icons/lu";
+import { LuLogOut, LuShieldCheck } from "react-icons/lu";
 import { PiNotebook } from "react-icons/pi";
 import { TbBookUpload } from "react-icons/tb";
 import { IoAnalytics } from "react-icons/io5";
@@ -119,6 +119,17 @@ const SideBar = ({
               selectedPage={selectedPage}
               icon={<MdPayments className="text-[20px]" />}
             />
+            <Menu
+              onClick={() => {
+                setSelectedPage("approval-points");
+                navigate("/approval-points");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Approval Points"
+              name="approval-points"
+              selectedPage={selectedPage}
+              icon={<LuShieldCheck className="text-[20px] scale-[1.1]" />}
+            />
           </>
         )}
         {/* merchant-profile & reposts/analytics */}
@@ -162,7 +173,7 @@ const SideBar = ({
           </>
         )}
         {/* settings */}
-        {loginType === "merchant" || (loginType === "staff" && permissionsData?.type !== "major" && permissionsData?.type !== "minor" && permissionsData?.settings) && (
+        {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type !== "major" && permissionsData?.type !== "minor" && permissionsData?.settings)) && (
           <>
             <Menu
               onClick={() => {

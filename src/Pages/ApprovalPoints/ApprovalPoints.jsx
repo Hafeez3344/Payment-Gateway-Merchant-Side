@@ -20,13 +20,13 @@ import {
 
 import BACKEND_URL, {
   fn_deleteTransactionApi,
-  fn_getAllDirectPaymentApi,
+  fn_getAllPointsPaymentApi,
   fn_updateTransactionStatusApi,
 } from "../../api/api";
 import { RxCross2 } from "react-icons/rx";
 import axios from "axios";
 
-const DirectPaymentPage = ({
+const ApprovalPoints = ({
   setSelectedPage,
   authorization,
   showSidebar,
@@ -51,7 +51,7 @@ const DirectPaymentPage = ({
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      const result = await fn_getAllDirectPaymentApi(status || null, pageNumber);
+      const result = await fn_getAllPointsPaymentApi(status || null, pageNumber);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -72,7 +72,7 @@ const DirectPaymentPage = ({
       navigate("/login");
       return;
     }
-    setSelectedPage("direct-payment");
+    setSelectedPage("approval-points");
   }, []);
 
   useEffect(() => {
@@ -92,8 +92,8 @@ const DirectPaymentPage = ({
       (!adjustedEndDate || transactionDate <= adjustedEndDate);
 
     return (
-      transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (merchant === "" || transaction?.merchantName === merchant) &&
+      transaction?.ledgerId?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      (merchant === "" || transaction?.ledgerId?.merchantName === merchant) &&
       isWithinDateRange
     );
   });
@@ -143,8 +143,8 @@ const DirectPaymentPage = ({
     }
   };
 
-  const fn_deleteTransaction = async (id) => {
-    const response = await fn_deleteTransactionApi(id);
+  const fn_deleteTransaction = async (ledgerId, merchantId) => {
+    const response = await axios.post(`${BACKEND_URL}/approval/create`, { ledgerId, merchantId });
     if (response?.status) {
       notification.success({
         message: "Success",
@@ -178,7 +178,7 @@ const DirectPaymentPage = ({
         placement: "topRight",
       });
     };
-  }
+  };
 
   return (
     <div
@@ -188,7 +188,7 @@ const DirectPaymentPage = ({
     >
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-          <h1 className="text-[25px] font-[500]">All Transaction</h1>
+          <h1 className="text-[25px] font-[500]">All Approval Points</h1>
           <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
@@ -197,7 +197,7 @@ const DirectPaymentPage = ({
           <div className="flex flex-col md:flex-row items-center justify-between pb-3">
             <div>
               <p className="text-black font-medium text-lg">
-                List of all Transactions
+                List of all Approval Points
               </p>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
@@ -238,7 +238,6 @@ const DirectPaymentPage = ({
                   <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
                   <th className="p-4 ">UTR#</th>
                   <th className="pl-8">Status</th>
-                  <th className="pl-7 cursor-pointer">Points</th>
                   <th className="pl-7 cursor-pointer">Action</th>
                 </tr>
               </thead>
@@ -250,21 +249,21 @@ const DirectPaymentPage = ({
                       className="text-gray-800 text-sm border-b"
                     >
                       <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
-                        {transaction?.trnNo}
+                        {transaction?.ledgerId?.trnNo}
                       </td>
                       <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
-                        {transaction?.username && transaction?.username !== ""
-                          ? transaction?.username
+                        {transaction?.ledgerId?.username && transaction?.ledgerId?.username !== ""
+                          ? transaction?.ledgerId?.username
                           : "GUEST"}
                       </td>
                       <td className="p-4 text-[13px] font-[600] text-[#000000B2] text-nowrap">
-                        {transaction?.site}
+                        {transaction?.ledgerId?.site}
                       </td>
                       {loginType === "merchant" ||
                         (loginType === "staff" &&
                           permissionsData?.merchantProfile && (
                             <td className="p-4">
-                              {transaction?.bankId?.bankName ? (
+                              {transaction?.ledgerId?.bankId?.bankName ? (
                                 <div className="">
                                   {/* <img
                           src={`${BACKEND_URL}/${transaction?.bankId?.image}`}
@@ -272,7 +271,7 @@ const DirectPaymentPage = ({
                           className="w-6 h-6 rounded-full mr-2"
                         /> */}
                                   <span className="text-[13px] font-[700] text-black whitespace-nowrap">
-                                    {transaction?.bankId?.bankName}
+                                    {transaction?.ledgerId?.bankId?.bankName}
                                   </span>
                                 </div>
                               ) : (
@@ -291,82 +290,37 @@ const DirectPaymentPage = ({
                           ))}
 
                       <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap text-nowrap">
-                        {new Date(transaction?.createdAt).toDateString()},{" "}
-                        {new Date(transaction?.createdAt).toLocaleTimeString()}
+                        {new Date(transaction?.ledgerId?.createdAt).toDateString()},{" "}
+                        {new Date(transaction?.ledgerId?.createdAt).toLocaleTimeString()}
                       </td>
 
                       <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                         <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
-                        {transaction?.total}
+                        {transaction?.ledgerId?.total}
                       </td>
                       <td className="p-4 text-[12px] font-[700] text-[#0864E8]">
-                        {transaction?.utr}
+                        {transaction?.ledgerId?.utr}
                       </td>
                       <td className="p-4 text-[13px] font-[500]">
                         <span
-                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
+                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.ledgerId?.status === "Verified"
                             ? "bg-[#10CB0026] text-[#0DA000]"
-                            : transaction?.status === "Unverified"
+                            : transaction?.ledgerId?.status === "Unverified"
                               ? "bg-[#FFC70126] text-[#FFB800]"
-                              : transaction?.status === "Manual Verified"
+                              : transaction?.ledgerId?.status === "Manual Verified"
                                 ? "bg-[#0865e851] text-[#0864E8]"
                                 : "bg-[#FF7A8F33] text-[#FF002A]"
                             }`}
                         >
-                          {transaction?.status?.charAt(0).toUpperCase() +
-                            transaction?.status?.slice(1)}
+                          {transaction?.ledgerId?.status?.charAt(0).toUpperCase() +
+                            transaction?.ledgerId?.status?.slice(1)}
                         </span>
-                      </td>
-                      <td className="text-nowrap">
-                        <button
-                          disabled={transaction?.approval}
-                          className={`px-2 py-2 rounded-full mx-2 ${transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
-                          onClick={() => fn_checkPoints(transaction)}
-                        >
-                          <FaCheck />
-                        </button>
-                        <button
-                          disabled={!transaction?.approval}
-                          className={`px-2 py-2 rounded-full ms-2 ${!transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"
-                            }`}
-                          onClick={() => {setShowPopup(true); fn_checkPoints(transaction)}}
-                        >
-                          <RxCross2 />
-                        </button>
-                        {showPopup && (
-                          <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
-                            <div className="bg-white p-5 rounded-lg shadow-sm w-80">
-                              <h3 className="text-lg font-bold mb-4">Select Reason</h3>
-                              <div className="space-y-3">
-                                {[
-                                  "Game Name Incorrect",
-                                  "User ID Incorrect",
-                                  "Both Incorrect",
-                                ].map((reason, index) => (
-                                  <label
-                                    key={index}
-                                    className="flex items-center space-x-3 bg-gray-200 py-2 px-3 rounded-lg hover:bg-gray-300 cursor-pointer"
-                                  >
-                                    <input type="checkbox" className="w-5 h-5 cursor-pointer" />
-                                    <span>{reason}</span>
-                                  </label>
-                                ))}
-                              </div>
-                              <button
-                                className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-                                onClick={() => setShowPopup(false)}
-                              >
-                                Close
-                              </button>
-                            </div>
-                          </div>
-                        )}
                       </td>
                       <td className="p-4 flex space-x-2 transaction-view-model">
                         <button
                           className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
                           title="View"
-                          onClick={() => handleViewTransaction(transaction)}
+                          onClick={() => handleViewTransaction(transaction?.ledgerId)}
                         >
                           <FiEye />
                         </button>
@@ -627,7 +581,7 @@ const DirectPaymentPage = ({
                           <button
                             className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
                             title="Delete"
-                            onClick={() => fn_deleteTransaction(transaction?._id)}
+                            onClick={() => fn_deleteTransaction(transaction?.ledgerId?._id, transaction?.merchantId?._id)}
                           >
                             <FiTrash2 />
                           </button>
@@ -660,4 +614,4 @@ const DirectPaymentPage = ({
   );
 };
 
-export default DirectPaymentPage;
+export default ApprovalPoints;

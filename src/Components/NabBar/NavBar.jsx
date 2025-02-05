@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { FaBarsStaggered } from "react-icons/fa6";
 import { RiMessageLine } from "react-icons/ri";
+import Cookies from "js-cookie";
 import { MdOutlineNotificationsNone } from "react-icons/md";
 import { MdOutlineFullscreen } from "react-icons/md";
 import { FaRegUser } from "react-icons/fa6";
-import { Button, Input, Modal, notification } from "antd";
+import { Button, Input, Modal, notification, Dropdown } from "antd";
 
 const NavBar = ({ setShowSide, showSidebar }) => {
   const [open, setOpen] = React.useState(false);
-  const [generatedLink, setGeneratedLink] = useState(""); // Add this state
+  const [generatedLink, setGeneratedLink] = useState("");
   const [showLinkField, setShowLinkField] = useState(false);
   const [transactionData, setTransactionData] = useState({
     amount: "",
@@ -70,8 +71,7 @@ const NavBar = ({ setShowSide, showSidebar }) => {
         });
       }
 
-      // Generate payment link
-      const baseUrl = window.location.origin;
+      const baseUrl = Cookies.get("website");
       const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}`;
       setGeneratedLink(link);
       setShowLinkField(true);
@@ -83,6 +83,20 @@ const NavBar = ({ setShowSide, showSidebar }) => {
       });
     }
   };
+
+  const items = [
+    {
+      key: '1',
+      label: 'Generate New Link',
+      onClick: copyLink,
+    },
+    {
+      key: '2',
+      label: 'Generate User Link',
+      onClick: () => setOpen(true),
+    },
+  ];
+
   return (
     <div
       className={`h-[55px]  flex justify-between transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
@@ -96,18 +110,14 @@ const NavBar = ({ setShowSide, showSidebar }) => {
           />
         </div>
         <div className="flex items-center gap-7 pr-7">
-          <button
-            className="text-white bg-[#cebd23] border min-w-[160px] sm:min-w-[190px] px-4 py-1 rounded text-nowrap"
-            onClick={copyLink}
-          >
-            Generate General Link
-          </button>
-          <button
-            className="text-white bg-[#0864E8] border min-w-[160px] sm:min-w-[190px] px-4 py-1 rounded text-nowrap"
-            onClick={() => setOpen(true)}
-          >
-            Generate User Link
-          </button>
+          <Dropdown menu={{ items }} placement="bottomRight">
+            <Button
+              className="text-white bg-[#0864E8] border min-w-[80px] sm:min-w-[100px] px-3 py-1 rounded text-nowrap"
+            >
+              Create Link
+            </Button>
+
+          </Dropdown>
           <div className="text-[25px] cursor-pointer">
             <RiMessageLine />
           </div>
