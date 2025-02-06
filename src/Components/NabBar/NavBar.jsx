@@ -15,6 +15,8 @@ const NavBar = ({ setShowSide, showSidebar }) => {
     amount: "",
     username: "",
   });
+  const baseUrl = Cookies.get("website");
+
   const fn_controlSidebar = () => {
     setShowSide(!showSidebar);
   };
@@ -71,7 +73,6 @@ const NavBar = ({ setShowSide, showSidebar }) => {
         });
       }
 
-      const baseUrl = Cookies.get("website");
       const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}`;
       setGeneratedLink(link);
       setShowLinkField(true);
@@ -86,21 +87,26 @@ const NavBar = ({ setShowSide, showSidebar }) => {
 
   const items = [
     {
-      key: '1',
-      label: 'Generate New Link',
-      onClick: copyLink,
+      key: "1",
+      label: "For New User",
+      onClick: () => {
+        setGeneratedLink(baseUrl);
+        setShowLinkField(true);
+        setOpen(true);
+      }
     },
     {
-      key: '2',
-      label: 'Generate User Link',
+      key: "2",
+      label: "For Existing User",
       onClick: () => setOpen(true),
     },
   ];
 
   return (
     <div
-      className={`h-[55px]  flex justify-between transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`h-[55px]  flex justify-between transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
     >
       <div className="flex w-full justify-between items-center pl-7">
         <div className="text-[20px]">
@@ -111,12 +117,9 @@ const NavBar = ({ setShowSide, showSidebar }) => {
         </div>
         <div className="flex items-center gap-7 pr-7">
           <Dropdown menu={{ items }} placement="bottomRight">
-            <Button
-              className="text-white bg-[#0864E8] border min-w-[80px] sm:min-w-[100px] px-3 py-1 rounded text-nowrap"
-            >
+            <Button className="text-white bg-[#0864E8] border min-w-[80px] sm:min-w-[100px] px-3 py-1 rounded text-nowrap">
               Create Link
             </Button>
-
           </Dropdown>
           <div className="text-[25px] cursor-pointer">
             <RiMessageLine />
@@ -146,6 +149,9 @@ const NavBar = ({ setShowSide, showSidebar }) => {
         open={open}
         onCancel={() => {
           setOpen(false);
+          setShowLinkField(false);
+          setGeneratedLink("");
+          setTransactionData({ amount: "", username: "" });
         }}
         footer={
           <div className="flex gap-4">
