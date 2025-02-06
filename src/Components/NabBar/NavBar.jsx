@@ -14,6 +14,7 @@ const NavBar = ({ setShowSide, showSidebar }) => {
   const [transactionData, setTransactionData] = useState({
     amount: "",
     username: "",
+    website: ""
   });
   const baseUrl = Cookies.get("website");
 
@@ -58,13 +59,6 @@ const NavBar = ({ setShowSide, showSidebar }) => {
   };
   const handleCreateTransaction = async () => {
     try {
-      if (!transactionData.amount) {
-        return notification.error({
-          message: "Error",
-          description: "Please enter amount",
-          placement: "topRight",
-        });
-      }
       if (!transactionData.username) {
         return notification.error({
           message: "Error",
@@ -72,8 +66,22 @@ const NavBar = ({ setShowSide, showSidebar }) => {
           placement: "topRight",
         });
       }
+      if (!transactionData.website) {
+        return notification.error({
+          message: "Error",
+          description: "Please enter Website",
+          placement: "topRight",
+        });
+      }
+      if (!transactionData.amount) {
+        return notification.error({
+          message: "Error",
+          description: "Please enter amount",
+          placement: "topRight",
+        });
+      }
 
-      const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}`;
+      const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}&site=${transactionData.website}`;
       setGeneratedLink(link);
       setShowLinkField(true);
     } catch (error) {
@@ -104,9 +112,8 @@ const NavBar = ({ setShowSide, showSidebar }) => {
 
   return (
     <div
-      className={`h-[55px]  flex justify-between transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`h-[55px]  flex justify-between transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
     >
       <div className="flex w-full justify-between items-center pl-7">
         <div className="text-[20px]">
@@ -137,7 +144,7 @@ const NavBar = ({ setShowSide, showSidebar }) => {
       </div>
       <Modal
         centered
-        width={600}
+        width={650}
         style={{ fontFamily: "sans-serif" }}
         title={
           <p className="text-[16px] font-[700]">
@@ -151,7 +158,7 @@ const NavBar = ({ setShowSide, showSidebar }) => {
           setOpen(false);
           setShowLinkField(false);
           setGeneratedLink("");
-          setTransactionData({ amount: "", username: "" });
+          setTransactionData({ amount: "", username: "", website: "" });
         }}
         footer={
           <div className="flex gap-4">
@@ -187,7 +194,7 @@ const NavBar = ({ setShowSide, showSidebar }) => {
                 setOpen(false);
                 setShowLinkField(false);
                 setGeneratedLink("");
-                setTransactionData({ amount: "", username: "" });
+                setTransactionData({ amount: "", username: "", website: "" });
               }}
             >
               Cancel
@@ -198,6 +205,38 @@ const NavBar = ({ setShowSide, showSidebar }) => {
         <div className="flex flex-col gap-4">
           {!showLinkField ? (
             <>
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Username <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={transactionData.username}
+                  onChange={(e) =>
+                    setTransactionData((prev) => ({
+                      ...prev,
+                      username: e.target.value,
+                    }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Enter Username"
+                />
+              </div>
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Website <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={transactionData.website}
+                  onChange={(e) =>
+                    setTransactionData((prev) => ({
+                      ...prev,
+                      website: e.target.value,
+                    }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Enter Website Name"
+                />
+              </div>
               <div className="flex-1 my-2">
                 <p className="text-[12px] font-[500] pb-1">
                   Amount <span className="text-[#D50000]">*</span>
@@ -213,22 +252,6 @@ const NavBar = ({ setShowSide, showSidebar }) => {
                   className="w-full text-[12px]"
                   placeholder="Enter Amount"
                   type="number"
-                />
-              </div>
-              <div className="flex-1 my-2">
-                <p className="text-[12px] font-[500] pb-1">
-                  Username <span className="text-[#D50000]">*</span>
-                </p>
-                <Input
-                  value={transactionData.username}
-                  onChange={(e) =>
-                    setTransactionData((prev) => ({
-                      ...prev,
-                      username: e.target.value,
-                    }))
-                  }
-                  className="w-full text-[12px]"
-                  placeholder="Enter Username"
                 />
               </div>
             </>
