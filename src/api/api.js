@@ -6,36 +6,62 @@ const BACKEND_URL = "https://backend.royal247.org";
 export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 
 // ------------------------------------- Merchant Login api------------------------------------
-export const fn_loginMerchantApi = async (data) => {
+export const fn_loginMerchantApi = async (data, setPermissionsData) => {
     try {
         const response = await axios.post(`${BACKEND_URL}/merchant/login`, data);
-        console.log(response);
-        const token = response?.data?.token;
+        
+        let id;
+        let type;
+        let message;
+        let website;
+        let merchantVerified;
+        let token = response?.data?.token;
+        let permissions;
         if (response?.data?.type === "merchant") {
-            const id = response?.data?.data?._id;
-            const merchantVerified = response?.data?.data?.verify;
-            return {
-                status: true,
-                type: "merchant",
-                message: "Merchant Logged in successfully",
-                token: token,
-                id: id,
-                merchantVerified: merchantVerified,
-                website: response?.data?.data?.website,
-            };
+            type = "merchant";
+            id = response?.data?.data?._id;
+            website = response?.data?.data?.website;
+            message = "Merchant Logged in successfully";
+            merchantVerified = response?.data?.data?.verify;
         } else {
-            const id = response?.data?.data?.merchantId?._id;
-            const merchantVerified = response?.data?.data?.merchantId?.verify;
-            return {
-                status: true,
-                type: response?.data?.data?.type,
-                message: "Staff Logged in successfully",
-                token: token,
-                id: id,
-                merchantVerified: merchantVerified,
-                website: response?.data?.data?.merchantId?.website,
+            type = response?.data?.data?.type;
+            message = "Staff Logged in successfully";
+            id = response?.data?.data?.merchantId?._id;
+            website = response?.data?.data?.merchantId?.website;
+            merchantVerified = response?.data?.data?.merchantId?.verify;
+
+            permissions = {
+                userName: response?.data?.data?.userName,
+                email: response?.data?.data?.email,
+                duties: response?.data?.data?.type,
+                dashboard: response?.data?.data?.dashboard,
+                merchantProfile: response?.data?.data?.merchantProfile,
+                uploadStatement: response?.data?.data?.uploadStatement,
+                transactionHistory: response?.data?.data?.transactionHistory,
+                directPayment: response?.data?.data?.directPayment,
+                approvalPoints: response?.data?.data?.approvalPoints,
+                reportsAnalytics: response?.data?.data?.reportsAnalytics,
+                editPermission: response?.data?.data?.editPermission,
+                support: response?.data?.data?.support
             };
-        }
+            setPermissionsData(permissions);
+            localStorage.setItem("permissions", JSON.stringify(permissions));
+        };
+        Cookies.set("merchantId", id);
+        Cookies.set("loginType", type);
+        Cookies.set("website", website);
+        Cookies.set("merchantToken", token);
+        localStorage.setItem("merchantVerified", merchantVerified);
+        return {
+            id: id,
+            type: type,
+            status: true,
+            token: token,
+            message: message,
+            website: website,
+            permissions: permissions,
+            merchantVerified: merchantVerified,
+        };
     } catch (error) {
         if (error?.response?.status === 400) {
             return { status: false, message: error?.response?.data?.message };

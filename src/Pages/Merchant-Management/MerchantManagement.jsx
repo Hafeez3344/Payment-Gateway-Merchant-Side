@@ -3,22 +3,15 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Switch, Button, Modal, Input, notification } from "antd";
-import { FiEdit, FiCamera } from "react-icons/fi"; 
+
+import { Banks } from "../../json-data/banks";
+import { FiEdit, FiCamera } from "react-icons/fi";
 import upilogo2 from "../../assets/upilogo2.svg";
 import Rectangle from "../../assets/Rectangle.jpg";
-import BACKEND_URL, {
-  fn_BankUpdate,
-  fn_getBankByAccountTypeApi,
-  fn_getMerchantData,
-} from "../../api/api";
-import { Banks } from "../../json-data/banks";
+import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi, fn_getMerchantData } from "../../api/api";
 
+const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
 
-const MerchantManagement = ({
-  setSelectedPage,
-  authorization,
-  showSidebar,
-}) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
   const [open, setOpen] = React.useState(false);
@@ -40,6 +33,7 @@ const MerchantManagement = ({
   const [selectedBank, setSelectedBank] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editAccountId, setEditAccountId] = useState(null);
+  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.editPermission : true;
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -165,9 +159,8 @@ const MerchantManagement = ({
       if (data?.iban === "") {
         notification.error({
           message: "Error",
-          description: `Enter ${
-            activeTab === "bank" ? "IFSC Number" : "UPI ID"
-          }`,
+          description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"
+            }`,
           placement: "topRight",
         });
         return;
@@ -247,8 +240,8 @@ const MerchantManagement = ({
           accountLimit: "",
           accountHolderName: "",
         });
-        setIsEditMode(false); 
-        setEditAccountId(null); 
+        setIsEditMode(false);
+        setEditAccountId(null);
         fn_getBankByAccountType();
       }
     } catch (error) {
@@ -265,7 +258,7 @@ const MerchantManagement = ({
     try {
       const formData = new FormData();
       formData.append('image', file);
-      
+
       const token = Cookies.get("merchantToken");
       const response = await axios.put(
         `${BACKEND_URL}/merchant/update/${merchantData?._id}`,
@@ -301,9 +294,8 @@ const MerchantManagement = ({
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -332,7 +324,7 @@ const MerchantManagement = ({
                   alt="logo"
                   className="w-[100px]"
                 />
-                <div 
+                <div
                   className="absolute bottom-2 right-2 w-[35px] h-[35px] bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"
                   onClick={() => {
                     const input = document.createElement('input');
@@ -353,7 +345,7 @@ const MerchantManagement = ({
             </div>
             <p className="text-gray-500 text-[19px] font-[600] text-center mt-4">
               {merchantData?.merchantName}
-            </p>      
+            </p>
             <div className="m-3 mt-6">
               <h3 className="text-[16px] font-[600] border-b pb-2">
                 Personal Info
@@ -416,9 +408,11 @@ const MerchantManagement = ({
               </div>
 
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-                <Button type="primary" onClick={handleAddAccount}>
-                  Add Account
-                </Button>
+                {editablePermission && (
+                  <Button type="primary" onClick={handleAddAccount}>
+                    Add Account
+                  </Button>
+                )}
                 <Modal
                   centered
                   width={600}
@@ -527,11 +521,10 @@ const MerchantManagement = ({
                           }))
                         }
                         className="w-full text-[12px]"
-                        placeholder={`${
-                          activeTab === "bank"
-                            ? "Enter IFSC Number"
-                            : "Enter UPI ID"
-                        }`}
+                        placeholder={`${activeTab === "bank"
+                          ? "Enter IFSC Number"
+                          : "Enter UPI ID"
+                          }`}
                       />
                     </div>
                     {/* account Holder Name */}
@@ -623,9 +616,8 @@ const MerchantManagement = ({
                     return (
                       <tr
                         key={index}
-                        className={`border-t border-b ${
-                          index % 2 === 0 ? "bg-white" : ""
-                        }`}
+                        className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                          }`}
                       >
                         <td className="p-3 text-[13px] font-[600]">
                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
@@ -676,62 +668,61 @@ const MerchantManagement = ({
                         </td>
                         <td className="text-center">
                           <button
-                            className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                              account?.block === false
-                                ? "bg-[#10CB0026] text-[#0DA000]"
-                                : "bg-[#FF173D33] text-[#D50000]"
-                            }`}
+                            className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : "bg-[#FF173D33] text-[#D50000]"
+                              }`}
                           >
                             {!account?.block ? "Active" : "Inactive"}
                           </button>
                         </td>
                         <td className="p-3 text-center">
                           <div className="flex justify-center items-center ml-6">
-                            <Switch
-                              size="small"
-                              checked={!account?.block}
-                              onChange={async (checked) => {
-                                const newStatus = checked;
-                                // if(newStatus === false){
-                                //   return notification.error({
-                                //     message: "Atleast one account is selected",
-                                //     description: `You can't deactivate all accounts.`,
-                                //     placement: "topRight",
-                                //   });
-                                // }
-                                const response = await fn_BankUpdate(
-                                  account?._id,
-                                  {
-                                    block: !newStatus,
-                                    accountType: activeTab,
-                                  }
-                                );
+                            {editablePermission && (
+                              <>
+                                <Switch
+                                  size="small"
+                                  checked={!account?.block}
+                                  onChange={async (checked) => {
+                                    const newStatus = checked;
+                                    const response = await fn_BankUpdate(
+                                      account?._id,
+                                      {
+                                        block: !newStatus,
+                                        accountType: activeTab,
+                                      }
+                                    );
 
-                                if (response?.status) {
-                                  fn_getBankByAccountType();
-                                  notification.success({
-                                    message: "Status Updated",
-                                    description: `Bank Status Updated!.`,
-                                    placement: "topRight",
-                                  });
-                                } else {
-                                  notification.error({
-                                    message: "Error",
-                                    description:
-                                      response.message ||
-                                      "Failed to update bank status.",
-                                    placement: "topRight",
-                                  });
-                                }
-                              }}
-                            />
-                            <Button
-                              className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
-                              title="Edit"
-                              onClick={() => handleEdit(account)}
-                            >
-                              <FiEdit />
-                            </Button>
+                                    if (response?.status) {
+                                      fn_getBankByAccountType();
+                                      notification.success({
+                                        message: "Status Updated",
+                                        description: `Bank Status Updated!.`,
+                                        placement: "topRight",
+                                      });
+                                    } else {
+                                      notification.error({
+                                        message: "Error",
+                                        description:
+                                          response.message ||
+                                          "Failed to update bank status.",
+                                        placement: "topRight",
+                                      });
+                                    }
+                                  }}
+                                />
+                                <Button
+                                  className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
+                                  title="Edit"
+                                  onClick={() => handleEdit(account)}
+                                >
+                                  <FiEdit />
+                                </Button>
+                              </>
+                            )}
+                            {!editablePermission && (
+                              <p className="italic text-[12px] text-red-500 mt-[2px] text-nowrap">Action Not Allowed</p>
+                            )}
                           </div>
                         </td>
                       </tr>

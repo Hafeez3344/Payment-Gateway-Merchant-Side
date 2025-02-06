@@ -1,75 +1,58 @@
-import Cookies from "js-cookie";
-import logo from "../../assets/logo.png";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import { Button, Form, Grid, Input, Typography, notification } from "antd";
+
+import logo from "../../assets/logo.png";
+import { fn_loginMerchantApi } from "../../api/api";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import { fn_loginMerchantApi, fn_loginStaffApi } from "../../api/api";
-import {
-  Button,
-  Checkbox,
-  Form,
-  Grid,
-  Input,
-  Typography,
-  notification,
-} from "antd";
 
 const { useBreakpoint } = Grid;
-const { Text, Title, Link } = Typography;
-const MerchantLogin = ({
-  authorization,
-  setAuthorization,
-  setMerchantVerified,
-  setGlobalLoginType,
-  setPermissionsData,
-}) => {
+const { Text, Title } = Typography;
+
+const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified, setGlobalLoginType, setPermissionsData }) => {
+
   const navigate = useNavigate();
   const screens = useBreakpoint();
-  // const [loginType, setLoginType] = useState("merchant");
+
   useEffect(() => {
     if (authorization) {
       navigate("/");
     }
   }, []);
 
-  // const handleLoginTypeChange = (e) => {
-  //   setLoginType(e.target.value);
-  // };
-
   const onFinish = async (values) => {
     try {
-      // Always treat as merchant login
-      const response = await fn_loginMerchantApi(values);
+      const response = await fn_loginMerchantApi(values, setPermissionsData);
+
       if (response?.status) {
         notification.success({
-          message: response?.message || "Login Successfull",
+          message: response?.message,
           description: "You have successfully logged in!",
           placement: "topRight",
         });
-        Cookies.set("merchantId", response?.id);
-        Cookies.set("merchantToken", response?.token);
-        Cookies.set("website", response?.website);
         setMerchantVerified(response?.merchantVerified);
-        localStorage.setItem("merchantVerified", response?.merchantVerified);
         setGlobalLoginType(response?.type);
-        Cookies.set("loginType", response?.type);
-        // localStorage.setItem("merchant", response?.id);
-        navigate("/");
         setAuthorization(true);
+        if (response?.type === "merchant") {
+          navigate("/");
+        } else {
+          if (response?.permissions?.dashboard) return navigate("/");
+          if (response?.permissions?.transactionHistory) return navigate("/transactions-table");
+          if (response?.permissions?.directPayment) return navigate("/direct-payment-page");
+          if (response?.permissions?.approvalPoints) return navigate("/approval-points");
+          if (response?.permissions?.merchantProfile) return navigate("/merchant-management");
+          if (response?.permissions?.reportsAnalytics) return navigate("/reports-and-analytics");
+          if (response?.permissions?.support) return navigate("/support-help-center");
+          if (response?.permissions?.uploadStatement) return navigate("/upload-statement");
+          if (response?.permissions?.settings) return navigate("/system-configuration");
+        }
       } else {
         notification.error({
           message: "Login Failed",
-          description:
-            response?.message || "Invalid credentials. Please try again.",
+          description: response?.message || "Invalid credentials. Please try again.",
           placement: "topRight",
         });
       }
-      
-      // Comment out staff login logic
-      /* else {
-        setGlobalLoginType("staff");
-        // ... rest of staff login code ...
-      } */
     } catch (error) {
       console.error("Login error: ", error);
       notification.error({
@@ -79,14 +62,6 @@ const MerchantLogin = ({
       });
     }
   };
-
-  // const handleCheckboxChange = (checkedValues) => {
-  //   if (checkedValues.length > 1) {
-  //     setLoginType(checkedValues[1]);
-  //   } else {
-  //     setLoginType(checkedValues[0]);
-  //   }
-  // };
 
   const styles = {
     container: {
@@ -147,8 +122,7 @@ const MerchantLogin = ({
           <img src={logo} alt="Logo" style={styles.logo} />
           <Title style={styles.title}>Merchant Login</Title>
           <Text style={styles.text}>
-            Welcome back! Please enter your details below to log in as an
-            Merchant.
+            Welcome back! Please enter your details below to log in as an Merchant.
           </Text>
         </div>
         <Form
@@ -160,21 +134,6 @@ const MerchantLogin = ({
           layout="vertical"
           requiredMark="optional"
         >
-          {/* Comment out login type selection
-          <Form.Item>
-            <Checkbox.Group
-              style={{ width: "100%" }}
-              value={[loginType]}
-              onChange={handleCheckboxChange}
-            >
-              <Checkbox value="merchant" style={{ marginRight: "10px" }}>
-                Login as Merchant
-              </Checkbox>
-              <Checkbox value="staff">Login as Staff</Checkbox>
-            </Checkbox.Group>
-          </Form.Item>
-          */}
-          
           <Form.Item
             name="email"
             rules={[
@@ -202,22 +161,10 @@ const MerchantLogin = ({
               placeholder="Password"
             />
           </Form.Item>
-          <Form.Item>
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
-            <a style={styles.forgotPassword} href="#">
-              Forgot password?
-            </a>
-          </Form.Item>
           <Form.Item style={{ marginBottom: "0px" }}>
             <Button block type="primary" htmlType="submit">
               Log in
             </Button>
-            <div style={styles.footer}>
-              <Text style={styles.text}>Don't have an account?</Text>
-              <Link href="#">Sign up now</Link>
-            </div>
           </Form.Item>
         </Form>
       </div>

@@ -4,41 +4,30 @@ import { Routes, Route } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 
 import Home from "./Components/Home/Home";
+import Staff from "./Pages/Staff-Page/Staff";
 import NavBar from "./Components/NabBar/NavBar";
 import Footer from "./Components/Footer/Footer";
 import SideBar from "./Components/Sidebar/SideBar";
+import NotVerfiedBar from "./Components/NotVerifiedBar/page";
 import MerchantLogin from "./Pages/Merchant-Login/MerchantLogin";
+import ApprovalPoints from "./Pages/ApprovalPoints/ApprovalPoints";
 import UploadStatement from "./Pages/Upload-Statement/UploadStatement";
 import TransactionsTable from "./Pages/Transaction-Table/TransactionsTable";
+import DirectPaymentPage from "./Pages/Direct-Payment-Page/DirectPaymentPage";
 import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
 import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import ReportsAndAnalytics from "./Pages/Reports-&-Analytics/ReportsAndAnalytics";
 import SystemConfigurationIntegration from "./Pages/System-Configuration-Integration/SystemConfigurationIntegration";
-import Staff from "./Pages/Staff-Page/Staff";
-import DirectPaymentPage from "./Pages/Direct-Payment-Page/DirectPaymentPage";
-import NotVerfiedBar from "./Components/NotVerifiedBar/page";
-import ApprovalPoints from "./Pages/ApprovalPoints/ApprovalPoints";
 
 function App() {
-  const [selectedPage, setSelectedPage] = useState("");
-  const [permissionsData, setPermissionsData] = useState(
-    JSON.parse(localStorage.getItem("permissionsData")) || {}
-  );
-  const [loginType, setLoginType] = useState(Cookies.get("loginType") || "");
 
-  const [showSidebar, setShowSide] = useState(
-    window.innerWidth > 760 ? true : false
-  );
-  const [authorization, setAuthorization] = useState(
-    Cookies.get("merchantToken") ? true : false
-  );
-  const [merchantVerified, setMerchantVerified] = useState(
-    localStorage.getItem("merchantVerified") === "true"
-      ? true
-      : localStorage.getItem("merchantVerified") === "false"
-      ? false
-      : false
-  );
+  const [selectedPage, setSelectedPage] = useState("");
+  const [loginType, setLoginType] = useState(Cookies.get("loginType") || "");
+  const [permissionsData, setPermissionsData] = useState(JSON.parse(localStorage.getItem("permissions")) || {});
+
+  const [showSidebar, setShowSide] = useState(window.innerWidth > 760 ? true : false);
+  const [authorization, setAuthorization] = useState(Cookies.get("merchantToken") ? true : false);
+  const [merchantVerified, setMerchantVerified] = useState(localStorage.getItem("merchantVerified") === "true" ? true : localStorage.getItem("merchantVerified") === "false" ? false : false);
 
   useEffect(() => {
     if (window.location.pathname === "/login") {
@@ -113,6 +102,7 @@ function App() {
                 setSelectedPage={setSelectedPage}
                 authorization={authorization}
                 showSidebar={showSidebar}
+                permissionsData={permissionsData}
               />
             }
           />
