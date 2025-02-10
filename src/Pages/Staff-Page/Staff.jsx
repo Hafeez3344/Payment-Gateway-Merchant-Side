@@ -5,6 +5,7 @@ import { Button, Modal, Input, notification, Switch, Select } from "antd";
 import { fn_createStaffApi, fn_getStaffApi, fn_updateStaffApi, fn_deleteStaffApi } from "../../api/api";
 
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { PiArrowBendDownRightFill } from "react-icons/pi";
 
 const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
 
@@ -16,40 +17,31 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editStaffId, setEditStaffId] = useState(null);
 
+  const [checkedPages, setCheckPages] = useState({
+    transactionHistory: { view: false, edit: false },
+    directPayment: { view: false, edit: false },
+    approvalPoints: { view: false, edit: false },
+    support: { view: false, edit: false }
+  });
+
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
-    password: "",
-    duties: "",
-    dashboard: false,
-    merchantProfile: false,
-    uploadStatement: false,
-    transactionHistory: false,
-    directPayment: false,
-    type: "",
-    approvalPoints: false,
-    reportsAnalytics: false,
-    editPermission: false,
-    support: false
+    password: ""
   });
 
   const resetForm = () => {
     setFormData({
       userName: "",
       email: "",
-      password: "",
-      duties: "",
-      dashboard: false,
-      merchantProfile: false,
-      uploadStatement: false,
-      directPayment: false,
-      transactionHistory: false,
-      approvalPoints: false,
-      reportsAnalytics: false,
-      editPermission: false,
-      type: "",
-      support: false
+      password: ""
     });
+    setCheckPages({
+      transactionHistory: { view: false, edit: false },
+      directPayment: { view: false, edit: false },
+      approvalPoints: { view: false, edit: false },
+      support: { view: false, edit: false }
+    })
     setErrors({});
     setIsEditMode(false);
     setEditStaffId(null);
@@ -58,51 +50,21 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
   const handleSubmit = async () => {
 
     if (!validateForm()) return;
-
     const submitData = new FormData();
 
     submitData.append("userName", formData.userName);
     submitData.append("email", formData.email);
     submitData.append("password", formData.password);
-    submitData.append("type", formData.duties);
-    if (formData.duties === "staff") {
-      submitData.append("dashboard", formData.dashboard);
-      submitData.append("merchantProfile", formData.merchantProfile);
-      submitData.append("uploadStatement", formData.uploadStatement);
-      submitData.append("transactionHistory", formData.transactionHistory);
-      submitData.append("directPayment", formData.directPayment);
-      submitData.append("approvalPoints", formData.approvalPoints);
-      submitData.append("support", formData.support);
-      submitData.append("reportsAnalytics", formData.reportsAnalytics);
-      submitData.append("editPermission", formData.editPermission);
-    } else if (formData.duties === "major") {
-      submitData.append("dashboard", false);
-      submitData.append("merchantProfile", false);
-      submitData.append("uploadStatement", false);
-      submitData.append("transactionHistory", false);
-      submitData.append("directPayment", true);
-      submitData.append("approvalPoints", true);
-      submitData.append("support", false);
-      submitData.append("reportsAnalytics", false);
-      submitData.append("editPermission", true);
-    } else if (formData.duties === "minor") {
-      submitData.append("dashboard", false);
-      submitData.append("merchantProfile", false);
-      submitData.append("uploadStatement", false);
-      submitData.append("transactionHistory", false);
-      submitData.append("directPayment", true);
-      submitData.append("approvalPoints", true);
-      submitData.append("support", false);
-      submitData.append("reportsAnalytics", false);
-      submitData.append("editPermission", false);
-    }
-
+    submitData.append("transactionHistory", JSON.stringify(checkedPages.transactionHistory));
+    submitData.append("directPayment", JSON.stringify(checkedPages.directPayment));
+    submitData.append("approvalPoints", JSON.stringify(checkedPages.approvalPoints));
+    submitData.append("support", JSON.stringify(checkedPages.support));
     try {
       let response;
       if (isEditMode) {
-        response = await fn_updateStaffApi(editStaffId, submitData);
+        response = await fn_updateStaffApi(editStaffId, { ...formData, ...checkedPages });
       } else {
-        response = await fn_createStaffApi(submitData);
+        response = await fn_createStaffApi({ ...formData, ...checkedPages });
       }
 
       if (response?.status) {
@@ -170,10 +132,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 5) {
       newErrors.password = "Password must be at least 6 characters long";
-    } else if (!formData.duties.trim()) {
-      newErrors.password = "Select Duty";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -284,6 +243,17 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
     fetchStaffList();
   }, []);
 
+  const fn_changeCheckbox = (e, label, option) => {
+    const isChecked = e.target.checked;
+    setCheckPages((prev) => {
+      const updated = { ...prev[label], [option]: isChecked };
+      if (option === "view" && !isChecked) {
+        updated.edit = false;
+      };
+      return { ...prev, [label]: updated };
+    });
+  };
+
   return (
     <>
       <div
@@ -351,13 +321,13 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                                 handleStatusChange(staff._id, checked)
                               }
                             />
-                            <Button
+                            {/* <Button
                               className="bg-green-100 hover:bg-green-200 text-green-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                               title="Edit"
                               onClick={() => handleEdit(staff)}
                             >
                               <FiEdit size={16} />
-                            </Button>
+                            </Button> */}
                             <Button
                               className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                               title="Delete"
@@ -472,172 +442,67 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
 
           <div>
             <p className="text-sm font-medium mb-1">
-              Staff Type{" "}
+              Permissions{" "}
               {!isEditMode && <span className="text-red-500">*</span>}
             </p>
-            <Select
-              className="w-full"
-              value={formData.duties === "" ? undefined : formData.duties}
-              placeholder="Select Staff Type"
-              status={errors.duties ? "error" : ""}
-              onChange={(value) => setFormData((prev) => ({ ...prev, duties: value }))}
-            >
-              <Option value="major">Major Staff</Option>
-              <Option value="minor">Minor Staff</Option>
-              <Option value="staff">Merchant</Option>
-            </Select>
-            {errors.duties && (
-              <p className="text-red-500 text-xs mt-1">{errors.duties}</p>
-            )}
-          </div>
-
-          {formData?.duties === "staff" && (
-            <div>
-              <p className="text-sm font-medium mb-1">Permissions{" "}{!isEditMode && <span className="text-red-500">*</span>}</p>
-              <div className="flex flex-col items-start">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="dashboard"
-                    checked={formData?.dashboard}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        dashboard: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="dashboard" className="cursor-pointer">Dashboard</label>
+            <div className="flex flex-col gap-[5px]">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-[10px]">
+                  <input type="checkbox" checked={checkedPages.transactionHistory.view} onChange={(e) => fn_changeCheckbox(e, "transactionHistory", "view")} />
+                  <p className="text-[13px] font-[500] mt-[-1px]">Transaction History</p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="transaction-history"
-                    checked={formData?.transactionHistory}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        transactionHistory: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="transaction-history" className="cursor-pointer">Transaction History</label>
+                {checkedPages?.transactionHistory?.view && (
+                  <div className="ms-[5px] flex items-center gap-[10px]">
+                    <PiArrowBendDownRightFill className="text-gray-500" />
+                    <input type="checkbox" checked={checkedPages.transactionHistory.edit} onChange={(e) => fn_changeCheckbox(e, "transactionHistory", "edit")} />
+                    <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
+                  </div>
+                )}
+              </div>
+              <hr />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-[10px]">
+                  <input type="checkbox" checked={checkedPages.directPayment.view} onChange={(e) => fn_changeCheckbox(e, "directPayment", "view")} />
+                  <p className="text-[13px] font-[500] mt-[-1px]">Direct Payment</p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="direct-payment"
-                    checked={formData?.directPayment}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        directPayment: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="direct-payment" className="cursor-pointer">Direct Payment</label>
+                {checkedPages?.directPayment?.view && (
+                  <div className="ms-[5px] flex items-center gap-[10px]">
+                    <PiArrowBendDownRightFill className="text-gray-500" />
+                    <input type="checkbox" checked={checkedPages.directPayment.edit} onChange={(e) => fn_changeCheckbox(e, "directPayment", "edit")} />
+                    <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
+                  </div>
+                )}
+              </div>
+              <hr />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-[10px]">
+                  <input type="checkbox" checked={checkedPages.approvalPoints.view} onChange={(e) => fn_changeCheckbox(e, "approvalPoints", "view")} />
+                  <p className="text-[13px] font-[500] mt-[-1px]">Approved Points</p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="approval-points"
-                    checked={formData?.approvalPoints}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        approvalPoints: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="approval-points" className="cursor-pointer">Approval Points</label>
+                {checkedPages?.approvalPoints?.view && (
+                  <div className="ms-[5px] flex items-center gap-[10px]">
+                    <PiArrowBendDownRightFill className="text-gray-500" />
+                    <input type="checkbox" checked={checkedPages.approvalPoints.edit} onChange={(e) => fn_changeCheckbox(e, "approvalPoints", "edit")} />
+                    <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
+                  </div>
+                )}
+              </div>
+              <hr />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-[10px]">
+                  <input type="checkbox" checked={checkedPages.support.view} onChange={(e) => fn_changeCheckbox(e, "support", "view")} />
+                  <p className="text-[13px] font-[500] mt-[-1px]">Support / Help Center</p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="merchant-profile"
-                    checked={formData?.merchantProfile}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        merchantProfile: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="merchant-profile" className="cursor-pointer">Merchant Profile</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="reports-analytics"
-                    checked={formData?.reportsAnalytics}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        reportsAnalytics: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="reports-analytics" className="cursor-pointer">Reports And Analytics</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="support"
-                    checked={formData?.support}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        support: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="support" className="cursor-pointer">Support and Help Center</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="upload-statement"
-                    checked={formData?.uploadStatement}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        uploadStatement: e.target.checked,
-                      }))
-                    }
-                    className="mr-2 cursor-pointer"
-                  />
-                  <label htmlFor="upload-statement" className="cursor-pointer">Upload Statement</label>
-                </div>
+                {checkedPages?.support?.view && (
+                  <div className="ms-[5px] flex items-center gap-[10px]">
+                    <PiArrowBendDownRightFill className="text-gray-500" />
+                    <input type="checkbox" checked={checkedPages.support.edit} onChange={(e) => fn_changeCheckbox(e, "support", "edit")} />
+                    <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
+                  </div>
+                )}
               </div>
             </div>
-          )}
-          {formData?.duties === "staff" && (
-            <>
-              <hr />
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="edit-permission"
-                  checked={formData?.editPermission}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      editPermission: e.target.checked,
-                    }))
-                  }
-                  className="mr-2 cursor-pointer"
-                />
-                <label htmlFor="edit-permission" className="cursor-pointer">Allow to Edit or Delete Data</label>
-              </div>
-            </>
-          )}
+          </div>
         </div>
       </Modal>
     </>

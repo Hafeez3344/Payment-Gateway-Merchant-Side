@@ -53,7 +53,7 @@ function App() {
       )}
       <div>
         {authorization && (
-          <NavBar setShowSide={setShowSide} showSidebar={showSidebar} />
+          <NavBar setShowSide={setShowSide} showSidebar={showSidebar} loginType={loginType} />
         )}
         <Routes>
           <Route

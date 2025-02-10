@@ -7,7 +7,7 @@ import { MdOutlineFullscreen } from "react-icons/md";
 import { FaRegUser } from "react-icons/fa6";
 import { Button, Input, Modal, notification, Dropdown } from "antd";
 
-const NavBar = ({ setShowSide, showSidebar }) => {
+const NavBar = ({ setShowSide, showSidebar, loginType }) => {
   const [open, setOpen] = React.useState(false);
   const [generatedLink, setGeneratedLink] = useState("");
   const [showLinkField, setShowLinkField] = useState(false);
@@ -123,11 +123,13 @@ const NavBar = ({ setShowSide, showSidebar }) => {
           />
         </div>
         <div className="flex items-center gap-7 pr-7">
-          <Dropdown menu={{ items }} placement="bottomRight">
-            <Button className="text-white bg-[#0864E8] border min-w-[80px] sm:min-w-[100px] px-3 py-1 rounded text-nowrap">
-              Create Link
-            </Button>
-          </Dropdown>
+          {loginType === "merchant" && (
+            <Dropdown menu={{ items }} placement="bottomRight">
+              <Button className="text-white bg-[#0864E8] border min-w-[80px] sm:min-w-[100px] px-3 py-1 rounded text-nowrap">
+                Create Link
+              </Button>
+            </Dropdown>
+          )}
           <div className="text-[25px] cursor-pointer">
             <RiMessageLine />
           </div>

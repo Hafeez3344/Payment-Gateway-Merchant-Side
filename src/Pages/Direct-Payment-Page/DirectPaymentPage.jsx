@@ -31,6 +31,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
   const [showPopup, setShowPopup] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState([]);
+  const [selectedTrns, setSelectedTrns] = useState(null);
   const [dateRange, setDateRange] = useState([null, null]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.editPermission : true;
@@ -292,7 +293,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                             disabled={!transaction?.approval}
                             className={`px-2 py-2 rounded-full ms-2 ${!transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"
                               }`}
-                            onClick={() => { setShowPopup(true); fn_checkPoints(transaction) }}
+                            onClick={() => { setShowPopup(true); setSelectedTrns(transaction) }}
                           >
                             <RxCross2 />
                           </button>
@@ -310,16 +311,16 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                                       key={index}
                                       className="flex items-center space-x-3 bg-gray-200 py-2 px-3 rounded-lg hover:bg-gray-300 cursor-pointer"
                                     >
-                                      <input type="checkbox" className="w-5 h-5 cursor-pointer" />
+                                      <input type="radio" name="same" className="w-5 h-5 cursor-pointer" />
                                       <span>{reason}</span>
                                     </label>
                                   ))}
                                 </div>
                                 <button
                                   className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-                                  onClick={() => setShowPopup(false)}
+                                  onClick={() => { setShowPopup(false); fn_checkPoints(selectedTrns) }}
                                 >
-                                  Close
+                                  Submit
                                 </button>
                               </div>
                             </div>
@@ -481,8 +482,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                 </div>
               ))}
               <div className="flex gap-2 mt-4">
-                {/* Approve Button & Decline Button */}
-                {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major")) && (
+                {editablePermission && (
                   <>
                     <button
                       className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
@@ -508,37 +508,34 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                       <GoCircleSlash className="mt-[3px] mr-[6px]" />
                       Decline TR
                     </button>
+                    <button
+                      className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
+                      onClick={() => {
+                        if (!isEdit) {
+                          setIsEdit(true);
+                        } else {
+                          handleEditTransactionAction(
+                            "Manual Verified",
+                            selectedTransaction._id,
+                            selectedTransaction?.total,
+                            selectedTransaction?.utr
+                          );
+                        }
+                      }}
+                    >
+                      {!isEdit ? (
+                        <>
+                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                          Edit TR
+                        </>
+                      ) : (
+                        <>
+                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
+                          Update TR
+                        </>
+                      )}
+                    </button>
                   </>
-                )}
-
-                {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major")) && selectedTransaction?.status === "Unverified" && (
-                  <button
-                    className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                    onClick={() => {
-                      if (!isEdit) {
-                        setIsEdit(true);
-                      } else {
-                        handleEditTransactionAction(
-                          "Manual Verified",
-                          selectedTransaction._id,
-                          selectedTransaction?.total,
-                          selectedTransaction?.utr
-                        );
-                      }
-                    }}
-                  >
-                    {!isEdit ? (
-                      <>
-                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                        Edit TR
-                      </>
-                    ) : (
-                      <>
-                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                        Update TR
-                      </>
-                    )}
-                  </button>
                 )}
               </div>
 
