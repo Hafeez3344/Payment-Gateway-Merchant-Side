@@ -97,7 +97,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
           response = await fn_createStaffApi({
             ...formData,
             dashboard: { view: false, edit: false },
-            transactionHistory: { view: false, edit: false },
+            transactionHistory: { view: true, edit: true },
             directPayment: { view: true, edit: true },
             approvalPoints: { view: true, edit: false },
             merchantProfile: { view: false, edit: false },
@@ -109,9 +109,9 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
           response = await fn_createStaffApi({
             ...formData,
             dashboard: { view: false, edit: false },
-            transactionHistory: { view: false, edit: false },
+            transactionHistory: { view: true, edit: true },
             directPayment: { view: true, edit: true },
-            approvalPoints: { view: true, edit: false },
+            approvalPoints: { view: false, edit: false },
             merchantProfile: { view: false, edit: false },
             reportsAnalytics: { view: false, edit: false },
             support: { view: false, edit: false },
@@ -611,7 +611,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                     </div>
                   )}
                 </div>
-                <hr />
+                {/* <hr />
                 <div className="flex flex-col">
                   <div className="flex items-center gap-[10px]">
                     <input type="checkbox" checked={checkedPages.uploadStatement.view} onChange={(e) => fn_changeCheckbox(e, "uploadStatement", "view")} />
@@ -624,7 +624,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                       <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
                     </div>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
           )}

@@ -79,7 +79,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       (!dateRange[0] || transactionDate >= dateRange[0]) &&
       (!adjustedEndDate || transactionDate <= adjustedEndDate);
 
-    const statusCondition = loginType === "minor" ? transaction?.status === "Approved" : loginType === "major" ? transaction?.status !== "Approved" : true;
+    const statusCondition = loginType === "minor" ? (transaction?.status === "Approved" && transaction?.approval === false && (!transaction?.reason || transaction?.reason === "")) : true;
 
     return (
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -290,17 +290,10 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                         </td>
                         <td className="p-4 text-[13px] font-[500]">
                           <span
-                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Approved"
-                              ? "bg-[#10CB0026] text-[#0DA000]"
-                              : transaction?.status === "Pending"
-                                ? "bg-[#FFC70126] text-[#FFB800]"
-                                : transaction?.status === "Manual Verified"
-                                  ? "bg-[#0865e851] text-[#0864E8]"
-                                  : "bg-[#FF7A8F33] text-[#FF002A]"
-                              }`}
+                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center
+                              ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.approval === true ? "bg-[#10CB0026] text-[#0DA000]" : transaction?.reason !== "" ? "bg-[#cc7aff33] text-[#9929d5]" : "bg-[#00000026] text-[#5a5a5a]"}`}
                           >
-                            {transaction?.status?.charAt(0).toUpperCase() +
-                              transaction?.status?.slice(1)}
+                            {transaction?.status === "Decline" ? "Transaction Decline" : transaction?.status === "Pending" ? "Transaction Pending" : transaction?.approval === true ? "Points Approved" : transaction?.reason !== "" ? "Points Decline" : "Points Pending"}
                           </span>
                         </td>
                         <td className="p-4 flex space-x-2 transaction-view-model">
@@ -311,18 +304,18 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                           >
                             <FiEye />
                           </button>
-                          {editablePermission && (
+                          {transaction?.status === "Approved" && loginType === "minor" && (
                             <>
                               <button
-                                disabled={transaction?.approval}
-                                className={`px-2 py-2 rounded-full ${transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
+                                disabled={transaction?.approval || transaction?.reason && transaction?.reason !== ""}
+                                className={`px-2 py-2 rounded-full ${(transaction?.approval || transaction?.reason && transaction?.reason !== "") ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
                                 onClick={() => fn_checkPoints(transaction)}
                               >
                                 <FaCheck />
                               </button>
                               <button
-                                disabled={transaction?.reason && transaction?.reason !== ""}
-                                className={`px-2 py-2 rounded-full ${(transaction?.reason && transaction?.reason) ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"}`}
+                                disabled={transaction?.approval || transaction?.reason && transaction?.reason !== ""}
+                                className={`px-2 py-2 rounded-full ${(transaction?.approval || transaction?.reason && transaction?.reason !== "") ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"}`}
                                 onClick={() => { setShowPopup(true); setSelectedTrns(transaction) }}
                               >
                                 <RxCross2 />
@@ -390,7 +383,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         width={900}
         style={{ fontFamily: "sans-serif", padding: "20px" }}
         title={
-          <p className="text-[16px] font-[700]">
+          <p className="text-[20px] font-[700]">
             Transaction Details
           </p>
         }
@@ -410,6 +403,10 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
             <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
               <p className="font-[500] mt-[-20px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
               {[
+                {
+                  label: "Website:",
+                  value: selectedTransaction?.site || selectedTransaction?.website,
+                },
                 {
                   label: "Amount:",
                   value: selectedTransaction?.total,
@@ -498,7 +495,11 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                   )}
                 </div>
               ))}
-              <div className="border-b w-[370px] mt-4"></div>
+              <div className="border-b w-[370px] mt-4">
+                {loginType === "major" && selectedTransaction?.status === "Approved" && selectedTransaction?.reason !== "" && !selectedTransaction?.approval && (
+                  <button className="bg-[#F6790233] flex text-[#F67A03] h-[35px] items-center mb-[10px] px-[10px] rounded-[5px]">Update Information</button>
+                )}
+              </div>
               {selectedTransaction?.reason && selectedTransaction?.reason !== "" && (
                 <div>
                   <p className="font-[600]">Reason For Decline Points:</p>
