@@ -51,7 +51,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
         </button>
       </div>
       <div className="mt-[10px]">
-        {loginType === "merchant" ? (
+        {(loginType === "merchant" && merchantVerified) ? (
           <>
             <Menu
               onClick={() => {
@@ -70,7 +70,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 navigate("/transactions-table");
                 if (isMobile()) fn_controlSidebar();
               }}
-              label="Transaction History"
+              label="Transactions"
               name="transaction-history"
               selectedPage={selectedPage}
               icon={<PiNotebook className="text-[20px]" />}
@@ -92,7 +92,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 navigate("/approval-points");
                 if (isMobile()) fn_controlSidebar();
               }}
-              label="Approval Points"
+              label="Approved Points"
               name="approval-points"
               selectedPage={selectedPage}
               icon={<LuShieldCheck className="text-[20px] scale-[1.1]" />}
@@ -162,6 +162,31 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="staff"
               selectedPage={selectedPage}
               icon={<FaPeopleGroup className="text-[20px]" />}
+            />
+          </>
+        ) : (loginType === "merchant" && !merchantVerified) ? (
+          <>
+            <Menu
+              onClick={() => {
+                setSelectedPage("dashboard");
+                navigate("/");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Dashboard"
+              name="dashboard"
+              selectedPage={selectedPage}
+              icon={<MdOutlineDashboard className="text-[20px]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("setting");
+                navigate("/system-configuration");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Settings"
+              name="setting"
+              selectedPage={selectedPage}
+              icon={<IoSettingsOutline className="text-[20px]" />}
             />
           </>
         ) : (
