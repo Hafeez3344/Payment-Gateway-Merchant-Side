@@ -33,7 +33,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
   const [selectedBank, setSelectedBank] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editAccountId, setEditAccountId] = useState(null);
-  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.editPermission : true;
+  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.merchantProfile?.edit : true;
 
   useEffect(() => {
     window.scroll(0, 0);

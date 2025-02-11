@@ -33,8 +33,9 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
   const [transactions, setTransactions] = useState([]);
   const [selectedTrns, setSelectedTrns] = useState(null);
   const [dateRange, setDateRange] = useState([null, null]);
+  const [reasonForDecline, setReasonForDecline] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.editPermission : true;
+  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.directPayment?.edit : true;
 
   const fetchTransactions = async (pageNumber) => {
     try {
@@ -78,12 +79,16 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       (!dateRange[0] || transactionDate >= dateRange[0]) &&
       (!adjustedEndDate || transactionDate <= adjustedEndDate);
 
+    const statusCondition = loginType === "minor" ? transaction?.status === "Verified" : loginType === "major" ? transaction?.status !== "Verified" : true;
+
     return (
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (merchant === "" || transaction?.merchantName === merchant) &&
-      isWithinDateRange
+      isWithinDateRange &&
+      statusCondition
     );
   });
+
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -163,6 +168,24 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         placement: "topRight",
       });
     };
+  };
+
+  const fn_declinePoints = async (item) => {
+    const response = await fn_updateTransactionStatusApi(item?._id, { reason: reasonForDecline });
+    if (response?.data?.status === "ok") {
+      fetchTransactions(currentPage);
+      notification.success({
+        message: "Updated Successfully",
+        description: "Transaction Updated",
+        placement: "topRight",
+      });
+    } else {
+      notification.error({
+        message: "Failed",
+        description: "Failed",
+        placement: "topRight",
+      });
+    };
   }
 
   return (
@@ -174,7 +197,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       >
         <div className="p-7">
           <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-            <h1 className="text-[25px] font-[500]">All Transaction</h1>
+            <h1 className="text-[25px] font-[500]">Direct Transactions</h1>
             <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
               Dashboard - Data Table
             </p>
@@ -213,14 +236,13 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                 <thead>
                   <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                     <th className="p-4 text-nowrap">TRN-ID</th>
+                    <th className="p-4">DATE</th>
                     <th className="p-4 text-nowrap">User Name</th>
                     <th className="p-4 text-nowrap">Website URL</th>
                     <th className="p-4 text-nowrap">BANK NAME</th>
-                    <th className="p-4">DATE</th>
                     <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
                     <th className="p-4 ">UTR#</th>
                     <th className="pl-8">Status</th>
-                    <th className="pl-7 cursor-pointer">Points</th>
                     <th className="pl-7 cursor-pointer">Action</th>
                   </tr>
                 </thead>
@@ -233,6 +255,10 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                       >
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
                           {transaction?.trnNo}
+                        </td>
+                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap text-nowrap">
+                          {new Date(transaction?.createdAt).toDateString()},{" "}
+                          {new Date(transaction?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           {transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}
@@ -254,10 +280,6 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                               </p>
                             </div>
                           )}
-                        </td>
-                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap text-nowrap">
-                          {new Date(transaction?.createdAt).toDateString()},{" "}
-                          {new Date(transaction?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
@@ -281,18 +303,24 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                               transaction?.status?.slice(1)}
                           </span>
                         </td>
-                        <td className="text-nowrap">
+                        <td className="p-4 flex space-x-2 transaction-view-model">
+                          <button
+                            className="bg-blue-100 text-blue-600 rounded-full px-2 py-2"
+                            title="View"
+                            onClick={() => handleViewTransaction(transaction)}
+                          >
+                            <FiEye />
+                          </button>
                           <button
                             disabled={transaction?.approval}
-                            className={`px-2 py-2 rounded-full mx-2 ${transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
+                            className={`px-2 py-2 rounded-full ${transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
                             onClick={() => fn_checkPoints(transaction)}
                           >
                             <FaCheck />
                           </button>
                           <button
-                            disabled={!transaction?.approval}
-                            className={`px-2 py-2 rounded-full ms-2 ${!transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"
-                              }`}
+                            disabled={transaction?.reason && transaction?.reason !== ""}
+                            className={`px-2 py-2 rounded-full ${(transaction?.reason && transaction?.reason) ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"}`}
                             onClick={() => { setShowPopup(true); setSelectedTrns(transaction) }}
                           >
                             <RxCross2 />
@@ -305,10 +333,11 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                                   {[
                                     "Game Name Incorrect",
                                     "User ID Incorrect",
-                                    "Both Incorrect",
+                                    "Both UserID and Game Name are Incorrect",
                                   ].map((reason, index) => (
                                     <label
                                       key={index}
+                                      onChange={() => setReasonForDecline(reason)}
                                       className="flex items-center space-x-3 bg-gray-200 py-2 px-3 rounded-lg hover:bg-gray-300 cursor-pointer"
                                     >
                                       <input type="radio" name="same" className="w-5 h-5 cursor-pointer" />
@@ -318,35 +347,12 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                                 </div>
                                 <button
                                   className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-                                  onClick={() => { setShowPopup(false); fn_checkPoints(selectedTrns) }}
+                                  onClick={() => { setShowPopup(false); fn_declinePoints(selectedTrns) }}
                                 >
                                   Submit
                                 </button>
                               </div>
                             </div>
-                          )}
-                        </td>
-                        <td className="p-4 flex space-x-2 transaction-view-model">
-                          {editablePermission && (
-                            <>
-                              <button
-                                className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
-                                title="View"
-                                onClick={() => handleViewTransaction(transaction)}
-                              >
-                                <FiEye />
-                              </button>
-                              <button
-                                className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
-                                title="Delete"
-                                onClick={() => fn_deleteTransaction(transaction?._id)}
-                              >
-                                <FiTrash2 />
-                              </button>
-                            </>
-                          )}
-                          {!editablePermission && (
-                            <p className="italic text-[12px] text-red-500 mt-[2px] text-nowrap">Action Not Allowed</p>
                           )}
                         </td>
                       </tr>
@@ -397,6 +403,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
           <div className="flex flex-col md:flex-row">
             {/* Left side input fields */}
             <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
+              <p className="font-[500] mt-[-20px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
               {[
                 {
                   label: "Amount:",
@@ -419,11 +426,16 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                     "UPI",
                 },
                 {
-                  label: "Description:",
+                  label: "Trn Status:",
                   value:
-                    selectedTransaction.description || "",
-                  isTextarea: true,
+                    selectedTransaction.status,
                 },
+                // {
+                //   label: "Description:",
+                //   value:
+                //     selectedTransaction.description || "",
+                //   isTextarea: true,
+                // },
               ].map((field, index) => (
                 <div
                   className="flex items-center gap-4"
@@ -481,75 +493,13 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                   )}
                 </div>
               ))}
-              <div className="flex gap-2 mt-4">
-                {editablePermission && (
-                  <>
-                    <button
-                      className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
-                      onClick={() =>
-                        handleTransactionAction(
-                          "Verified",
-                          selectedTransaction?._id
-                        )
-                      }
-                    >
-                      <IoMdCheckmark className="mt-[3px] mr-[6px]" />
-                      Approve Transaction
-                    </button>
-                    <button
-                      className="bg-[#FF405F33] flex text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
-                      onClick={() =>
-                        handleTransactionAction(
-                          "Decline",
-                          selectedTransaction?._id
-                        )
-                      }
-                    >
-                      <GoCircleSlash className="mt-[3px] mr-[6px]" />
-                      Decline TR
-                    </button>
-                    <button
-                      className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                      onClick={() => {
-                        if (!isEdit) {
-                          setIsEdit(true);
-                        } else {
-                          handleEditTransactionAction(
-                            "Manual Verified",
-                            selectedTransaction._id,
-                            selectedTransaction?.total,
-                            selectedTransaction?.utr
-                          );
-                        }
-                      }}
-                    >
-                      {!isEdit ? (
-                        <>
-                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                          Edit TR
-                        </>
-                      ) : (
-                        <>
-                          <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                          Update TR
-                        </>
-                      )}
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Bottom Divider and Activity */}
               <div className="border-b w-[370px] mt-4"></div>
-              <p className="text-[13px] font-[600] leading-10">
-                Transaction ID:
-                <span className="text-[12px] ml-2 font-[600] text-[#00000080]">
-                  {selectedTransaction.trnNo}
-                </span>
-              </p>
-              {/* <p className="text-[14px] font-[700]">
-            Activity
-          </p> */}
+              {selectedTransaction?.reason && selectedTransaction?.reason !== "" && (
+                <div>
+                  <p className="font-[600]">Reason For Decline Points:</p>
+                  <p className="font-[400] text-[13px]">{selectedTransaction?.reason}</p>
+                </div>
+              )}
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">

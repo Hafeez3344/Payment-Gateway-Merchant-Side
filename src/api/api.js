@@ -33,16 +33,14 @@ export const fn_loginMerchantApi = async (data, setPermissionsData) => {
             permissions = {
                 userName: response?.data?.data?.userName,
                 email: response?.data?.data?.email,
-                duties: response?.data?.data?.type,
                 dashboard: response?.data?.data?.dashboard,
-                merchantProfile: response?.data?.data?.merchantProfile,
-                uploadStatement: response?.data?.data?.uploadStatement,
                 transactionHistory: response?.data?.data?.transactionHistory,
                 directPayment: response?.data?.data?.directPayment,
                 approvalPoints: response?.data?.data?.approvalPoints,
+                merchantProfile: response?.data?.data?.merchantProfile,
                 reportsAnalytics: response?.data?.data?.reportsAnalytics,
-                editPermission: response?.data?.data?.editPermission,
-                support: response?.data?.data?.support
+                support: response?.data?.data?.support,
+                uploadStatement: response?.data?.data?.uploadStatement,
             };
             setPermissionsData(permissions);
             localStorage.setItem("permissions", JSON.stringify(permissions));

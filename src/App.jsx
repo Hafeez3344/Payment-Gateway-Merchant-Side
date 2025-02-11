@@ -148,6 +148,7 @@ function App() {
                 setSelectedPage={setSelectedPage}
                 authorization={authorization}
                 showSidebar={showSidebar}
+                permissionsData={permissionsData}
               />
             }
           />

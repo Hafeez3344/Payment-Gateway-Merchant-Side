@@ -166,7 +166,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
           </>
         ) : (
           <>
-            {permissionsData?.dashboard && (
+            {permissionsData?.dashboard?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("dashboard");
@@ -179,20 +179,20 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 icon={<MdOutlineDashboard className="text-[20px]" />}
               />
             )}
-            {permissionsData?.transactionHistory && (
+            {permissionsData?.transactionHistory?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("transaction-history");
                   navigate("/transactions-table");
                   if (isMobile()) fn_controlSidebar();
                 }}
-                label="Transaction History"
+                label="Transactions"
                 name="transaction-history"
                 selectedPage={selectedPage}
                 icon={<PiNotebook className="text-[20px]" />}
               />
             )}
-            {permissionsData?.directPayment && (
+            {permissionsData?.directPayment?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("direct-payment");
@@ -205,20 +205,20 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 icon={<MdPayments className="text-[20px]" />}
               />
             )}
-            {permissionsData?.approvalPoints && (
+            {permissionsData?.approvalPoints?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("approval-points");
                   navigate("/approval-points");
                   if (isMobile()) fn_controlSidebar();
                 }}
-                label="Approval Points"
+                label="Approved Points"
                 name="approval-points"
                 selectedPage={selectedPage}
                 icon={<LuShieldCheck className="text-[20px] scale-[1.1]" />}
               />
             )}
-            {permissionsData?.merchantProfile && (
+            {permissionsData?.merchantProfile?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("merchant-profile");
@@ -231,7 +231,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 icon={<FaRegCircleUser className="text-[20px]" />}
               />
             )}
-            {permissionsData?.reportsAnalytics && (
+            {permissionsData?.reportsAnalytics?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("reports-and-analytics");
@@ -244,7 +244,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 icon={<IoAnalytics className="text-[20px]" />}
               />
             )}
-            {permissionsData?.support && (
+            {permissionsData?.support?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("help-center");
@@ -257,7 +257,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 icon={<FaHeadphones className="text-[20px]" />}
               />
             )}
-            {permissionsData?.uploadStatement && (
+            {permissionsData?.uploadStatement?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("upload-statement");

@@ -1,3 +1,4 @@
+import Cookies from "js-cookie";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Form, Grid, Input, Typography, notification } from "antd";
@@ -23,7 +24,6 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified, s
   const onFinish = async (values) => {
     try {
       const response = await fn_loginMerchantApi(values, setPermissionsData);
-
       if (response?.status) {
         notification.success({
           message: response?.message,
@@ -36,15 +36,21 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified, s
         if (response?.type === "merchant") {
           navigate("/");
         } else {
-          if (response?.permissions?.dashboard) return navigate("/");
-          if (response?.permissions?.transactionHistory) return navigate("/transactions-table");
-          if (response?.permissions?.directPayment) return navigate("/direct-payment-page");
-          if (response?.permissions?.approvalPoints) return navigate("/approval-points");
-          if (response?.permissions?.merchantProfile) return navigate("/merchant-management");
-          if (response?.permissions?.reportsAnalytics) return navigate("/reports-and-analytics");
-          if (response?.permissions?.support) return navigate("/support-help-center");
-          if (response?.permissions?.uploadStatement) return navigate("/upload-statement");
-          if (response?.permissions?.settings) return navigate("/system-configuration");
+          if (response?.permissions?.dashboard?.view) return navigate("/");
+          if (response?.permissions?.transactionHistory?.view) return navigate("/transactions-table");
+          if (response?.permissions?.directPayment?.view) return navigate("/direct-payment-page");
+          if (response?.permissions?.approvalPoints?.view) return navigate("/approval-points");
+          if (response?.permissions?.merchantProfile?.view) return navigate("/merchant-management");
+          if (response?.permissions?.reportsAnalytics?.view) return navigate("/reports-and-analytics");
+          if (response?.permissions?.support?.view) return navigate("/support-help-center");
+          if (response?.permissions?.uploadStatement?.view) return navigate("/upload-statement");
+          localStorage.removeItem("permissions");
+          Cookies.remove("merchantId");
+          Cookies.remove("loginType");
+          Cookies.remove("website");
+          Cookies.remove("merchantToken");
+          localStorage.removeItem("merchantVerified");
+          window.location.reload();
         }
       } else {
         notification.error({

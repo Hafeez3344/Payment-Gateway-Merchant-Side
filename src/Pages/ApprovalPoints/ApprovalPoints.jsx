@@ -32,7 +32,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
   const [transactions, setTransactions] = useState([]);
   const [dateRange, setDateRange] = useState([null, null]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.editPermission : true;
+  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.approvalPoints?.edit : true;
 
   const fetchTransactions = async (pageNumber) => {
     try {
@@ -211,10 +211,10 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 <thead>
                   <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                     <th className="p-4 text-nowrap">TRN-ID</th>
+                    <th className="p-4">DATE</th>
                     <th className="p-4 text-nowrap">User Name</th>
                     <th className="p-4 text-nowrap">Website URL</th>
                     <th className="p-4 text-nowrap">BANK NAME</th>
-                    <th className="p-4">DATE</th>
                     <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
                     <th className="p-4 ">UTR#</th>
                     <th className="pl-8">Status</th>
@@ -230,6 +230,10 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                       >
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
                           {transaction?.ledgerId?.trnNo}
+                        </td>
+                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap text-nowrap">
+                          {new Date(transaction?.ledgerId?.createdAt).toDateString()},{" "}
+                          {new Date(transaction?.ledgerId?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           {transaction?.ledgerId?.username && transaction?.ledgerId?.username !== "" ? transaction?.ledgerId?.username : "GUEST"}
@@ -251,10 +255,6 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                               </p>
                             </div>
                           )}
-                        </td>
-                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap text-nowrap">
-                          {new Date(transaction?.ledgerId?.createdAt).toDateString()},{" "}
-                          {new Date(transaction?.ledgerId?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
@@ -279,27 +279,13 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                           </span>
                         </td>
                         <td className="p-4 flex space-x-2 transaction-view-model">
-                          {editablePermission && (
-                            <>
-                              <button
-                                className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
-                                title="View"
-                                onClick={() => handleViewTransaction(transaction?.ledgerId)}
-                              >
-                                <FiEye />
-                              </button>
-                              <button
-                                className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
-                                title="Delete"
-                                onClick={() => fn_deleteTransaction(transaction?.ledgerId?._id, transaction?.merchantId?._id)}
-                              >
-                                <FiTrash2 />
-                              </button>
-                            </>
-                          )}
-                          {!editablePermission && (
-                            <p className="italic text-[12px] text-red-500 mt-[2px] text-nowrap">Action Not Allowed</p>
-                          )}
+                          <button
+                            className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
+                            title="View"
+                            onClick={() => handleViewTransaction(transaction?.ledgerId)}
+                          >
+                            <FiEye />
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -313,7 +299,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 </tbody>
               </table>
             </div>
-            <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
+            {/* <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
               <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
               <Pagination
                 className="self-center md:self-auto"
@@ -321,7 +307,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 defaultCurrent={1}
                 total={totalPages * 10}
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -331,7 +317,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
         width={900}
         style={{ fontFamily: "sans-serif", padding: "20px" }}
         title={
-          <p className="text-[16px] font-[700]">
+          <p className="text-[20px] font-[700]">
             Transaction Details
           </p>
         }
@@ -349,7 +335,12 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
           <div className="flex flex-col md:flex-row">
             {/* Left side input fields */}
             <div className="flex flex-col gap-2 mt-3 w-full md:w-1/2">
+              <p className="font-[500] mt-[-20px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
               {[
+                {
+                  label: "Website:",
+                  value: selectedTransaction?.website,
+                },
                 {
                   label: "Amount:",
                   value: selectedTransaction?.total,
@@ -371,11 +362,16 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                     "UPI",
                 },
                 {
-                  label: "Description:",
+                  label: "Status:",
                   value:
-                    selectedTransaction.description || "",
-                  isTextarea: true,
+                    selectedTransaction.status,
                 },
+                // {
+                //   label: "Description:",
+                //   value:
+                //     selectedTransaction.description || "",
+                //   isTextarea: true,
+                // },
               ].map((field, index) => (
                 <div
                   className="flex items-center gap-4"
@@ -433,79 +429,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                   )}
                 </div>
               ))}
-              <div className="flex gap-2 mt-4">
-                {/* Approve Button & Decline Button */}
-                {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major")) && (
-                  <>
-                    <button
-                      className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
-                      onClick={() =>
-                        handleTransactionAction(
-                          "Verified",
-                          selectedTransaction?._id
-                        )
-                      }
-                    >
-                      <IoMdCheckmark className="mt-[3px] mr-[6px]" />
-                      Approve Transaction
-                    </button>
-                    <button
-                      className="bg-[#FF405F33] flex text-[#FF3F5F] p-2 rounded hover:bg-[#FF405F50] text-[13px]"
-                      onClick={() =>
-                        handleTransactionAction(
-                          "Decline",
-                          selectedTransaction?._id
-                        )
-                      }
-                    >
-                      <GoCircleSlash className="mt-[3px] mr-[6px]" />
-                      Decline TR
-                    </button>
-                  </>
-                )}
-
-                {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major")) && selectedTransaction?.status === "Unverified" && (
-                  <button
-                    className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
-                    onClick={() => {
-                      if (!isEdit) {
-                        setIsEdit(true);
-                      } else {
-                        handleEditTransactionAction(
-                          "Manual Verified",
-                          selectedTransaction._id,
-                          selectedTransaction?.total,
-                          selectedTransaction?.utr
-                        );
-                      }
-                    }}
-                  >
-                    {!isEdit ? (
-                      <>
-                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                        Edit TR
-                      </>
-                    ) : (
-                      <>
-                        <FaRegEdit className="mt-[2px] mr-2" />{" "}
-                        Update TR
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-
-              {/* Bottom Divider and Activity */}
               <div className="border-b w-[370px] mt-4"></div>
-              <p className="text-[13px] font-[600] leading-10">
-                Transaction ID:
-                <span className="text-[12px] ml-2 font-[600] text-[#00000080]">
-                  {selectedTransaction.trnNo}
-                </span>
-              </p>
-              {/* <p className="text-[14px] font-[700]">
-            Activity
-          </p> */}
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">

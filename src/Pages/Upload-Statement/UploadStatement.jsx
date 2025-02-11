@@ -17,7 +17,7 @@ import {
   fn_deleteTransactionSlipApi,
 } from "../../api/api";
 
-const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
+const UploadStatement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -27,6 +27,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [slipData, setSlipData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.uploadStatement?.edit : true;
 
   const handleFileUpload = async (event) => {
     setLoading(true);
@@ -111,7 +112,7 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
           };
           if (item?.type === "CR" || item?.type === "Credit") {
             console.log("Line no 113");
-            
+
             return getTransactionData(item);
           } else if (item?.type === "DR" || item?.type === "Debit") {
             console.log("Line no 117");
@@ -123,25 +124,25 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
               item?.deposit !== null
             ) {
               console.log("Line no 125");
-              
+
               return getTransactionData(item);
             } else if (item?.deposit === "") {
               console.log("Line no 129");
-              
+
               return null;
             } else {
-              
+
               if (item?.credit !== "" && item?.credit > 0) {
                 console.log("Line no 135");
-                
+
                 return getTransactionData(item);
               } else if (item?.credit === "" || item?.credit === 0) {
                 console.log("Line no 136");
-                
+
                 return null;
               } else {
                 console.log("Line no 143");
-                
+
                 return getTransactionData(item);
               }
             }
@@ -261,53 +262,54 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Upload Statement</h1>
         </div>
-        <div className="bg-white rounded-lg flex justify-center items-center h-40 p-4">
-          <div className="flex flex-col items-center justify-center w-full">
-            <p className="text-[18px] font-[600] text-center mb-3">
-              Please Upload your Statement Here
-            </p>
-            <div className="flex items-center mb-2 relative justify-center">
-              <label
-                htmlFor="file-upload"
-                className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
-              >
-                <FiUpload />
-                Choose a file
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              {loading && (
-                <div className="absolute right-[-60px]">
-                  <MagnifyingGlass
-                    visible={true}
-                    height="50"
-                    width="50"
-                    ariaLabel="magnifying-glass-loading"
-                    wrapperStyle={{}}
-                    wrapperClass="magnifying-glass-wrapper"
-                    glassColor="white"
-                    color="gray"
-                  />
-                </div>
-              )}
+        {editablePermission && (
+          <div className="bg-white rounded-lg flex justify-center items-center h-40 p-4">
+            <div className="flex flex-col items-center justify-center w-full">
+              <p className="text-[18px] font-[600] text-center mb-3">
+                Please Upload your Statement Here
+              </p>
+              <div className="flex items-center mb-2 relative justify-center">
+                <label
+                  htmlFor="file-upload"
+                  className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
+                >
+                  <FiUpload />
+                  Choose a file
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                {loading && (
+                  <div className="absolute right-[-60px]">
+                    <MagnifyingGlass
+                      visible={true}
+                      height="50"
+                      width="50"
+                      ariaLabel="magnifying-glass-loading"
+                      wrapperStyle={{}}
+                      wrapperClass="magnifying-glass-wrapper"
+                      glassColor="white"
+                      color="gray"
+                    />
+                  </div>
+                )}
+              </div>
+              <span className="text-[11px] text-[#00000040]">PDF Files Only</span>
             </div>
-            <span className="text-[11px] text-[#00000040]">PDF Files Only</span>
           </div>
-        </div>
+        )}
         <div className="flex justify-between my-4">
           <p className="text-black font-medium text-lg">All Statements</p>
         </div>
@@ -434,13 +436,13 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar }) => {
                           </span>
                         </Modal>
 
-                        <button
+                        {/* <button
                           className="bg-red-100 text-red-600 rounded-full px-2 py-2 mx-2"
                           title="Delete"
                           onClick={() => fn_deleteTransaction(transaction?._id)}
                         >
                           <FiTrash2 />
-                        </button>
+                        </button> */}
                       </td>
                     </tr>
                   ))
