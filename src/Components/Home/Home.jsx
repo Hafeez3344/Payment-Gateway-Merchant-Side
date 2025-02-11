@@ -72,7 +72,7 @@ const Home = ({
 
     const fetchVerifiedTransactions = async () => {
       try {
-        const response = await fn_getAllVerifiedTransactionApi("Verified");
+        const response = await fn_getAllVerifiedTransactionApi("Approved");
         const manualResponse = await fn_getAllVerifiedTransactionApi(
           "Manual Verified"
         );
@@ -80,7 +80,7 @@ const Home = ({
           "Decline"
         );
         const unverifiedResponse = await fn_getAllVerifiedTransactionApi(
-          "Unverified"
+          "Pending"
         );
         const total = await fn_getAllTransactionApi();
         setVerifiedTransactions(response?.data || 0);
@@ -175,7 +175,7 @@ const Home = ({
     ],
     datasets: [
       {
-        label: "Verified",
+        label: "Approved",
         data: [
           10300, 15200, 19300, 14500, 5300, 10200, 12200, 7100, 16300, 13500,
           5300, 7400,
@@ -270,11 +270,11 @@ const Home = ({
           <Boxes
             number={verifiedTransactions}
             amount={totalTransaction}
-            title={"SYSTEM VERIFIED TRANSACTIONS"}
+            title={"SYSTEM APPROVED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
             }
-            link={"/transactions-table?status=Verified"}
+            link={"/transactions-table?status=Approved"}
           />
           <Boxes
             number={manualVerifiedTransactions}
@@ -292,7 +292,7 @@ const Home = ({
             bgColor={
               "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
             }
-            link={"/transactions-table?status=Unverified"}
+            link={"/transactions-table?status=Pending"}
           />
           <Boxes
             number={declineTransactions}
@@ -318,7 +318,7 @@ const Home = ({
                 </p>
                 <div className="grid grid-cols-2 gap-4 md:flex md:gap-12 mt-3">
                   <Stat
-                    label="System Verified"
+                    label="System Approved"
                     value={verifiedTransactions}
                     color="#029868"
                   />
@@ -328,7 +328,7 @@ const Home = ({
                     color="#FF3E5E"
                   />
                   <Stat
-                    label="Unverified"
+                    label="Pending"
                     value={unverifiedTransactions}
                     color="#F67A03"
                   />
@@ -415,10 +415,10 @@ const Stat = ({ label, value, color }) => (
 
 const RecentTransaction = ({ name, utrId, status, color, amount }) => {
   const statusColor = {
-    Verified: "#029868",
+    Approved: "#029868",
     Declined: "#FF3F5E",
     "Manual Verified": "#0864E8",
-    Unverified: "#F67A03",
+    Pending: "#F67A03",
   };
 
   return (

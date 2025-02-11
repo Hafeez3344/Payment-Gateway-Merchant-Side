@@ -177,9 +177,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                         <td className="p-4 text-[12px] font-[700] text-[#0864E8]">{transaction?.utr}</td>
                         <td className="p-4 text-[13px] font-[500]">
                           <span
-                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
+                            className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Approved"
                               ? "bg-[#10CB0026] text-[#0DA000]"
-                              : transaction?.status === "Unverified"
+                              : transaction?.status === "Pending"
                                 ? "bg-[#FFC70126] text-[#FFB800]"
                                 : transaction?.status === "Manual Verified"
                                   ? "bg-[#0865e851] text-[#0864E8]"

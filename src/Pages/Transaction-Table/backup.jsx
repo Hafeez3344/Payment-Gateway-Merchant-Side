@@ -262,9 +262,9 @@ const TransactionsTable = ({
                       </td>
                       <td className="p-4 text-[13px] font-[500]">
                         <span
-                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Verified"
+                          className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center ${transaction?.status === "Approved"
                             ? "bg-[#10CB0026] text-[#0DA000]"
-                            : transaction?.status === "Unverified"
+                            : transaction?.status === "Pending"
                               ? "bg-[#FFC70126] text-[#FFB800]"
                               : transaction?.status === "Manual Verified"
                                 ? "bg-[#0865e851] text-[#0864E8]"
@@ -410,7 +410,7 @@ const TransactionsTable = ({
                                         className="bg-[#03996933] flex text-[#039969] p-2 rounded hover:bg-[#03996950] text-[13px]"
                                         onClick={() =>
                                           handleTransactionAction(
-                                            "Verified",
+                                            "Approved",
                                             selectedTransaction?._id
                                           )
                                         }
@@ -435,7 +435,7 @@ const TransactionsTable = ({
                                   )}
 
 
-                                  {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major") && selectedTransaction?.status === "Unverified") && (
+                                  {(loginType === "merchant" || (loginType === "staff" && permissionsData?.type === "major") && selectedTransaction?.status === "Pending") && (
                                     <button
                                       className="bg-[#F6790233] flex text-[#F67A03] ml-[20px] p-2 rounded hover:bg-[#F6790250] text-[13px]"
                                       onClick={() => {
