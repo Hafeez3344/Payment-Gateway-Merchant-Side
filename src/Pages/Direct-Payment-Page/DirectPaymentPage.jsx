@@ -186,7 +186,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         placement: "topRight",
       });
     };
-  }
+  };
 
   return (
     <>
@@ -311,20 +311,25 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                           >
                             <FiEye />
                           </button>
-                          <button
-                            disabled={transaction?.approval}
-                            className={`px-2 py-2 rounded-full ${transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
-                            onClick={() => fn_checkPoints(transaction)}
-                          >
-                            <FaCheck />
-                          </button>
-                          <button
-                            disabled={transaction?.reason && transaction?.reason !== ""}
-                            className={`px-2 py-2 rounded-full ${(transaction?.reason && transaction?.reason) ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"}`}
-                            onClick={() => { setShowPopup(true); setSelectedTrns(transaction) }}
-                          >
-                            <RxCross2 />
-                          </button>
+                          {editablePermission && (
+                            <>
+                              <button
+                                disabled={transaction?.approval}
+                                className={`px-2 py-2 rounded-full ${transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
+                                onClick={() => fn_checkPoints(transaction)}
+                              >
+                                <FaCheck />
+                              </button>
+                              <button
+                                disabled={transaction?.reason && transaction?.reason !== ""}
+                                className={`px-2 py-2 rounded-full ${(transaction?.reason && transaction?.reason) ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"}`}
+                                onClick={() => { setShowPopup(true); setSelectedTrns(transaction) }}
+                              >
+                                <RxCross2 />
+                              </button>
+                            </>
+                          )}
+
                           {showPopup && (
                             <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
                               <div className="bg-white p-5 rounded-lg shadow-sm w-80">

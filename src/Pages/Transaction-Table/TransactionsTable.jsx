@@ -8,9 +8,11 @@ import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
 import { FiEye, FiTrash2 } from "react-icons/fi";
 import { RiFindReplaceLine } from "react-icons/ri";
-import { FaIndianRupeeSign } from "react-icons/fa6";
+import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
 
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
+import { RxCross2 } from "react-icons/rx";
+import axios from "axios";
 
 const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
@@ -28,7 +30,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState([]);
+  const [selectedTrns, setSelectedTrns] = useState(null);
   const [dateRange, setDateRange] = useState([null, null]);
+  const [reasonForDecline, setReasonForDecline] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.transactionHistory?.edit : true;
 
@@ -84,6 +88,47 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
     setOpen(true);
+  };
+
+  const fn_checkPoints = async (item) => {
+    console.log("item ", item);
+    const data = {
+      merchantId: item?.merchantId,
+      ledgerId: item?._id
+    };
+    const response = await axios.post(`${BACKEND_URL}/approval/create`, data);
+    if (response?.data?.status === "ok") {
+      fetchTransactions(currentPage);
+      notification.success({
+        message: "Updated Successfully",
+        description: "Added to Approval Points Table",
+        placement: "topRight",
+      });
+    } else {
+      notification.error({
+        message: "Failed",
+        description: "Failed to add to Approval Points Table",
+        placement: "topRight",
+      });
+    };
+  };
+
+  const fn_declinePoints = async (item) => {
+    const response = await fn_updateTransactionStatusApi(item?._id, { reason: reasonForDecline });
+    if (response?.data?.status === "ok") {
+      fetchTransactions(currentPage);
+      notification.success({
+        message: "Updated Successfully",
+        description: "Transaction Updated",
+        placement: "topRight",
+      });
+    } else {
+      notification.error({
+        message: "Failed",
+        description: "Failed",
+        placement: "topRight",
+      });
+    };
   };
 
   return (
@@ -198,6 +243,54 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                           >
                             <FiEye />
                           </button>
+                          {editablePermission && (
+                            <>
+                              <button
+                                disabled={transaction?.approval}
+                                className={`px-2 py-2 rounded-full ${transaction?.approval ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-green-300"}`}
+                                onClick={() => fn_checkPoints(transaction)}
+                              >
+                                <FaCheck />
+                              </button>
+                              <button
+                                disabled={transaction?.reason && transaction?.reason !== ""}
+                                className={`px-2 py-2 rounded-full ${(transaction?.reason && transaction?.reason) ? "cursor-not-allowed bg-gray-300" : "cursor-pointer bg-red-300"}`}
+                                onClick={() => { setShowPopup(true); setSelectedTrns(transaction) }}
+                              >
+                                <RxCross2 />
+                              </button>
+                            </>
+                          )}
+
+                          {showPopup && (
+                            <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
+                              <div className="bg-white p-5 rounded-lg shadow-sm w-80">
+                                <h3 className="text-lg font-bold mb-4">Select Reason</h3>
+                                <div className="space-y-3">
+                                  {[
+                                    "Game Name Incorrect",
+                                    "User ID Incorrect",
+                                    "Both UserID and Game Name are Incorrect",
+                                  ].map((reason, index) => (
+                                    <label
+                                      key={index}
+                                      onChange={() => setReasonForDecline(reason)}
+                                      className="flex items-center space-x-3 bg-gray-200 py-2 px-3 rounded-lg hover:bg-gray-300 cursor-pointer"
+                                    >
+                                      <input type="radio" name="same" className="w-5 h-5 cursor-pointer" />
+                                      <span>{reason}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                                <button
+                                  className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+                                  onClick={() => { setShowPopup(false); fn_declinePoints(selectedTrns) }}
+                                >
+                                  Submit
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -229,7 +322,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         width={900}
         style={{ fontFamily: "sans-serif", padding: "20px" }}
         title={
-          <p className="text-[16px] font-[700]">
+          <p className="text-[20px] font-[700]">
             Transaction Details
           </p>
         }
@@ -338,6 +431,12 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 </div>
               ))}
               <div className="border-b w-[370px] mt-4"></div>
+              {selectedTransaction?.reason && selectedTransaction?.reason !== "" && (
+                <div>
+                  <p className="font-[600]">Reason For Decline Points:</p>
+                  <p className="font-[400] text-[13px]">{selectedTransaction?.reason}</p>
+                </div>
+              )}
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
