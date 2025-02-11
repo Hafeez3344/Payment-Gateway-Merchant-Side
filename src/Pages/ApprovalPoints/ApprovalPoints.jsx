@@ -239,7 +239,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                           {transaction?.ledgerId?.username && transaction?.ledgerId?.username !== "" ? transaction?.ledgerId?.username : "GUEST"}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] text-nowrap">
-                          {transaction?.ledgerId?.site}
+                          {transaction?.ledgerId?.site || transaction?.ledgerId?.website}
                         </td>
                         <td className="p-4">
                           {transaction?.ledgerId?.bankId?.bankName ? (

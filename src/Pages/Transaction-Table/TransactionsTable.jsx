@@ -78,7 +78,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       (!dateRange[0] || transactionDate >= dateRange[0]) &&
       (!adjustedEndDate || transactionDate <= adjustedEndDate);
 
-      const statusCondition = loginType === "minor" ? (transaction?.status === "Approved" && transaction?.approval === false && (!transaction?.reason || transaction?.reason === "")) : true;
+    const statusCondition = loginType === "minor" ? (transaction?.status === "Approved" && transaction?.approval === false && (!transaction?.reason || transaction?.reason === "")) : true;
 
     return (
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -226,9 +226,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                         <td className="p-4 text-[13px] font-[500]">
                           <span
                             className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center
-                              ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.approval === true ? "bg-[#10CB0026] text-[#0DA000]" : transaction?.reason !== "" ? "bg-[#cc7aff33] text-[#9929d5]" : "bg-[#00000026] text-[#5a5a5a]"}`}
+                              ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : transaction?.approval === true ? "bg-[#10CB0026] text-[#0DA000]" : (transaction?.reason && transaction?.reason !== "") ? "bg-[#cc7aff33] text-[#9929d5]" : "bg-[#00000026] text-[#5a5a5a]"}`}
                           >
-                            {transaction?.status === "Decline" ? "Transaction Decline" : transaction?.status === "Pending" ? "Transaction Pending" : transaction?.approval === true ? "Points Approved" : transaction?.reason !== "" ? "Points Decline" : "Points Pending"}
+                            {transaction?.status === "Decline" ? "Transaction Decline" : transaction?.status === "Pending" ? "Transaction Pending" : transaction?.approval === true ? "Points Approved" : (transaction?.reason && transaction?.reason !== "") ? "Points Decline" : "Points Pending"}
                           </span>
                         </td>
                         <td className="p-4 flex space-x-2 transaction-view-model">
@@ -339,7 +339,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
               <p className="font-[500] mt-[-20px] mb-[15px]">Transaction Id: <span className="text-gray-500 font-[700]">{selectedTransaction.trnNo}</span></p>
               {[
                 {
-                  label: "Amount:",
+                  label: "Total Amount:",
                   value: selectedTransaction?.total,
                 },
                 {
@@ -426,7 +426,11 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                   )}
                 </div>
               ))}
-              <div className="border-b w-[370px] mt-4"></div>
+              <div className="border-b w-[370px] mt-4">
+                {loginType === "major" && selectedTransaction?.status === "Approved" && (selectedTransaction?.reason && selectedTransaction?.reason !== "") && !selectedTransaction?.approval && (
+                  <button className="bg-[#F6790233] flex text-[#F67A03] h-[35px] items-center mb-[10px] px-[10px] rounded-[5px]">Update Information</button>
+                )}
+              </div>
               {selectedTransaction?.reason && selectedTransaction?.reason !== "" && (
                 <div>
                   <p className="font-[600]">Reason For Decline Points:</p>
