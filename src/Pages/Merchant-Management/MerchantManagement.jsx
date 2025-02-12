@@ -3,15 +3,23 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Switch, Button, Modal, Input, notification } from "antd";
+import { FiEdit, FiCamera, FiTrash2 } from "react-icons/fi";
 
 import { Banks } from "../../json-data/banks";
-import { FiEdit, FiCamera } from "react-icons/fi";
 import upilogo2 from "../../assets/upilogo2.svg";
 import Rectangle from "../../assets/Rectangle.jpg";
-import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi, fn_getMerchantData } from "../../api/api";
+import BACKEND_URL, {
+  fn_BankUpdate,
+  fn_getBankByAccountTypeApi,
+  fn_getMerchantData,
+} from "../../api/api";
 
-const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
-
+const MerchantManagement = ({
+  setSelectedPage,
+  authorization,
+  showSidebar,
+  permissionsData,
+}) => {
   const navigate = useNavigate();
   const containerHeight = window.innerHeight - 120;
   const [open, setOpen] = React.useState(false);
@@ -33,7 +41,12 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
   const [selectedBank, setSelectedBank] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editAccountId, setEditAccountId] = useState(null);
-  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.merchantProfile?.edit : true;
+  const editablePermission =
+    Object.keys(permissionsData).length > 0
+      ? permissionsData?.merchantProfile?.edit
+      : true;
+  const [websiteModalOpen, setWebsiteModalOpen] = useState(false);
+  const [websiteName, setWebsiteName] = useState("");
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -159,8 +172,9 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
       if (data?.iban === "") {
         notification.error({
           message: "Error",
-          description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"
-            }`,
+          description: `Enter ${
+            activeTab === "bank" ? "IFSC Number" : "UPI ID"
+          }`,
           placement: "topRight",
         });
         return;
@@ -257,7 +271,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
   const handleProfileImageUpdate = async (file) => {
     try {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append("image", file);
 
       const token = Cookies.get("merchantToken");
       const response = await axios.put(
@@ -284,7 +298,8 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
     } catch (error) {
       notification.error({
         message: "Error",
-        description: error?.response?.data?.message || "Failed to update profile image",
+        description:
+          error?.response?.data?.message || "Failed to update profile image",
         placement: "topRight",
       });
     }
@@ -294,8 +309,9 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`bg-gray-100 transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -327,9 +343,9 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                 <div
                   className="absolute bottom-2 right-2 w-[35px] h-[35px] bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"
                   onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "image/*";
                     input.onchange = async (e) => {
                       const file = e.target.files[0];
                       if (file) {
@@ -406,12 +422,120 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                   UPI Accounts
                 </button>
               </div>
-
               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-                {editablePermission && (
-                  <Button type="primary" onClick={handleAddAccount}>
-                    Add Account
+                {/* {editablePermission && (
+                  <Button
+                    type="primary"
+                    onClick={() => setWebsiteModalOpen(true)}
+                  >
+                    Website Management
                   </Button>
+                )} */}
+                <Modal
+                  centered
+                  width={600}
+                  style={{ fontFamily: "sans-serif" }}
+                  title={
+                    <p className="text-[16px] font-[700]">Website Management</p>
+                  }
+                  open={websiteModalOpen}
+                  onCancel={() => setWebsiteModalOpen(false)}
+                  footer={null}
+                >
+                  <div className="flex flex-col gap-4">
+                    {/* Top Section */}
+                    <div className="flex flex-col gap-3">
+                      <Input
+                        placeholder="Enter Website Name"
+                        value={websiteName}
+                        onChange={(e) => setWebsiteName(e.target.value)}
+                        className="text-[12px]"
+                      />
+                      <Button
+                        type="primary"
+                        className="w-24"
+                        onClick={() => {
+                          // Handle submit logic here
+                          console.log("Website name submitted:", websiteName);
+                        }}
+                      >
+                        Submit
+                      </Button>
+                    </div>
+
+                    {/* Divider Line */}
+                    <div className="border-b-2 border-gray-200 my-4"></div>
+
+                    {/* Table Section */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-[#ECF0FA]">
+                            <th className="p-3 text-[13px] font-[600] text-left">
+                              Sr. No
+                            </th>
+                            <th className="p-3 text-[13px] font-[600] text-left">
+                              Website Name
+                            </th>
+                            <th className="p-3 text-[13px] font-[600] text-left">
+                              Action
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {/* Sample row - replace with actual data mapping */}
+                          <tr className="border-b">
+                            <td className="p-3 text-[13px]">1</td>
+                            <td className="p-3 text-[13px]">example.com</td>
+                            <td className="p-3 text-[13px]">
+                              <Button
+                                className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
+                                title="Delete"
+                                onClick={() => {
+                                  // Handle delete logic
+                                  console.log("Delete clicked");
+                                }}
+                              >
+                                <FiTrash2 size={16} />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-3 text-[13px]">2</td>
+                            <td className="p-3 text-[13px]">example.com</td>
+                            <td className="p-3 text-[13px]">
+                              <Button
+                                className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
+                                title="Delete"
+                                onClick={() => {
+                                  // Handle delete logic
+                                  console.log("Delete clicked");
+                                }}
+                              >
+                                <FiTrash2 size={16} />
+                              </Button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </Modal>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
+                {editablePermission && (
+                  <>
+                    <Button
+                      type="primary"
+                      onClick={() => setWebsiteModalOpen(true)}
+                    >
+                      Website Management
+                    </Button>
+                    <Button type="primary" onClick={handleAddAccount}>
+                      Add Account
+                    </Button>
+                  </>
                 )}
                 <Modal
                   centered
@@ -521,10 +645,11 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                           }))
                         }
                         className="w-full text-[12px]"
-                        placeholder={`${activeTab === "bank"
-                          ? "Enter IFSC Number"
-                          : "Enter UPI ID"
-                          }`}
+                        placeholder={`${
+                          activeTab === "bank"
+                            ? "Enter IFSC Number"
+                            : "Enter UPI ID"
+                        }`}
                       />
                     </div>
                     {/* account Holder Name */}
@@ -616,8 +741,9 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                     return (
                       <tr
                         key={index}
-                        className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
-                          }`}
+                        className={`border-t border-b ${
+                          index % 2 === 0 ? "bg-white" : ""
+                        }`}
                       >
                         <td className="p-3 text-[13px] font-[600]">
                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
@@ -668,10 +794,11 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                         </td>
                         <td className="text-center">
                           <button
-                            className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
-                              ? "bg-[#10CB0026] text-[#0DA000]"
-                              : "bg-[#FF173D33] text-[#D50000]"
-                              }`}
+                            className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
+                              account?.block === false
+                                ? "bg-[#10CB0026] text-[#0DA000]"
+                                : "bg-[#FF173D33] text-[#D50000]"
+                            }`}
                           >
                             {!account?.block ? "Active" : "Inactive"}
                           </button>
@@ -721,7 +848,9 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                               </>
                             )}
                             {!editablePermission && (
-                              <p className="italic text-[12px] text-red-500 mt-[2px] text-nowrap">Action Not Allowed</p>
+                              <p className="italic text-[12px] text-red-500 mt-[2px] text-nowrap">
+                                Action Not Allowed
+                              </p>
                             )}
                           </div>
                         </td>

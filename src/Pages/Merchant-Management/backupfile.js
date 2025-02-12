@@ -3,30 +3,21 @@
 // import { useNavigate } from "react-router-dom";
 // import React, { useState, useEffect } from "react";
 // import { Switch, Button, Modal, Input, notification } from "antd";
-// import { FiEdit } from "react-icons/fi";
+
+// import { Banks } from "../../json-data/banks";
+// import { FiEdit, FiCamera } from "react-icons/fi";
 // import upilogo2 from "../../assets/upilogo2.svg";
 // import Rectangle from "../../assets/Rectangle.jpg";
-// import mehtaLogo from "../../assets/mehtaLogo.png";
-// import BACKEND_URL, {
-//   fn_BankUpdate,
-//   fn_getBankByAccountTypeApi,
-//   fn_getMerchantData,
-// } from "../../api/api";
-// import { Banks } from "../../json-data/banks";
+// import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi, fn_getMerchantData } from "../../api/api";
 
-// const MerchantManagement = ({
-//   setSelectedPage,
-//   authorization,
-//   showSidebar,
-// }) => {
+// const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
+
 //   const navigate = useNavigate();
 //   const containerHeight = window.innerHeight - 120;
 //   const [open, setOpen] = React.useState(false);
 //   const [banksData, setBanksData] = useState([]);
 //   const [activeTab, setActiveTab] = useState("bank");
-
 //   const [merchantData, setMerchantData] = useState(null);
-
 //   const [data, setData] = useState({
 //     image: null,
 //     bankName: "",
@@ -36,13 +27,13 @@
 //     accountLimit: "",
 //     accountHolderName: "",
 //   });
-
 //   const [state, setState] = useState({
 //     bank: "",
 //   });
 //   const [selectedBank, setSelectedBank] = useState(null);
 //   const [isEditMode, setIsEditMode] = useState(false);
 //   const [editAccountId, setEditAccountId] = useState(null);
+//   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.merchantProfile?.edit : true;
 
 //   useEffect(() => {
 //     window.scroll(0, 0);
@@ -105,7 +96,6 @@
 //     }
 //   };
 
-//   /*changes for edit model */
 //   const handleEdit = (account) => {
 //     setData({
 //       image: account.image,
@@ -137,6 +127,15 @@
 
 //   const fn_submit = async () => {
 //     try {
+//       if (activeTab === "upi" && !data?.image) {
+//         notification.error({
+//           message: "Error",
+//           description: "QR Code is required",
+//           placement: "topRight",
+//         });
+//         return;
+//       }
+
 //       if (data?.bankName === "") {
 //         if (activeTab === "bank") {
 //           notification.error({
@@ -160,9 +159,8 @@
 //       if (data?.iban === "") {
 //         notification.error({
 //           message: "Error",
-//           description: `Enter ${
-//             activeTab === "bank" ? "IFSC Number" : "UPI ID"
-//           }`,
+//           description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"
+//             }`,
 //           placement: "topRight",
 //         });
 //         return;
@@ -185,7 +183,10 @@
 //       }
 //       const formData = new FormData();
 //       if (activeTab === "bank") {
-//         formData.append("image", data?.image);
+//         // Bank account - QR is optional
+//         if (data?.image) {
+//           formData.append("image", data?.image);
+//         }
 //         formData.append("bankName", data?.bankName);
 //         formData.append("accountNo", data?.accountNo);
 //         formData.append("accountType", activeTab);
@@ -194,6 +195,8 @@
 //         formData.append("accountHolderName", data?.accountHolderName);
 //         formData.append("block", true);
 //       } else {
+//         // UPI account - QR is mandatory
+//         if (!data?.image) return;
 //         formData.append("image", data?.image);
 //         formData.append("accountType", activeTab);
 //         formData.append("iban", data?.iban);
@@ -237,8 +240,8 @@
 //           accountLimit: "",
 //           accountHolderName: "",
 //         });
-//         setIsEditMode(false); /*changes for edit model */
-//         setEditAccountId(null); /*changes for edit model */
+//         setIsEditMode(false);
+//         setEditAccountId(null);
 //         fn_getBankByAccountType();
 //       }
 //     } catch (error) {
@@ -251,13 +254,48 @@
 //     }
 //   };
 
+//   const handleProfileImageUpdate = async (file) => {
+//     try {
+//       const formData = new FormData();
+//       formData.append('image', file);
+
+//       const token = Cookies.get("merchantToken");
+//       const response = await axios.put(
+//         `${BACKEND_URL}/merchant/update/${merchantData?._id}`,
+//         formData,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//         }
+//       );
+
+//       if (response?.status === 200) {
+//         notification.success({
+//           message: "Success",
+//           description: "Profile image updated successfully!",
+//           placement: "topRight",
+//         });
+//         const result = await fn_getMerchantData();
+//         if (result.status) {
+//           setMerchantData(result.data?.data);
+//         }
+//       }
+//     } catch (error) {
+//       notification.error({
+//         message: "Error",
+//         description: error?.response?.data?.message || "Failed to update profile image",
+//         placement: "topRight",
+//       });
+//     }
+//   };
+
 //   console.log("merchantData ", merchantData);
 
 //   return (
 //     <div
-//       className={`bg-gray-100 transition-all duration-500 ${
-//         showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-//       }`}
+//       className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+//         }`}
 //       style={{ minHeight: `${containerHeight}px` }}
 //     >
 //       <div className="p-7">
@@ -278,14 +316,31 @@
 //                 className="h-[130px] object-cover w-full rounded-t-lg"
 //               />
 //               <div
-//                 className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9]"
+//                 className="w-[150px] h-[150px] rounded-full flex justify-center items-center bg-white mt-[-75px] z-[9] relative"
 //                 style={{ boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.15)" }}
 //               >
 //                 <img
 //                   src={`${BACKEND_URL}/${merchantData?.image}`}
 //                   alt="logo"
-//                   className="w-[75px]"
+//                   className="w-[100px]"
 //                 />
+//                 <div
+//                   className="absolute bottom-2 right-2 w-[35px] h-[35px] bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"
+//                   onClick={() => {
+//                     const input = document.createElement('input');
+//                     input.type = 'file';
+//                     input.accept = 'image/*';
+//                     input.onchange = async (e) => {
+//                       const file = e.target.files[0];
+//                       if (file) {
+//                         await handleProfileImageUpdate(file);
+//                       }
+//                     };
+//                     input.click();
+//                   }}
+//                 >
+//                   <FiCamera className="text-gray-600 text-xl" />
+//                 </div>
 //               </div>
 //             </div>
 //             <p className="text-gray-500 text-[19px] font-[600] text-center mt-4">
@@ -353,9 +408,11 @@
 //               </div>
 
 //               <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-//                 <Button type="primary" onClick={handleAddAccount}>
-//                   Add Account
-//                 </Button>
+//                 {editablePermission && (
+//                   <Button type="primary" onClick={handleAddAccount}>
+//                     Add Account
+//                   </Button>
+//                 )}
 //                 <Modal
 //                   centered
 //                   width={600}
@@ -464,11 +521,10 @@
 //                           }))
 //                         }
 //                         className="w-full text-[12px]"
-//                         placeholder={`${
-//                           activeTab === "bank"
-//                             ? "Enter IFSC Number"
-//                             : "Enter UPI ID"
-//                         }`}
+//                         placeholder={`${activeTab === "bank"
+//                           ? "Enter IFSC Number"
+//                           : "Enter UPI ID"
+//                           }`}
 //                       />
 //                     </div>
 //                     {/* account Holder Name */}
@@ -508,23 +564,26 @@
 //                         placeholder="Account Limit "
 //                       />
 //                     </div>
-//                     {/* Account QR Code */}
-//                     <div className="flex-1 my-2">
-//                       <p className="text-[12px] font-[500] pb-1">
-//                         {activeTab === "upi" ? "UPI" : "Bank"} QR Code
-//                       </p>
-//                       <Input
-//                         type="file"
-//                         onChange={(e) => {
-//                           setData((prev) => ({
-//                             ...prev,
-//                             image: e.target.files[0],
-//                           }));
-//                         }}
-//                         className="w-full text-[12px]"
-//                         placeholder="Enter IFSC Number "
-//                       />
-//                     </div>
+//                     {/* Account QR Code - only show for UPI */}
+//                     {activeTab === "upi" && (
+//                       <div className="flex-1 my-2">
+//                         <p className="text-[12px] font-[500] pb-1">
+//                           UPI QR Code <span className="text-[#D50000]">*</span>
+//                         </p>
+//                         <Input
+//                           type="file"
+//                           required
+//                           onChange={(e) => {
+//                             setData((prev) => ({
+//                               ...prev,
+//                               image: e.target.files[0],
+//                             }));
+//                           }}
+//                           className="w-full text-[12px]"
+//                           placeholder="Select QR Code"
+//                         />
+//                       </div>
+//                     )}
 //                   </div>
 //                 </Modal>
 //               </div>
@@ -557,9 +616,8 @@
 //                     return (
 //                       <tr
 //                         key={index}
-//                         className={`border-t border-b ${
-//                           index % 2 === 0 ? "bg-white" : ""
-//                         }`}
+//                         className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+//                           }`}
 //                       >
 //                         <td className="p-3 text-[13px] font-[600]">
 //                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
@@ -610,62 +668,61 @@
 //                         </td>
 //                         <td className="text-center">
 //                           <button
-//                             className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-//                               account?.block === false
-//                                 ? "bg-[#10CB0026] text-[#0DA000]"
-//                                 : "bg-[#FF173D33] text-[#D50000]"
-//                             }`}
+//                             className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
+//                               ? "bg-[#10CB0026] text-[#0DA000]"
+//                               : "bg-[#FF173D33] text-[#D50000]"
+//                               }`}
 //                           >
 //                             {!account?.block ? "Active" : "Inactive"}
 //                           </button>
 //                         </td>
 //                         <td className="p-3 text-center">
 //                           <div className="flex justify-center items-center ml-6">
-//                             <Switch
-//                               size="small"
-//                               checked={!account?.block}
-//                               onChange={async (checked) => {
-//                                 const newStatus = checked;
-//                                 // if(newStatus === false){
-//                                 //   return notification.error({
-//                                 //     message: "Atleast one account is selected",
-//                                 //     description: `You can't deactivate all accounts.`,
-//                                 //     placement: "topRight",
-//                                 //   });
-//                                 // }
-//                                 const response = await fn_BankUpdate(
-//                                   account?._id,
-//                                   {
-//                                     block: !newStatus,
-//                                     accountType: activeTab,
-//                                   }
-//                                 );
+//                             {editablePermission && (
+//                               <>
+//                                 <Switch
+//                                   size="small"
+//                                   checked={!account?.block}
+//                                   onChange={async (checked) => {
+//                                     const newStatus = checked;
+//                                     const response = await fn_BankUpdate(
+//                                       account?._id,
+//                                       {
+//                                         block: !newStatus,
+//                                         accountType: activeTab,
+//                                       }
+//                                     );
 
-//                                 if (response?.status) {
-//                                   fn_getBankByAccountType();
-//                                   notification.success({
-//                                     message: "Status Updated",
-//                                     description: `Bank Status Updated!.`,
-//                                     placement: "topRight",
-//                                   });
-//                                 } else {
-//                                   notification.error({
-//                                     message: "Error",
-//                                     description:
-//                                       response.message ||
-//                                       "Failed to update bank status.",
-//                                     placement: "topRight",
-//                                   });
-//                                 }
-//                               }}
-//                             />
-//                             <Button
-//                               className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
-//                               title="Edit"
-//                               onClick={() => handleEdit(account)}
-//                             >
-//                               <FiEdit />
-//                             </Button>
+//                                     if (response?.status) {
+//                                       fn_getBankByAccountType();
+//                                       notification.success({
+//                                         message: "Status Updated",
+//                                         description: `Bank Status Updated!.`,
+//                                         placement: "topRight",
+//                                       });
+//                                     } else {
+//                                       notification.error({
+//                                         message: "Error",
+//                                         description:
+//                                           response.message ||
+//                                           "Failed to update bank status.",
+//                                         placement: "topRight",
+//                                       });
+//                                     }
+//                                   }}
+//                                 />
+//                                 <Button
+//                                   className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
+//                                   title="Edit"
+//                                   onClick={() => handleEdit(account)}
+//                                 >
+//                                   <FiEdit />
+//                                 </Button>
+//                               </>
+//                             )}
+//                             {!editablePermission && (
+//                               <p className="italic text-[12px] text-red-500 mt-[2px] text-nowrap">Action Not Allowed</p>
+//                             )}
 //                           </div>
 //                         </td>
 //                       </tr>

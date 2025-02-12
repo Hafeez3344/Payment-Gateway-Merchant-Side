@@ -7,14 +7,13 @@ import { MdOutlineFullscreen } from "react-icons/md";
 import { FaRegUser } from "react-icons/fa6";
 import { Button, Input, Modal, notification, Dropdown } from "antd";
 
-const NavBar = ({ setShowSide, showSidebar, loginType }) => {
+const NavBar = ({ setShowSide, showSidebar }) => {
   const [open, setOpen] = React.useState(false);
   const [generatedLink, setGeneratedLink] = useState("");
   const [showLinkField, setShowLinkField] = useState(false);
   const [transactionData, setTransactionData] = useState({
     amount: "",
     username: "",
-    website: ""
   });
   const baseUrl = Cookies.get("website");
 
@@ -59,20 +58,6 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
   };
   const handleCreateTransaction = async () => {
     try {
-      if (!transactionData.username) {
-        return notification.error({
-          message: "Error",
-          description: "Please enter username",
-          placement: "topRight",
-        });
-      }
-      if (!transactionData.website) {
-        return notification.error({
-          message: "Error",
-          description: "Please enter Website",
-          placement: "topRight",
-        });
-      }
       if (!transactionData.amount) {
         return notification.error({
           message: "Error",
@@ -80,8 +65,15 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
           placement: "topRight",
         });
       }
+      if (!transactionData.username) {
+        return notification.error({
+          message: "Error",
+          description: "Please enter username",
+          placement: "topRight",
+        });
+      }
 
-      const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}&site=${transactionData.website}`;
+      const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}`;
       setGeneratedLink(link);
       setShowLinkField(true);
     } catch (error) {
@@ -112,8 +104,9 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
 
   return (
     <div
-      className={`h-[55px]  flex justify-between transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-        }`}
+      className={`h-[55px]  flex justify-between transition-all duration-500 ${
+        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+      }`}
     >
       <div className="flex w-full justify-between items-center pl-7">
         <div className="text-[20px]">
@@ -123,13 +116,11 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
           />
         </div>
         <div className="flex items-center gap-7 pr-7">
-          {loginType === "merchant" && (
-            <Dropdown menu={{ items }} placement="bottomRight">
-              <Button className="text-white bg-[#0864E8] border min-w-[80px] sm:min-w-[100px] px-3 py-1 rounded text-nowrap">
-                Create Link
-              </Button>
-            </Dropdown>
-          )}
+          <Dropdown menu={{ items }} placement="bottomRight">
+            <Button className="text-white bg-[#0864E8] border min-w-[80px] sm:min-w-[100px] px-3 py-1 rounded text-nowrap">
+              Create Link
+            </Button>
+          </Dropdown>
           <div className="text-[25px] cursor-pointer">
             <RiMessageLine />
           </div>
@@ -146,7 +137,7 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
       </div>
       <Modal
         centered
-        width={650}
+        width={600}
         style={{ fontFamily: "sans-serif" }}
         title={
           <p className="text-[16px] font-[700]">
@@ -160,7 +151,7 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
           setOpen(false);
           setShowLinkField(false);
           setGeneratedLink("");
-          setTransactionData({ amount: "", username: "", website: "" });
+          setTransactionData({ amount: "", username: "" });
         }}
         footer={
           <div className="flex gap-4">
@@ -196,7 +187,7 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
                 setOpen(false);
                 setShowLinkField(false);
                 setGeneratedLink("");
-                setTransactionData({ amount: "", username: "", website: "" });
+                setTransactionData({ amount: "", username: "" });
               }}
             >
               Cancel
@@ -207,38 +198,6 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
         <div className="flex flex-col gap-4">
           {!showLinkField ? (
             <>
-              <div className="flex-1 my-2">
-                <p className="text-[12px] font-[500] pb-1">
-                  Username <span className="text-[#D50000]">*</span>
-                </p>
-                <Input
-                  value={transactionData.username}
-                  onChange={(e) =>
-                    setTransactionData((prev) => ({
-                      ...prev,
-                      username: e.target.value,
-                    }))
-                  }
-                  className="w-full text-[12px]"
-                  placeholder="Enter Username"
-                />
-              </div>
-              <div className="flex-1 my-2">
-                <p className="text-[12px] font-[500] pb-1">
-                  Website <span className="text-[#D50000]">*</span>
-                </p>
-                <Input
-                  value={transactionData.website}
-                  onChange={(e) =>
-                    setTransactionData((prev) => ({
-                      ...prev,
-                      website: e.target.value,
-                    }))
-                  }
-                  className="w-full text-[12px]"
-                  placeholder="Enter Website Name"
-                />
-              </div>
               <div className="flex-1 my-2">
                 <p className="text-[12px] font-[500] pb-1">
                   Amount <span className="text-[#D50000]">*</span>
@@ -254,6 +213,22 @@ const NavBar = ({ setShowSide, showSidebar, loginType }) => {
                   className="w-full text-[12px]"
                   placeholder="Enter Amount"
                   type="number"
+                />
+              </div>
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Username <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={transactionData.username}
+                  onChange={(e) =>
+                    setTransactionData((prev) => ({
+                      ...prev,
+                      username: e.target.value,
+                    }))
+                  }
+                  className="w-full text-[12px]"
+                  placeholder="Enter Username"
                 />
               </div>
             </>
