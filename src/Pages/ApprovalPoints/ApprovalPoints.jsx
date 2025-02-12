@@ -29,6 +29,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
   const [currentPage, setCurrentPage] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchTrnId, setSearchTrnId] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [dateRange, setDateRange] = useState([null, null]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -79,7 +80,8 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
     return (
       transaction?.ledgerId?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (merchant === "" || transaction?.ledgerId?.merchantName === merchant) &&
-      isWithinDateRange
+      isWithinDateRange &&
+      (searchTrnId === "" || transaction?.ledgerId?.trnNo.toString().includes(searchTrnId))
     );
   });
 
@@ -197,6 +199,15 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 <div className="flex flex-col w-full md:w-40">
                   <input
                     type="text"
+                    placeholder="Search by TRN-ID"
+                    value={searchTrnId}
+                    onChange={(e) => setSearchTrnId(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
                     placeholder="Search by UTR"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -299,15 +310,6 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 </tbody>
               </table>
             </div>
-            {/* <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
-              <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
-              <Pagination
-                className="self-center md:self-auto"
-                onChange={(e) => setCurrentPage(e)}
-                defaultCurrent={1}
-                total={totalPages * 10}
-              />
-            </div> */}
           </div>
         </div>
       </div>

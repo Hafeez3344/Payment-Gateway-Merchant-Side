@@ -141,7 +141,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<IoSettingsOutline className="text-[20px]" />}
             />
-            <Menu
+            {/* <Menu
               onClick={() => {
                 setSelectedPage("upload-statement");
                 navigate("/upload-statement");
@@ -151,7 +151,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="upload-statement"
               selectedPage={selectedPage}
               icon={<TbBookUpload className="text-[20px]" />}
-            />
+            /> */}
             <Menu
               onClick={() => {
                 setSelectedPage("staff");

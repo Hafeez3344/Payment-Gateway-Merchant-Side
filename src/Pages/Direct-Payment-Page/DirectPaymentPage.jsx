@@ -35,6 +35,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
   const [dateRange, setDateRange] = useState([null, null]);
   const [reasonForDecline, setReasonForDecline] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [searchTrnId, setSearchTrnId] = useState("");
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.directPayment?.edit : true;
 
   const fetchTransactions = async (pageNumber) => {
@@ -85,7 +86,8 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (merchant === "" || transaction?.merchantName === merchant) &&
       isWithinDateRange &&
-      statusCondition
+      statusCondition &&
+      (searchTrnId === "" || transaction?.trnNo.toString().includes(searchTrnId))
     );
   });
 
@@ -222,6 +224,15 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                 <div className="flex flex-col w-full md:w-40">
                   <input
                     type="text"
+                    placeholder="Search By TRN-ID"
+                    value={searchTrnId}
+                    onChange={(e) => setSearchTrnId(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
                     placeholder="Search by UTR"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -329,9 +340,9 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                                 <h3 className="text-lg font-bold mb-4">Select Reason</h3>
                                 <div className="space-y-3">
                                   {[
-                                    "Game Name Incorrect",
+                                    "Site Name Incorrect",
                                     "User ID Incorrect",
-                                    "Both UserID and Game Name are Incorrect",
+                                    "Both UserID and Site Name are Incorrect",
                                   ].map((reason, index) => (
                                     <label
                                       key={index}
@@ -408,6 +419,10 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                   value: selectedTransaction?.site || selectedTransaction?.website,
                 },
                 {
+                  label: "User ID:",
+                  value: selectedTransaction?.username,
+                },
+                {
                   label: "Amount:",
                   value: selectedTransaction?.total,
                 },
@@ -464,30 +479,19 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                           <FaIndianRupeeSign className="mt-[2px]" />
                         ) : null
                       }
-                      className={`w-[50%] text-[12px] input-placeholder-black ${isEdit &&
-                        (field.label === "Amount:" ||
-                          field?.label === "UTR#:")
-                        ? "bg-white"
-                        : "bg-gray-200"
-                        }`}
-                      readOnly={
-                        isEdit &&
-                          (field.label === "Amount:" ||
-                            field?.label === "UTR#:")
-                          ? false
-                          : true
-                      }
+                      className={`w-[50%] text-[12px] input-placeholder-black ${isEdit && (field.label === "Website:" || field?.label === "User ID:") ? "bg-white" : "bg-gray-200"}`}
+                      readOnly={isEdit && (field.label === "Website:" || field?.label === "User ID:") ? false : true}
                       value={field?.value}
                       onChange={(e) => {
-                        if (field?.label === "Amount:") {
+                        if (field?.label === "Website:") {
                           setSelectedTransaction((prev) => ({
                             ...prev,
-                            total: e.target.value,
+                            site: e.target.value,
                           }));
                         } else {
                           setSelectedTransaction((prev) => ({
                             ...prev,
-                            utr: e.target.value,
+                            username: e.target.value,
                           }));
                         }
                       }}
@@ -497,7 +501,27 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
               ))}
               <div className="border-b w-[370px] mt-4">
                 {loginType === "major" && selectedTransaction?.status === "Approved" && (selectedTransaction?.reason && selectedTransaction?.reason !== "") && !selectedTransaction?.approval && (
-                  <button className="bg-[#F6790233] flex text-[#F67A03] h-[35px] items-center mb-[10px] px-[10px] rounded-[5px]">Update Information</button>
+                  <>
+                    {!isEdit && (<button className="bg-[#F6790233] flex text-[#F67A03] h-[35px] items-center mb-[10px] px-[10px] rounded-[5px]" onClick={() => setIsEdit(!isEdit)}>Edit Information</button>)}
+                    {isEdit && (<button
+                      className="bg-[#F6790233] flex text-[#F67A03] h-[35px] items-center mb-[10px] px-[10px] rounded-[5px]"
+                      onClick={async() => {
+                       console.log("selectedTransaction ", selectedTransaction);
+                       const response = await fn_updateTransactionStatusApi(selectedTransaction?._id, {...selectedTransaction, reason: ""});
+                       if(response?.status){
+                        fetchTransactions(currentPage);
+                        notification.success({
+                          message: "Success",
+                          description: "Transaction Updated!",
+                          placement: "topRight",
+                        });
+                        setIsEdit(false);
+                        setOpen(false);
+                       }
+                      }
+                      }>
+                      Update Information</button>)}
+                  </>
                 )}
               </div>
               {selectedTransaction?.reason && selectedTransaction?.reason !== "" && (

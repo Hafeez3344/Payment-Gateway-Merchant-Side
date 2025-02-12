@@ -26,6 +26,7 @@ const MerchantManagement = ({
   const [banksData, setBanksData] = useState([]);
   const [activeTab, setActiveTab] = useState("bank");
   const [merchantData, setMerchantData] = useState(null);
+  const [websiteList, setWebsiteList] = useState([]);
   const [data, setData] = useState({
     image: null,
     bankName: "",
@@ -76,7 +77,7 @@ const MerchantManagement = ({
         }
       }
     };
-
+    fn_getWebsiteList();
     fetchMerchantData();
   }, []);
 
@@ -108,6 +109,22 @@ const MerchantManagement = ({
       }
     }
   };
+
+  const fn_getWebsiteList = async () => {
+    try {
+      const token = Cookies.get("merchantToken");
+      const response = await axios.get(`${BACKEND_URL}/website/getAllMerchant`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      if (response?.status === 200) {
+        setWebsiteList(response?.data?.data);
+      }
+    } catch (error) {
+      console.log("error => ", error);
+    };
+  }
 
   const handleEdit = (account) => {
     setData({
@@ -172,9 +189,8 @@ const MerchantManagement = ({
       if (data?.iban === "") {
         notification.error({
           message: "Error",
-          description: `Enter ${
-            activeTab === "bank" ? "IFSC Number" : "UPI ID"
-          }`,
+          description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"
+            }`,
           placement: "topRight",
         });
         return;
@@ -305,13 +321,62 @@ const MerchantManagement = ({
     }
   };
 
-  console.log("merchantData ", merchantData);
+  const fn_createWebsite = async () => {
+    if (websiteName === "") {
+      notification.error({
+        message: "Error",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    };
+    const token = Cookies.get("merchantToken");
+    const response = await axios.post(`${BACKEND_URL}/website/create`, { url: websiteName },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      }
+    );
+    if (response?.status === 200) {
+      notification.success({
+        message: "Success",
+        description: "Website Added Successfully!",
+        placement: "topRight",
+      });
+      setWebsiteName("");
+      fn_getWebsiteList();
+    }
+  };
+
+  const fn_deleteWebsute = async(id) => {
+    try {
+      const token = Cookies.get("merchantToken");
+      const response = await axios.delete(`${BACKEND_URL}/website/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      if (response?.status === 200) {
+        notification.success({
+          message: "Success",
+          description: "Website Deleted Successfully!",
+          placement: "topRight",
+        });
+        fn_getWebsiteList();
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error?.response?.data?.message || "Failed to delete website",
+        placement: "topRight",
+      });
+    }
+  }
 
   return (
     <div
-      className={`bg-gray-100 transition-all duration-500 ${
-        showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
-      }`}
+      className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
+        }`}
       style={{ minHeight: `${containerHeight}px` }}
     >
       <div className="p-7">
@@ -454,10 +519,7 @@ const MerchantManagement = ({
                       <Button
                         type="primary"
                         className="w-24"
-                        onClick={() => {
-                          // Handle submit logic here
-                          console.log("Website name submitted:", websiteName);
-                        }}
+                        onClick={fn_createWebsite}
                       >
                         Submit
                       </Button>
@@ -483,39 +545,27 @@ const MerchantManagement = ({
                           </tr>
                         </thead>
                         <tbody>
-                          {/* Sample row - replace with actual data mapping */}
-                          <tr className="border-b">
-                            <td className="p-3 text-[13px]">1</td>
-                            <td className="p-3 text-[13px]">example.com</td>
-                            <td className="p-3 text-[13px]">
-                              <Button
-                                className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
-                                title="Delete"
-                                onClick={() => {
-                                  // Handle delete logic
-                                  console.log("Delete clicked");
-                                }}
-                              >
-                                <FiTrash2 size={16} />
-                              </Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-3 text-[13px]">2</td>
-                            <td className="p-3 text-[13px]">example.com</td>
-                            <td className="p-3 text-[13px]">
-                              <Button
-                                className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
-                                title="Delete"
-                                onClick={() => {
-                                  // Handle delete logic
-                                  console.log("Delete clicked");
-                                }}
-                              >
-                                <FiTrash2 size={16} />
-                              </Button>
-                            </td>
-                          </tr>
+                          {websiteList?.length > 0 ? websiteList?.map((web, index) => (
+                            <tr className="border-b">
+                              <td className="p-3 text-[13px]">{index + 1}</td>
+                              <td className="p-3 text-[13px]">{web?.url}</td>
+                              <td className="p-3 text-[13px]">
+                                <Button
+                                  className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
+                                  title="Delete"
+                                  onClick={() => fn_deleteWebsute(web?._id)}
+                                >
+                                  <FiTrash2 size={16} />
+                                </Button>
+                              </td>
+                            </tr>
+                          )) : (
+                            <tr>
+                              <td colSpan="3" className="text-center text-[13px]">
+                                No data found
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -645,11 +695,10 @@ const MerchantManagement = ({
                           }))
                         }
                         className="w-full text-[12px]"
-                        placeholder={`${
-                          activeTab === "bank"
-                            ? "Enter IFSC Number"
-                            : "Enter UPI ID"
-                        }`}
+                        placeholder={`${activeTab === "bank"
+                          ? "Enter IFSC Number"
+                          : "Enter UPI ID"
+                          }`}
                       />
                     </div>
                     {/* account Holder Name */}
@@ -741,9 +790,8 @@ const MerchantManagement = ({
                     return (
                       <tr
                         key={index}
-                        className={`border-t border-b ${
-                          index % 2 === 0 ? "bg-white" : ""
-                        }`}
+                        className={`border-t border-b ${index % 2 === 0 ? "bg-white" : ""
+                          }`}
                       >
                         <td className="p-3 text-[13px] font-[600]">
                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
@@ -794,11 +842,10 @@ const MerchantManagement = ({
                         </td>
                         <td className="text-center">
                           <button
-                            className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${
-                              account?.block === false
-                                ? "bg-[#10CB0026] text-[#0DA000]"
-                                : "bg-[#FF173D33] text-[#D50000]"
-                            }`}
+                            className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
+                              ? "bg-[#10CB0026] text-[#0DA000]"
+                              : "bg-[#FF173D33] text-[#D50000]"
+                              }`}
                           >
                             {!account?.block ? "Active" : "Inactive"}
                           </button>

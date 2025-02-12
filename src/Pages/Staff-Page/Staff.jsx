@@ -97,7 +97,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
           response = await fn_createStaffApi({
             ...formData,
             dashboard: { view: false, edit: false },
-            transactionHistory: { view: true, edit: true },
+            transactionHistory: { view: false, edit: false },
             directPayment: { view: true, edit: true },
             approvalPoints: { view: true, edit: false },
             merchantProfile: { view: false, edit: false },
@@ -109,9 +109,9 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
           response = await fn_createStaffApi({
             ...formData,
             dashboard: { view: false, edit: false },
-            transactionHistory: { view: true, edit: true },
+            transactionHistory: { view: false, edit: false },
             directPayment: { view: true, edit: true },
-            approvalPoints: { view: false, edit: false },
+            approvalPoints: { view: true, edit: true },
             merchantProfile: { view: false, edit: false },
             reportsAnalytics: { view: false, edit: false },
             support: { view: false, edit: false },

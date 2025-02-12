@@ -29,6 +29,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   const [showPopup, setShowPopup] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchTrnId, setSearchTrnId] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [selectedTrns, setSelectedTrns] = useState(null);
   const [dateRange, setDateRange] = useState([null, null]);
@@ -81,6 +82,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
     const statusCondition = loginType === "minor" ? (transaction?.status === "Approved" && transaction?.approval === false && (!transaction?.reason || transaction?.reason === "")) : true;
 
     return (
+      transaction?.trnNo?.toString().includes(searchTrnId) &&
       transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (merchant === "" || transaction?.merchantName === merchant) &&
       isWithinDateRange &&
@@ -164,6 +166,15 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                   />
                 </Space>
                 {/* Search Input */}
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by TRN-ID"
+                    value={searchTrnId}
+                    onChange={(e) => setSearchTrnId(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
                 <div className="flex flex-col w-full md:w-40">
                   <input
                     type="text"
@@ -264,9 +275,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                                 <h3 className="text-lg font-bold mb-4">Select Reason</h3>
                                 <div className="space-y-3">
                                   {[
-                                    "Game Name Incorrect",
+                                    "Site Name Incorrect",
                                     "User ID Incorrect",
-                                    "Both UserID and Game Name are Incorrect",
+                                    "Both UserID and Site Name are Incorrect",
                                   ].map((reason, index) => (
                                     <label
                                       key={index}
