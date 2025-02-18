@@ -26,6 +26,7 @@ const MerchantManagement = ({
   const [banksData, setBanksData] = useState([]);
   const [activeTab, setActiveTab] = useState("bank");
   const [merchantData, setMerchantData] = useState(null);
+  const [phoneData, setPhoneData] = useState(null);
   const [websiteList, setWebsiteList] = useState([]);
   const [data, setData] = useState({
     image: null,
@@ -47,6 +48,7 @@ const MerchantManagement = ({
       ? permissionsData?.merchantProfile?.edit
       : true;
   const [websiteModalOpen, setWebsiteModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [websiteName, setWebsiteName] = useState("");
 
   useEffect(() => {
@@ -65,18 +67,22 @@ const MerchantManagement = ({
     }
   }, [state.bank]);
 
-  useEffect(() => {
-    const fetchMerchantData = async () => {
-      const token = Cookies.get("merchantToken");
-      if (token) {
-        const result = await fn_getMerchantData();
-        if (result.status) {
-          setMerchantData(result.data?.data);
-        } else {
-          console.error(result.message);
-        }
+
+  const fetchMerchantData = async () => {
+    const token = Cookies.get("merchantToken");
+    if (token) {
+      const result = await fn_getMerchantData();
+      if (result.status) {
+        setMerchantData(result.data?.data);
+        setPhoneData(result.data?.data?.phone);
+      } else {
+        console.error(result.message);
       }
-    };
+    }
+  };
+
+  useEffect(() => {
+    
     fn_getWebsiteList();
     fetchMerchantData();
   }, []);
@@ -203,6 +209,14 @@ const MerchantManagement = ({
         });
         return;
       }
+      if (!phoneData) {
+        notification.error({
+          message: "Error",
+          description: "Must enter phone number",
+          placement: "topRight",
+        });
+        return;
+      }
       if (data?.accountHolderName === "") {
         notification.error({
           message: "Error",
@@ -218,6 +232,7 @@ const MerchantManagement = ({
           formData.append("image", data?.image);
         }
         formData.append("bankName", data?.bankName);
+        formData.append("phone", phoneData);
         formData.append("accountNo", data?.accountNo);
         formData.append("accountType", activeTab);
         formData.append("iban", data?.iban);
@@ -273,6 +288,60 @@ const MerchantManagement = ({
         setIsEditMode(false);
         setEditAccountId(null);
         fn_getBankByAccountType();
+      }
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || "Network Error";
+      notification.error({
+        message: "Error",
+        description: errorMessage,
+        placement: "topRight",
+      });
+    }
+  };
+
+
+
+
+  
+  const fn_edit_phone = async () => {
+    try {
+      console.log('click');
+      
+      if (!phoneData) {
+        notification.error({
+          message: "Error",
+          description: "Must enter phone number",
+          placement: "topRight",
+        });
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append("phone", phoneData);
+      
+      const token = Cookies.get("merchantToken");
+      let response;
+        response = await axios.put(
+          `${BACKEND_URL}/merchant/update/${merchantData?._id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      
+      
+      if (response?.status === 200) {
+        setOpen(false);
+        notification.success({
+          message: "Success",
+          description: "Phone Updated Successfully!",
+          placement: "topRight",
+        });
+        
+        setEditModalOpen(false);
+        fetchMerchantData();
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message || "Network Error";
@@ -348,7 +417,7 @@ const MerchantManagement = ({
     }
   };
 
-  const fn_deleteWebsute = async(id) => {
+  const fn_deleteWebsute = async (id) => {
     try {
       const token = Cookies.get("merchantToken");
       const response = await axios.delete(`${BACKEND_URL}/website/delete/${id}`, {
@@ -445,7 +514,10 @@ const MerchantManagement = ({
                   <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
                     Phone:
                   </span>
-                  <span className="text-[12px]">{merchantData?.phone}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px]">{merchantData?.phone}</span>
+                    <FiEdit className=" text-[12px] cursor-pointer" onClick={() => setEditModalOpen(true)} />
+                  </div>
                 </div>
                 <div className="flex">
                   <span className="text-[12px] font-[600] min-w-[105px] max-w-[105px]">
@@ -910,6 +982,45 @@ const MerchantManagement = ({
           </div>
         </div>
       </div>
+
+
+
+      <Modal
+        centered
+        width={600}
+        style={{ fontFamily: "sans-serif" }}
+        title={
+          <p className="text-[16px] font-[700] ">Edit Phone</p>
+        }
+        open={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        footer={null}
+      >
+        <div className="flex flex-col gap-4">
+          {/* Top Section */}
+          <div className="flex flex-col gap-3">
+            <Input
+              placeholder="Enter Phone Number"
+              defaultValue={phoneData}
+              onChange={(e) => setPhoneData(e.target.value)}
+              className="text-[12px]"
+            />
+            <Button
+              type="primary"
+              className="w-24"
+              onClick={fn_edit_phone}
+            >
+              Update
+            </Button>
+          </div>
+
+
+        </div>
+      </Modal>
+
+
+
+
     </div>
   );
 };

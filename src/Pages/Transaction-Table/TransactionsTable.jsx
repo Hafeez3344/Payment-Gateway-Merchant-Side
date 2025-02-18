@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space } from "antd";
+import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
 
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
@@ -157,6 +157,24 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                {/* DropDown of status */}
+                <div>
+                  <Select
+                    className="min-w-[180px]"
+                    placeholder="Status"
+                    value={merchant}
+                    onChange={(value) => setMerchant(value)}
+                    options={[
+                      { value: '', label: <span className="text-gray-400">All Status</span> },
+                      { value: 'Points Pending', label: 'Points Pending' },
+                      { value: 'Points Decline', label: 'Points Decline' },
+                      { value: 'Points Approved', label: 'Points Approved' },
+                      { value: 'Transaction Pending', label: 'Transaction Pending' },
+                      { value: 'Transaction Declined', label: 'Transaction Declined' }
+                    ]}
+                    dropdownStyle={{ minWidth: '180px' }}
+                  />
+                </div>
                 <Space direction="vertical" size={10}>
                   <RangePicker
                     value={dateRange}
@@ -448,6 +466,30 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                   <p className="font-[400] text-[13px]">{selectedTransaction?.reason}</p>
                 </div>
               )}
+
+              {selectedTransaction?.transactionReason ?
+                <>
+                  <p className="text-[14px] font-[700]">
+                    Reason for Decline Transaction
+                  </p>
+
+                  <p className="text-[14px] font-[400]">
+                    {selectedTransaction?.transactionReason}
+                  </p>
+                </>
+                : null}
+
+
+              {selectedTransaction?.activity && selectedTransaction?.activity !== "" &&
+                (<>
+                  <p className="text-[14px] font-[700]">
+                    Activity
+                  </p>
+
+                  <p className="text-[14px] font-[400]">
+                    {selectedTransaction?.activity}
+                  </p>
+                </>)}
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
@@ -457,7 +499,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 className="max-h-[400px]"
               />
 
-              <div className="flex">
+              {/* <div className="flex">
                 <button
                   className="mt-12 border flex border-black px-1 py-1 rounded"
                   onClick={() => {
@@ -470,7 +512,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                   <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
                   <p>Replace Payment Proof</p>
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         )}

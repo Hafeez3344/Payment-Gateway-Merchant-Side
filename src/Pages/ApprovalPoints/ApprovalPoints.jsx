@@ -61,6 +61,11 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
     setSelectedPage("approval-points");
   }, []);
 
+  // setTimeout(() => {
+  //   fetchTransactions(currentPage || 1);
+  // }, 3000);
+
+
   useEffect(() => {
     fetchTransactions(currentPage);
   }, [currentPage]);
@@ -432,6 +437,19 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 </div>
               ))}
               <div className="border-b w-[370px] mt-4"></div>
+
+
+              {selectedTransaction?.activity && selectedTransaction?.activity !== "" &&
+              (<>
+              <p className="text-[14px] font-[700]">
+              Activity
+                  </p>
+
+                  <p className="text-[14px] font-[400]">
+                    {selectedTransaction?.activity}
+                  </p>
+              </>)}
+              
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
@@ -441,7 +459,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 className="max-h-[400px]"
               />
 
-              <div className="flex">
+              {/* <div className="flex">
                 <button
                   className="mt-12 border flex border-black px-1 py-1 rounded"
                   onClick={() => {
@@ -454,7 +472,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                   <RiFindReplaceLine className="mt-[5px] mr-2 text-[#699BF7]" />
                   <p>Replace Payment Proof</p>
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
