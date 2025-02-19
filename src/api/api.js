@@ -216,10 +216,10 @@ export const fn_BankUpdate = async (id, data) => {
 };
 
 // -------------------------------- get All Merchant api----------------------------------------
-export const fn_getAllMerchantApi = async (status, pageNumber) => {
+export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQuery, searchTrnId) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=manual`,
+        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=manual&trnStatus=${merchant || ""}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -245,10 +245,10 @@ export const fn_getAllMerchantApi = async (status, pageNumber) => {
     }
 };
 
-export const fn_getAllDirectPaymentApi = async (status, pageNumber) => {
+export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, searchQuery, searchTrnId) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=direct`,
+        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=direct&trnStatus=${merchant}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

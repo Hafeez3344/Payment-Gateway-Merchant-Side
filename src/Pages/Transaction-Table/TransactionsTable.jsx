@@ -39,7 +39,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      const result = await fn_getAllMerchantApi(status || null, pageNumber);
+      const result = await fn_getAllMerchantApi(status || null, pageNumber, merchant, searchQuery, searchTrnId);
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -65,7 +65,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage]);
+  }, [currentPage, merchant, searchQuery, searchTrnId]);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = new Date(transaction.createdAt);
@@ -170,7 +170,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                       { value: 'Points Decline', label: 'Points Decline' },
                       { value: 'Points Approved', label: 'Points Approved' },
                       { value: 'Transaction Pending', label: 'Transaction Pending' },
-                      { value: 'Transaction Declined', label: 'Transaction Declined' }
+                      { value: 'Transaction Decline', label: 'Transaction Decline' }
                     ]}
                     dropdownStyle={{ minWidth: '180px' }}
                   />
@@ -220,8 +220,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.length > 0 ? (
-                    filteredTransactions.map((transaction) => (
+                  {transactions.length > 0 ? (
+                    transactions.map((transaction) => (
                       <tr
                         key={transaction?._id}
                         className="text-gray-800 text-sm border-b"
