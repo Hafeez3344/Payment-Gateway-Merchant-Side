@@ -14,8 +14,10 @@
     "axios": "^1.7.8",
     "chart.js": "^4.4.7",
     "date-fns": "^4.1.0",
+    "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
-    "jspdf": "^3.0.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.4",
     "pdf-table-extractor": "^1.0.3",
     "pdfjs-dist": "^4.9.155",
     "react": "^18.3.1",
@@ -26,6 +28,7 @@
     "react-loader-spinner": "^6.1.6",
     "react-pdftotext": "^1.3.4",
     "react-router-dom": "^7.0.1",
+    "socket.io-client": "^4.8.1",
     "tabula-js": "^1.0.1"
   },
   "devDependencies": {

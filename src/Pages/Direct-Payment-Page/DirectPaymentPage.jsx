@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 import { RxCross2 } from "react-icons/rx";
 import { FaRegEdit } from "react-icons/fa";
@@ -195,6 +197,127 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
     };
   };
 
+  const downloadPDF = async () => {
+    try {
+      // Fetch all transactions
+      const allTransactions = [];
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await fn_getAllDirectPaymentApi(status || null, page, merchant, searchQuery, searchTrnId);
+        if (result?.status && result?.data?.status === "ok") {
+          allTransactions.push(...result.data.data);
+          if (result.data.data.length < 10) { // Assuming 10 is your page size
+            hasMore = false;
+          }
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Create PDF in landscape mode with larger width
+      const doc = new jsPDF('landscape', 'mm', 'a4');
+
+      // Add title
+      doc.setFontSize(16);
+      doc.text('Direct Transactions Report', 14, 15);
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
+
+      // Define the columns for the table
+      const columns = [
+        { header: 'TRN-ID', dataKey: 'trnNo' },
+        { header: 'Date', dataKey: 'date' },
+        { header: 'User Name', dataKey: 'username' },
+        { header: 'Website', dataKey: 'site' },
+        { header: 'Bank', dataKey: 'bank' },
+        { header: 'Amount', dataKey: 'amount' },
+        { header: 'UTR', dataKey: 'utr' },
+        { header: 'Status', dataKey: 'status' }
+      ];
+
+      // Prepare the data
+      const data = allTransactions.map(transaction => ({
+        trnNo: transaction.trnNo,
+        date: new Date(transaction.createdAt).toLocaleDateString(),
+        username: transaction.username || 'GUEST',
+        site: transaction.site,
+        bank: transaction.bankId?.bankName || 'UPI',
+        amount: transaction.total,
+        utr: transaction.utr,
+        status: transaction.status === "Decline" ? "Transaction Decline"
+          : transaction.status === "Pending" ? "Transaction Pending"
+            : transaction.approval === true ? "Points Approved"
+              : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+                : "Points Pending"
+      }));
+
+      // Generate the table with wider columns
+      doc.autoTable({
+        head: [columns.map(col => col.header)],
+        body: data.map(item => columns.map(col => item[col.dataKey])),
+        startY: 35,
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
+          overflow: 'visible',
+          halign: 'left',
+          textColor: [0, 0, 0]
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          fontSize: 9,
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        columnStyles: {
+          0: { cellWidth: 15 },  // TRN-ID
+          1: { cellWidth: 30 },  // Date
+          2: { cellWidth: 35 },  // User Name
+          3: { cellWidth: 40 },  // Website
+          4: { cellWidth: 30 },  // Bank
+          5: { cellWidth: 25 },  // Amount
+          6: { cellWidth: 35 },  // UTR
+          7: { cellWidth: 35 }   // Status
+        },
+        bodyStyles: {
+          valign: 'middle',
+        },
+        margin: { top: 35, left: 10, right: 10, bottom: 20 },
+        tableWidth: 'auto',
+        didDrawPage: function (data) {
+          // Add page number at the bottom
+          doc.setFontSize(8);
+          doc.text(
+            `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
+            doc.internal.pageSize.width - 20,
+            doc.internal.pageSize.height - 10,
+            { align: 'right' }
+          );
+        },
+      });
+
+      // Add total count at the bottom of the last page
+      const lastPage = doc.internal.getNumberOfPages();
+      doc.setPage(lastPage);
+      doc.setFontSize(10);
+      doc.text(`Total Transactions: ${data.length}`, 14, doc.internal.pageSize.height - 10);
+
+      // Save the PDF
+      doc.save('direct-transactions-report.pdf');
+
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to generate PDF report",
+        placement: "topRight",
+      });
+    }
+  };
+
   return (
     <>
       <div
@@ -203,11 +326,16 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         style={{ minHeight: `${containerHeight}px` }}
       >
         <div className="p-7">
-          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
+          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
             <h1 className="text-[25px] font-[500]">Direct Transactions</h1>
             <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
               Dashboard - Data Table
             </p>
+          </div>
+          <div className="flex justify-end mb-2">
+            <Button type="primary" onClick={downloadPDF}>
+              <p className="">Download Report</p>
+            </Button>
           </div>
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
@@ -220,7 +348,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                 {/* DropDown of status */}
                 <div>
                   <Select
-                    className="min-w-[180px]" 
+                    className="min-w-[180px]"
                     placeholder="Status"
                     value={merchant}
                     onChange={(value) => setMerchant(value)}
@@ -232,7 +360,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                       { value: 'Transaction Pending', label: 'Transaction Pending' },
                       { value: 'Transaction Decline', label: 'Transaction Decline' }
                     ]}
-                    dropdownStyle={{ minWidth: '180px' }} 
+                    dropdownStyle={{ minWidth: '180px' }}
                   />
                 </div>
                 <Space direction="vertical" size={10}>

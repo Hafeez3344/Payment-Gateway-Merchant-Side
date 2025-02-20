@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
+import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button } from "antd";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
@@ -136,6 +138,124 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
     };
   };
 
+  const downloadPDF = async () => {
+    try {
+      // Fetch all transactions
+      const allTransactions = [];
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await fn_getAllMerchantApi(status || null, page, merchant, searchQuery, searchTrnId);
+        if (result?.status && result?.data?.status === "ok") {
+          allTransactions.push(...result.data.data);
+          if (result.data.data.length < 10) { // Assuming 10 is your page size
+            hasMore = false;
+          }
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Create PDF in landscape mode with larger width
+      const doc = new jsPDF('landscape', 'mm', 'a4');
+
+      // Add title
+      doc.setFontSize(16);
+      doc.text('Transactions Report', 14, 15);
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
+
+      // Define the columns for the table
+      const columns = [
+        { header: 'TRN-ID', dataKey: 'trnNo' },
+        { header: 'Date', dataKey: 'date' },
+        { header: 'User Name', dataKey: 'username' },
+        { header: 'Bank', dataKey: 'bank' },
+        { header: 'Amount', dataKey: 'amount' },
+        { header: 'UTR', dataKey: 'utr' },
+        { header: 'Status', dataKey: 'status' }
+      ];
+
+      // Prepare the data
+      const data = allTransactions.map(transaction => ({
+        trnNo: transaction.trnNo,
+        date: new Date(transaction.createdAt).toLocaleDateString(),
+        username: transaction.username || 'GUEST',
+        bank: transaction.bankId?.bankName || 'UPI',
+        amount: transaction.total,
+        utr: transaction.utr,
+        status: transaction.status === "Decline" ? "Transaction Decline"
+          : transaction.status === "Pending" ? "Transaction Pending"
+            : transaction.approval === true ? "Points Approved"
+              : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+                : "Points Pending"
+      }));
+
+      // Generate the table with wider columns
+      doc.autoTable({
+        head: [columns.map(col => col.header)],
+        body: data.map(item => columns.map(col => item[col.dataKey])),
+        startY: 35,
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
+          overflow: 'visible',
+          halign: 'left',
+          textColor: [0, 0, 0]
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          fontSize: 9,
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        columnStyles: {
+          0: { cellWidth: 30 },  // TRN-ID
+          1: { cellWidth: 35 },  // Date
+          2: { cellWidth: 40 },  // User Name
+          3: { cellWidth: 35 },  // Bank
+          4: { cellWidth: 25 },  // Amount
+          5: { cellWidth: 40 },  // UTR
+          6: { cellWidth: 40 }   // Status
+        },
+        bodyStyles: {
+          valign: 'middle',
+        },
+        margin: { top: 35, left: 10, right: 10, bottom: 20 },
+        tableWidth: 'auto',
+        didDrawPage: function (data) {
+          // Add page number at the bottom
+          doc.setFontSize(8);
+          doc.text(
+            `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
+            doc.internal.pageSize.width - 20,
+            doc.internal.pageSize.height - 10,
+            { align: 'right' }
+          );
+        },
+      });
+
+      // Add total count at the bottom of the last page
+      const lastPage = doc.internal.getNumberOfPages();
+      doc.setPage(lastPage);
+      doc.setFontSize(10);
+      doc.text(`Total Transactions: ${data.length}`, 14, doc.internal.pageSize.height - 10);
+
+      // Save the PDF
+      doc.save('transactions-report.pdf');
+
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to generate PDF report",
+        placement: "topRight",
+      });
+    }
+  };
+
   return (
     <>
       <div
@@ -143,11 +263,16 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"}`}
       >
         <div className="p-7">
-          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
+          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
             <h1 className="text-[25px] font-[500]">All Transaction</h1>
             <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
               Dashboard - Data Table
             </p>
+          </div>
+          <div className="flex justify-end mb-2">
+            <Button type="primary" onClick={downloadPDF}>
+              <p className="">Download Report</p>
+            </Button>
           </div>
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
