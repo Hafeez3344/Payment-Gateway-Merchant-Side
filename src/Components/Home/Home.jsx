@@ -16,6 +16,7 @@ import {
   fn_getAllMerchantApi,
   fn_getAllTransactionApi,
   fn_getAllVerifiedTransactionApi,
+  fn_getCardDataByStatus,
 } from "../../api/api";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -41,9 +42,9 @@ const Home = ({
     amount: "",
     username: "",
   });
-  // const [formStep, setFormStep] = useState(1); // Add this state
-  const [generatedLink, setGeneratedLink] = useState(""); 
+  const [generatedLink, setGeneratedLink] = useState("");
   const [showLinkField, setShowLinkField] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -56,7 +57,6 @@ const Home = ({
       try {
         console.log("Fetching all transactions...");
         const response = await fn_getAllMerchantApi();
-        // console.log("Response from fn_getAllMerchantApi: ", response);
         if (response.status) {
           setTransactions(response?.data?.data || []);
         } else {
@@ -72,31 +72,28 @@ const Home = ({
 
     const fetchVerifiedTransactions = async () => {
       try {
-        const response = await fn_getAllVerifiedTransactionApi("Approved");
-        const manualResponse = await fn_getAllVerifiedTransactionApi(
-          "Manual Verified"
-        );
-        const declineResponse = await fn_getAllVerifiedTransactionApi(
-          "Decline"
-        );
-        const unverifiedResponse = await fn_getAllVerifiedTransactionApi(
-          "Pending"
-        );
-        const total = await fn_getAllTransactionApi();
-        setVerifiedTransactions(response?.data || 0);
-        setUnverifiedTransactions(unverifiedResponse?.data || 0);
-        setManualVerifiedTransactions(manualResponse?.data || 0);
-        setDeclineTransactions(declineResponse?.data || 0);
-        setTotalTransactions(total?.data || 0);
+        const [approvedData, manualData, pendingData, declineData, totalData] = await Promise.all([
+          fn_getCardDataByStatus('Approved', activeFilter),
+          fn_getCardDataByStatus('Manual Verified', activeFilter),
+          fn_getCardDataByStatus('Pending', activeFilter),
+          fn_getCardDataByStatus('Decline', activeFilter),
+          fn_getAllTransactionApi()
+        ]);
+
+        setVerifiedTransactions(approvedData?.data?.data || 0);
+        setManualVerifiedTransactions(manualData?.data?.data || 0);
+        setUnverifiedTransactions(pendingData?.data?.data || 0);
+        setDeclineTransactions(declineData?.data?.data || 0);
+        setTotalTransactions(totalData?.data || 0);
       } catch (err) {
-        console.error("Error fetching verified transactions:", err);
-        setError("Unable to fetch verified transactions.");
+        console.error("Error fetching transactions:", err);
+        setError("Unable to fetch transactions.");
       }
     };
 
     fetchTransactions();
     fetchVerifiedTransactions();
-  }, [authorization, navigate, setSelectedPage]);
+  }, [authorization, navigate, setSelectedPage, activeFilter]);
 
   const handleCreateTransaction = async () => {
     try {
@@ -158,6 +155,10 @@ const Home = ({
     }
   };
 
+  const handleFilterClick = (filter) => {
+    setActiveFilter(filter);
+  };
+
   const data = {
     labels: [
       "Jan",
@@ -181,10 +182,6 @@ const Home = ({
           5300, 7400,
         ],
         backgroundColor: "#009666",
-        // borderRadius: {
-        //   topLeft: 10,
-        //   topRight: 10,
-        // },
       },
       {
         label: "Manual Varified",
@@ -250,23 +247,31 @@ const Home = ({
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-1">
           <h1 className="text-[25px] font-[500]">Merchant Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
-            <button className="text-white bg-[#0864E8] border w-[70px] sm:w-[70px] p-1.5 rounded">
+            <button
+              onClick={() => handleFilterClick('all')}
+              className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
               ALL
             </button>
-            <button className="text-black border w-[70px] sm:w-[70px] p-1 rounded">
+            <button
+              onClick={() => handleFilterClick('today')}
+              className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
               TODAY
             </button>
-            <button className="text-black border w-[70px] sm:w-[70px] p-1 rounded">
+            <button
+              onClick={() => handleFilterClick('7days')}
+              className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
               7 DAYS
             </button>
-            <button className="text-black border w-[70px] sm:w-[70px] p-1 rounded">
+            <button
+              onClick={() => handleFilterClick('30days')}
+              className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
               30 DAYS
             </button>
           </div>
         </div>
 
         {/* Boxes Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
           <Boxes
             number={verifiedTransactions}
             amount={totalTransaction}
@@ -276,7 +281,7 @@ const Home = ({
             }
             link={"/transactions-table?status=Approved"}
           />
-          <Boxes
+          {/* <Boxes
             number={manualVerifiedTransactions}
             amount={totalTransaction}
             title={"MANUAL VERIFIED TRANSACTIONS"}
@@ -284,7 +289,7 @@ const Home = ({
               "linear-gradient(to right, rgba(8, 100, 232, 1), rgba(108, 168, 255, 1))"
             }
             link={"/transactions-table?status=Manual Verified"}
-          />
+          /> */}
           <Boxes
             number={unverifiedTransactions}
             amount={totalTransaction}
@@ -333,11 +338,11 @@ const Home = ({
                     color="#F67A03"
                   />
 
-                  <Stat
+                  {/* <Stat
                     label="Manual Verified"
                     value={manualVerifiedTransactions}
                     color="#0C67E9"
-                  />
+                  /> */}
                 </div>
               </div>
               <div className="w-full h-[300px]">

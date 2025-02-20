@@ -82,7 +82,7 @@ const MerchantManagement = ({
   };
 
   useEffect(() => {
-    
+
     fn_getWebsiteList();
     fetchMerchantData();
   }, []);
@@ -302,11 +302,11 @@ const MerchantManagement = ({
 
 
 
-  
+
   const fn_edit_phone = async () => {
     try {
       console.log('click');
-      
+
       if (!phoneData) {
         notification.error({
           message: "Error",
@@ -315,23 +315,23 @@ const MerchantManagement = ({
         });
         return;
       }
-      
+
       const formData = new FormData();
       formData.append("phone", phoneData);
-      
+
       const token = Cookies.get("merchantToken");
       let response;
-        response = await axios.put(
-          `${BACKEND_URL}/merchant/update/${merchantData?._id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      
-      
+      response = await axios.put(
+        `${BACKEND_URL}/merchant/update/${merchantData?._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+
       if (response?.status === 200) {
         setOpen(false);
         notification.success({
@@ -339,7 +339,7 @@ const MerchantManagement = ({
           description: "Phone Updated Successfully!",
           placement: "topRight",
         });
-        
+
         setEditModalOpen(false);
         fetchMerchantData();
       }
@@ -452,6 +452,7 @@ const MerchantManagement = ({
         {/* header */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Banks Details</h1>
+          <h1 className="hidden md:block text-[25px] font-[500] mr-[260px] md:mr-0 lg:mr-[260px]">Withdraw</h1>
           <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
             Dashboard - Data Table
           </p>
@@ -528,12 +529,16 @@ const MerchantManagement = ({
               </div>
             </div>
           </div>
+
+          {/* Mobile Withdrawal heading */}
+          <h1 className="md:hidden text-[25px] font-[500] mt-4 mb-2">Withdrawal</h1>
+
           {/* Right side Card */}
           <div className="w-full md:w-3/4 lg:min-h-[550px] bg-white rounded-lg shadow-md border">
             {/* Header */}
             <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between border-b space-y-4 md:space-y-0">
               {/* Tab Buttons */}
-              <div className="w-full md:w-auto">
+              < div className="w-full md:w-auto">
                 <button
                   className="text-[14px] font-[600] px-4 py-2 w-full md:w-auto border-t"
                   style={{

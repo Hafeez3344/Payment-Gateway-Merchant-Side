@@ -6,8 +6,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { io } from "socket.io-client";
-const socket = io(`${BACKEND_URL}/payment`);
 
 import { RxCross2 } from "react-icons/rx";
 import { FaRegEdit } from "react-icons/fa";
@@ -28,7 +26,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
   const [open, setOpen] = useState(false);
   const status = searchParams.get("status");
   const [isEdit, setIsEdit] = useState(false);
-  const [merchant, setMerchant] = useState("");
+  const [merchant, setMerchant] = useState(loginType === "minor" ? "Points Pending" : "");
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,6 +65,10 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
     }
     setSelectedPage("direct-payment");
   }, []);
+
+  // setTimeout(() => {
+  //   fetchTransactions(currentPage || 1);
+  // }, 3000);
 
 
   useEffect(() => {
@@ -178,7 +180,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
   };
 
   const fn_declinePoints = async (item) => {
-    const response = await fn_updateTransactionStatusApi(item?._id, { reason: reasonForDecline });
+    const response = await fn_updateTransactionStatusApi(item?._id, { reason: reasonForDecline, trnStatus: "Points Decline" });
     if (response?.data?.status === "ok") {
       fetchTransactions(currentPage);
       notification.success({
@@ -316,21 +318,6 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
     }
   };
 
-  useEffect(() => {
-    // Listen for real-time ledger updates
-    socket.on("getMerchantLedger", (data) => {
-
-      console.log("data ", data);
-      fetchTransactions(currentPage || 1);
-    });
-
-
-    socket.on("error", (error) => {
-        console.error("Socket Error:", error.message);
-    });
-
-}, []);
-
   return (
     <>
       <div
@@ -345,11 +332,13 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
               Dashboard - Data Table
             </p>
           </div>
-          <div className="flex justify-end mb-2">
-            <Button type="primary" onClick={downloadPDF}>
-              <p className="">Download Report</p>
-            </Button>
-          </div>
+          {loginType !== "minor" && (
+            <div className="flex justify-end mb-2">
+              <Button type="primary" onClick={downloadPDF}>
+                <p className="">Download Report</p>
+              </Button>
+            </div>
+          )}
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
               <div>
@@ -359,23 +348,25 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
                 {/* DropDown of status */}
-                <div>
-                  <Select
-                    className="min-w-[180px]"
-                    placeholder="Status"
-                    value={merchant}
-                    onChange={(value) => setMerchant(value)}
-                    options={[
-                      { value: '', label: <span className="text-gray-400">All Status</span> },
-                      { value: 'Points Pending', label: 'Points Pending' },
-                      { value: 'Points Decline', label: 'Points Decline' },
-                      { value: 'Points Approved', label: 'Points Approved' },
-                      { value: 'Transaction Pending', label: 'Transaction Pending' },
-                      { value: 'Transaction Decline', label: 'Transaction Decline' }
-                    ]}
-                    dropdownStyle={{ minWidth: '180px' }}
-                  />
-                </div>
+                {loginType !== "minor" && (
+                  <div>
+                    <Select
+                      className="min-w-[180px]"
+                      placeholder="Status"
+                      value={merchant}
+                      onChange={(value) => setMerchant(value)}
+                      options={[
+                        { value: '', label: <span className="text-gray-400">All Status</span> },
+                        { value: 'Points Pending', label: 'Points Pending' },
+                        { value: 'Points Decline', label: 'Points Decline' },
+                        { value: 'Points Approved', label: 'Points Approved' },
+                        { value: 'Transaction Pending', label: 'Transaction Pending' },
+                        { value: 'Transaction Decline', label: 'Transaction Decline' }
+                      ]}
+                      dropdownStyle={{ minWidth: '180px' }}
+                    />
+                  </div>
+                )}
                 <Space direction="vertical" size={10}>
                   <RangePicker
                     value={dateRange}

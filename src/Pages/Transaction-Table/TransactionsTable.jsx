@@ -15,8 +15,6 @@ import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
 import { RxCross2 } from "react-icons/rx";
 import axios from "axios";
-import { io } from "socket.io-client";
-const socket = io(`${BACKEND_URL}/payment`);
 
 const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
@@ -257,21 +255,6 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       });
     }
   };
-
-  useEffect(() => {
-    // Listen for real-time ledger updates
-    socket.on("getMerchantLedger", (data) => {
-
-      console.log("data ", data);
-      fetchTransactions(currentPage || 1);
-    });
-
-
-    socket.on("error", (error) => {
-        console.error("Socket Error:", error.message);
-    });
-
-}, []);
 
   return (
     <>

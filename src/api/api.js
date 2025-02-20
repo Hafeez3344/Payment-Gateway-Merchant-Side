@@ -9,7 +9,7 @@ export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 export const fn_loginMerchantApi = async (data, setPermissionsData) => {
     try {
         const response = await axios.post(`${BACKEND_URL}/merchant/login`, data);
-        
+
         let id;
         let type;
         let message;
@@ -639,6 +639,31 @@ export const fn_deleteStaffApi = async (id) => {
         return {
             status: true,
             message: "Staff Deleted Successfully",
+        };
+    } catch (error) {
+        if (error?.response) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "An error occurred",
+            };
+        }
+        return { status: false, message: "Network Error" };
+    }
+};
+
+//------------------------------------Get Card Data By Status API---------------------------------------------
+export const fn_getCardDataByStatus = async (status, filter) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(`${BACKEND_URL}/ledger/cardMerchantData?status=${status}&filter=${filter}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
         };
     } catch (error) {
         if (error?.response) {

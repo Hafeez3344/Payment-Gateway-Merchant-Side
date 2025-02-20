@@ -1,9 +1,7 @@
 import React from "react";
 import Cookies from "js-cookie";
-
 import Royal247Logo from "../../assets/Royal247Logo.png";
-
-import { PiNotebook } from "react-icons/pi";
+import { PiNotebook, PiHandWithdraw } from "react-icons/pi";
 import { MdPayments } from "react-icons/md";
 import { TbBookUpload } from "react-icons/tb";
 import { IoAnalytics } from "react-icons/io5";
@@ -96,6 +94,17 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="approval-points"
               selectedPage={selectedPage}
               icon={<LuShieldCheck className="text-[20px] scale-[1.1]" />}
+            />
+            <Menu
+              onClick={() => {
+                setSelectedPage("withdraw");
+                navigate("/withdraw");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Withdraw Requests"
+              name="withdraw"
+              selectedPage={selectedPage}
+              icon={<PiHandWithdraw className="text-[20px] scale-[1.1]" />}
             />
             <Menu
               onClick={() => {

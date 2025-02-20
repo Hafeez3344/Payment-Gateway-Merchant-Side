@@ -18,6 +18,7 @@ import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
 import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import ReportsAndAnalytics from "./Pages/Reports-&-Analytics/ReportsAndAnalytics";
 import SystemConfigurationIntegration from "./Pages/System-Configuration-Integration/SystemConfigurationIntegration";
+import Withdraw from "./Pages/Withdraw-Page/Withdraw";
 
 function App() {
 
@@ -179,6 +180,18 @@ function App() {
             path="/approval-points"
             element={
               <ApprovalPoints
+                setSelectedPage={setSelectedPage}
+                authorization={authorization}
+                showSidebar={showSidebar}
+                permissionsData={permissionsData}
+                loginType={loginType}
+              />
+            }
+          />
+           <Route
+            path="/withdraw"
+            element={
+              <Withdraw
                 setSelectedPage={setSelectedPage}
                 authorization={authorization}
                 showSidebar={showSidebar}
