@@ -6,6 +6,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { io } from "socket.io-client";
+const socket = io(`${BACKEND_URL}/payment`);
 
 import { RxCross2 } from "react-icons/rx";
 import { FaRegEdit } from "react-icons/fa";
@@ -65,10 +67,6 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
     }
     setSelectedPage("direct-payment");
   }, []);
-
-  // setTimeout(() => {
-  //   fetchTransactions(currentPage || 1);
-  // }, 3000);
 
 
   useEffect(() => {
@@ -317,6 +315,21 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       });
     }
   };
+
+  useEffect(() => {
+    // Listen for real-time ledger updates
+    socket.on("getMerchantLedger", (data) => {
+
+      console.log("data ", data);
+      fetchTransactions(currentPage || 1);
+    });
+
+
+    socket.on("error", (error) => {
+        console.error("Socket Error:", error.message);
+    });
+
+}, []);
 
   return (
     <>
