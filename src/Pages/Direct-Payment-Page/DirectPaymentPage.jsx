@@ -667,7 +667,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                       className="bg-[#F6790233] flex text-[#F67A03] h-[35px] items-center mb-[10px] px-[10px] rounded-[5px]"
                       onClick={async () => {
                         console.log("selectedTransaction ", selectedTransaction);
-                        const response = await fn_updateTransactionStatusApi(selectedTransaction?._id, { ...selectedTransaction, reason: "" });
+                        const response = await fn_updateTransactionStatusApi(selectedTransaction?._id, { ...selectedTransaction, reason: "", trnStatus: "Points Pending" });
                         if (response?.status) {
                           fetchTransactions(currentPage);
                           notification.success({
@@ -690,7 +690,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                   <p className="font-[400] text-[13px]">{selectedTransaction?.reason}</p>
                 </div>
               )}
-              {selectedTransaction?.transactionReason ?
+              {selectedTransaction?.trnStatus === "Transaction Decline" ?
                 <>
                   <p className="text-[14px] font-[700]">
                     Reason for Decline Transaction

@@ -244,7 +244,7 @@ const Home = ({
     >
       <div className="p-7">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-1">
+        <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-5">
           <h1 className="text-[25px] font-[500]">Merchant Dashboard</h1>
           <div className="flex space-x-2 text-[12px]">
             <button
