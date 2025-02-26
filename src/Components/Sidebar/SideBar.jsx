@@ -39,7 +39,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
     >
       <div className="flex pl-[21px] h-[55px] items-center gap-3 border-b border-secondary">
         <div>
-          <img className="w-[180px]" src={Royal247Logo} alt="" />
+          <img className="w-[160px]" src={Royal247Logo} alt="" />
         </div>
         <button
           className="bg-gray-200 h-[25px] w-[25px] rounded-sm flex md:hidden justify-center ml-20 items-center"
@@ -117,7 +117,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<FaRegCircleUser className="text-[20px]" />}
             />
-            <Menu
+            {/* <Menu
               onClick={() => {
                 setSelectedPage("reports-and-analytics");
                 navigate("/reports-and-analytics");
@@ -127,7 +127,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="reports-and-analytics"
               selectedPage={selectedPage}
               icon={<IoAnalytics className="text-[20px]" />}
-            />
+            /> */}
             <Menu
               onClick={() => {
                 setSelectedPage("help-center");
