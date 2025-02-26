@@ -30,7 +30,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   const containerHeight = window.innerHeight - 120;
   const [showPopup, setShowPopup] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); 
   const [searchTrnId, setSearchTrnId] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [selectedTrns, setSelectedTrns] = useState(null);
@@ -308,7 +308,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                     }}
                   />
                 </Space>
-                {/* Search Input */}
+                {/* Search By TRN Is */}
                 <div className="flex flex-col w-full md:w-40">
                   <input
                     type="text"
