@@ -12,7 +12,7 @@ import { FiEye, FiTrash2 } from "react-icons/fi";
 import { RiFindReplaceLine } from "react-icons/ri";
 import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
 
-import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
+import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
 import { RxCross2 } from "react-icons/rx";
 import axios from "axios";
 
@@ -30,7 +30,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   const containerHeight = window.innerHeight - 120;
   const [showPopup, setShowPopup] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState(""); 
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchTrnId, setSearchTrnId] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [selectedTrns, setSelectedTrns] = useState(null);
@@ -38,12 +38,23 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   const [reasonForDecline, setReasonForDecline] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.transactionHistory?.edit : true;
+  const [allBanks, setAllBanks] = useState([]);
+  const [selectedFilteredBank, setSelectedFilteredBank] = useState("");
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      const result = await fn_getAllMerchantApi(status || null, pageNumber, merchant, searchQuery, searchTrnId);
+      console.log('Fetching with bank:', selectedFilteredBank); // Debug log
+      const result = await fn_getAllMerchantApi(
+        status || null,
+        pageNumber,
+        merchant,
+        searchQuery,
+        searchTrnId,
+        selectedFilteredBank  // Add bank filter
+      );
       if (result?.status) {
         if (result?.data?.status === "ok") {
+          console.log('Received transactions:', result?.data?.data); // Debug log
           setTransactions(result?.data?.data);
           setTotalPages(result?.data?.totalPages);
         } else {
@@ -56,6 +67,25 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
     }
   };
 
+  const fetchBanks = async () => {
+    try {
+      const result = await fn_getAllBanksData2();
+      console.log('Received banks:', result)
+      if (result?.status) {
+        setAllBanks(
+          result?.data?.data?.map((item) => {
+            return {
+              value: item._id,
+              label: item.bankName === "UPI" ? `UPI - ${item.iban}` : item.bankName,
+            };
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching banks:", error);
+    }
+  };
+
   useEffect(() => {
     window.scroll(0, 0);
     if (!authorization) {
@@ -63,34 +93,14 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       return;
     }
     setSelectedPage("transaction-history");
+    fetchBanks();
   }, []);
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage, merchant, searchQuery, searchTrnId]);
+  }, [currentPage, merchant, searchQuery, searchTrnId, selectedFilteredBank]); // Add selectedFilteredBank to dependencies
 
-  const filteredTransactions = transactions.filter((transaction) => {
-    const transactionDate = new Date(transaction.createdAt);
-
-    const adjustedEndDate = dateRange[1] ? new Date(dateRange[1]) : null;
-    if (adjustedEndDate) {
-      adjustedEndDate.setHours(23, 59, 59, 999);
-    }
-
-    const isWithinDateRange =
-      (!dateRange[0] || transactionDate >= dateRange[0]) &&
-      (!adjustedEndDate || transactionDate <= adjustedEndDate);
-
-    const statusCondition = loginType === "minor" ? (transaction?.status === "Approved" && transaction?.approval === false && (!transaction?.reason || transaction?.reason === "")) : true;
-
-    return (
-      transaction?.trnNo?.toString().includes(searchTrnId) &&
-      transaction?.utr?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (merchant === "" || transaction?.merchantName === merchant) &&
-      isWithinDateRange &&
-      statusCondition
-    );
-  });
+  const filteredTransactions = transactions;
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -149,7 +159,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         const result = await fn_getAllMerchantApi(status || null, page, merchant, searchQuery, searchTrnId);
         if (result?.status && result?.data?.status === "ok") {
           allTransactions.push(...result.data.data);
-          if (result.data.data.length < 10) { // Assuming 10 is your page size
+          if (result.data.data.length < 10) {
             hasMore = false;
           }
           page++;
@@ -277,11 +287,39 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
               <div>
-                <p className="text-black font-medium text-lg">
-                  List of all Transactions
+                <p className="text-black font-[500] text-[24px] mr-2">
+                  Filters
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                <Space direction="vertical" size={10}>
+                  <RangePicker
+                    value={dateRange}
+                    onChange={(dates) => {
+                      setDateRange(dates);
+                    }}
+                  />
+                </Space>
+
+                {/* Search By TRN Is */}
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by TRN-ID"
+                    value={searchTrnId}
+                    onChange={(e) => setSearchTrnId(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by UTR"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
                 {/* DropDown of status */}
                 <div>
                   <Select
@@ -300,31 +338,25 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                     dropdownStyle={{ minWidth: '180px' }}
                   />
                 </div>
-                <Space direction="vertical" size={10}>
-                  <RangePicker
-                    value={dateRange}
-                    onChange={(dates) => {
-                      setDateRange(dates);
+
+                {/* Search by Bank */}
+                <div>
+                  <Select
+                    className="w-40"
+                    placeholder="Select Bank"
+                    value={selectedFilteredBank}
+                    onChange={(e) => {
+                      setSelectedFilteredBank(e);
                     }}
-                  />
-                </Space>
-                {/* Search By TRN Is */}
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search by TRN-ID"
-                    value={searchTrnId}
-                    onChange={(e) => setSearchTrnId(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search by UTR"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    options={[
+                      {
+                        value: "",
+                        label: (
+                          <span className="text-gray-400">All Bank</span>
+                        ),
+                      },
+                      ...allBanks,
+                    ]}
                   />
                 </div>
               </div>
@@ -357,8 +389,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                           {new Date(transaction?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}</td>
-                        <td className="p-4">
-                          {transaction?.bankId?.bankName ? (
+                        <td className="p-4 text-nowrap">
+                          {transaction?.bankId?.bankName !== "UPI" ? (
                             <div className="">
                               <span className="text-[13px] font-[700] text-black whitespace-nowrap">
                                 {transaction?.bankId?.bankName}
@@ -366,8 +398,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                             </div>
                           ) : (
                             <div className="">
-                              <p className="text-[14px] font-[700] text-black ">
-                                UPI
+                              <p className="text-[13px] font-[700] text-black ">
+                                UPI<span className="font-[400]"> - {transaction?.bankId?.iban}</span>
                               </p>
                             </div>
                           )}

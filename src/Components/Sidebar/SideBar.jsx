@@ -1,17 +1,18 @@
 import React from "react";
 import Cookies from "js-cookie";
-import Royal247Logo from "../../assets/Royal247Logo.png";
-import { PiNotebook, PiHandWithdraw } from "react-icons/pi";
 import { MdPayments } from "react-icons/md";
-import { TbBookUpload } from "react-icons/tb";
 import { IoAnalytics } from "react-icons/io5";
 import { FaHeadphones } from "react-icons/fa";
+import { TbBookUpload } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+import { TbReportSearch } from "react-icons/tb";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineDashboard } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 import { LuLogOut, LuShieldCheck } from "react-icons/lu";
+import Royal247Logo from "../../assets/Royal247Logo.png";
+import { PiNotebook, PiHandWithdraw } from "react-icons/pi";
 
 const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization, selectedPage, setSelectedPage, setMerchantVerified, loginType, permissionsData }) => {
 
@@ -128,7 +129,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<IoAnalytics className="text-[20px]" />}
             /> */}
-            <Menu
+            {/* <Menu
               onClick={() => {
                 setSelectedPage("help-center");
                 navigate("/support-help-center");
@@ -138,6 +139,17 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="help-center"
               selectedPage={selectedPage}
               icon={<FaHeadphones className="text-[20px]" />}
+            /> */}
+              <Menu
+              onClick={() => {
+                setSelectedPage("reports");
+                navigate("/reports");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Reports"
+              name="reports"
+              selectedPage={selectedPage}
+              icon={<TbReportSearch className="text-[20px]" />}
             />
             <Menu
               onClick={() => {

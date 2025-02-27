@@ -4,47 +4,26 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCircleExclamation } from "react-icons/fa6";
 import { Modal, Button, Input, notification } from "antd";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import {
-  fn_getAllMerchantApi,
-  fn_getAllTransactionApi,
-  fn_getAllVerifiedTransactionApi,
-  fn_getCardDataByStatus,
-} from "../../api/api";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend, } from "chart.js";
+import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getAllVerifiedTransactionApi, fn_getCardDataByStatus, } from "../../api/api";
 
-const Home = ({
-  setSelectedPage,
-  authorization,
-  showSidebar,
-  loginType,
-  permissionsData,
-}) => {
+const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissionsData }) => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const containerHeight = window.innerHeight - 105;
+  const [adminCharges, setAdminCharges] = useState("")
   const [transactions, setTransactions] = useState([]);
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [showLinkField, setShowLinkField] = useState(false);
   const [totalTransaction, setTotalTransactions] = useState(0);
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
-  const [manualVerifiedTransactions, setManualVerifiedTransactions] =
-    useState(0);
-  const [transactionData, setTransactionData] = useState({
-    amount: "",
-    username: "",
-  });
-  const [generatedLink, setGeneratedLink] = useState("");
-  const [showLinkField, setShowLinkField] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [transactionData, setTransactionData] = useState({ amount: "", username: "", });
+
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -52,48 +31,83 @@ const Home = ({
       navigate("/login");
     }
     setSelectedPage("dashboard");
-
-    const fetchTransactions = async () => {
-      try {
-        console.log("Fetching all transactions...");
-        const response = await fn_getAllMerchantApi();
-        if (response.status) {
-          setTransactions(response?.data?.data || []);
-        } else {
-          setError(response.message);
-        }
-      } catch (err) {
-        console.error("Error fetching transactions:", err);
-        setError("Unable to fetch transactions.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchVerifiedTransactions = async () => {
-      try {
-        const [approvedData, manualData, pendingData, declineData, totalData] = await Promise.all([
-          fn_getCardDataByStatus('Approved', activeFilter),
-          fn_getCardDataByStatus('Manual Verified', activeFilter),
-          fn_getCardDataByStatus('Pending', activeFilter),
-          fn_getCardDataByStatus('Decline', activeFilter),
-          fn_getAllTransactionApi()
-        ]);
-
-        setVerifiedTransactions(approvedData?.data?.data || 0);
-        setManualVerifiedTransactions(manualData?.data?.data || 0);
-        setUnverifiedTransactions(pendingData?.data?.data || 0);
-        setDeclineTransactions(declineData?.data?.data || 0);
-        setTotalTransactions(totalData?.data || 0);
-      } catch (err) {
-        console.error("Error fetching transactions:", err);
-        setError("Unable to fetch transactions.");
-      }
-    };
-
-    fetchTransactions();
-    fetchVerifiedTransactions();
+    fetchAllData();
   }, [authorization, navigate, setSelectedPage, activeFilter]);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+      const [
+        approvedData,
+        pendingData,
+        declineData,
+        totalData,
+        merchantData,
+      ] = await Promise.all([
+        fn_getCardDataByStatus('Approved', activeFilter),
+        fn_getCardDataByStatus('Pending', activeFilter),
+        fn_getCardDataByStatus('Decline', activeFilter),
+        fn_getAllTransactionApi(),
+        fn_getAllMerchantApi(),
+      ]);
+
+      setVerifiedTransactions(approvedData?.data?.data || 0);
+      setAdminCharges(approvedData?.data?.adminTotalSum || 0);
+      setTotalTransactions(approvedData?.data?.totalTransaction || 0);
+      setUnverifiedTransactions(pendingData?.data?.data || 0);
+      setDeclineTransactions(declineData?.data?.data || 0);
+
+      if (merchantData.status) {
+        setTransactions(merchantData?.data?.data || []);
+      } else {
+        setError(merchantData.message);
+      }
+
+    } catch (err) {
+      console.error("Error fetching transactions:", err);
+      setError("Unable to fetch transactions.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterClick = async (filterType) => {
+    setActiveFilter(filterType);
+    try {
+      setLoading(true);
+      const [
+        approvedData,
+        pendingData,
+        declineData,
+        totalData,
+        merchantData,
+      ] = await Promise.all([
+        fn_getCardDataByStatus('Approved', filterType),
+        fn_getCardDataByStatus('Pending', filterType),
+        fn_getCardDataByStatus('Decline', filterType),
+        fn_getAllTransactionApi(),
+        fn_getAllMerchantApi(),
+      ]);
+
+      setVerifiedTransactions(approvedData?.data?.data || 0);
+      setAdminCharges(approvedData?.data?.adminTotalSum || 0);
+      setTotalTransactions(approvedData?.data?.totalTransaction || 0);
+      setUnverifiedTransactions(pendingData?.data?.data || 0);
+      setDeclineTransactions(declineData?.data?.data || 0);
+
+      if (merchantData.status) {
+        setTransactions(merchantData?.data?.data || []);
+      } else {
+        setError(merchantData.message);
+      }
+
+    } catch (err) {
+      console.error("Error fetching filtered data:", err);
+      setError("Unable to fetch filtered data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreateTransaction = async () => {
     try {
@@ -112,7 +126,6 @@ const Home = ({
         });
       }
 
-      // Generate payment link
       const baseUrl = window.location.origin;
       const link = `${baseUrl}/payment?amount=${transactionData.amount}&username=${transactionData.username}`;
       setGeneratedLink(link);
@@ -155,10 +168,6 @@ const Home = ({
     }
   };
 
-  const handleFilterClick = (filter) => {
-    setActiveFilter(filter);
-  };
-
   const data = {
     labels: [
       "Jan",
@@ -178,32 +187,32 @@ const Home = ({
       {
         label: "Approved",
         data: [
-          10300, 15200, 19300, 14500, 5300, 10200, 12200, 7100, 16300, 13500,
-          5300, 7400,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0,
         ],
         backgroundColor: "#009666",
       },
       {
         label: "Manual Varified",
         data: [
-          15300, 5200, 17300, 18500, 5300, 17200, 12400, 7100, 14300, 13500,
-          5300, 7400,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0,
         ],
         backgroundColor: "#0C67E9",
       },
       {
         label: "Pending",
         data: [
-          16300, 15200, 15300, 13500, 15300, 14200, 10200, 10200, 7100, 13500,
-          5900, 3300,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0,
         ],
         backgroundColor: "#F67A03",
       },
       {
         label: "Faild",
         data: [
-          4500, 4000, 9300, 15000, 4000, 11000, 2000, 8000, 10200, 17400, 15300,
-          18800,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0,
         ],
         backgroundColor: "#FF3E5E",
       },
@@ -249,29 +258,29 @@ const Home = ({
           <div className="flex space-x-2 text-[12px]">
             <button
               onClick={() => handleFilterClick('all')}
-              className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
+              className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
               ALL
             </button>
             <button
               onClick={() => handleFilterClick('today')}
-              className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
+              className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
               TODAY
             </button>
             <button
               onClick={() => handleFilterClick('7days')}
-              className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
+              className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
               7 DAYS
             </button>
             <button
               onClick={() => handleFilterClick('30days')}
-              className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
+              className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
               30 DAYS
             </button>
           </div>
         </div>
 
         {/* Boxes Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7 text-nowrap">
           <Boxes
             number={verifiedTransactions}
             amount={totalTransaction}
@@ -281,15 +290,6 @@ const Home = ({
             }
             link={"/transactions-table?status=Approved"}
           />
-          {/* <Boxes
-            number={manualVerifiedTransactions}
-            amount={totalTransaction}
-            title={"MANUAL VERIFIED TRANSACTIONS"}
-            bgColor={
-              "linear-gradient(to right, rgba(8, 100, 232, 1), rgba(108, 168, 255, 1))"
-            }
-            link={"/transactions-table?status=Manual Verified"}
-          /> */}
           <Boxes
             number={unverifiedTransactions}
             amount={totalTransaction}
@@ -308,6 +308,17 @@ const Home = ({
             }
             link={"/transactions-table?status=Decline"}
           />
+          <div
+            className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
+            style={{ backgroundImage: "linear-gradient(to right, rgba(148, 0, 211, 1), rgba(186, 85, 211, 1))" }}
+
+          >
+            <h2 className="text-[13px] uppercase font-[500]">CHARGES</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(adminCharges).toFixed(2)}</p>
+            <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
+              No. of Transactions: <span className="font-[700]">{totalTransaction}</span>
+            </p>
+          </div>
         </div>
 
         {/* Graph and Recent Transactions */}
@@ -337,12 +348,6 @@ const Home = ({
                     value={unverifiedTransactions}
                     color="#F67A03"
                   />
-
-                  {/* <Stat
-                    label="Manual Verified"
-                    value={manualVerifiedTransactions}
-                    color="#0C67E9"
-                  /> */}
                 </div>
               </div>
               <div className="w-full h-[300px]">
@@ -421,8 +426,7 @@ const Stat = ({ label, value, color }) => (
 const RecentTransaction = ({ name, utrId, status, color, amount }) => {
   const statusColor = {
     Approved: "#029868",
-    Declined: "#FF3F5E",
-    "Manual Verified": "#0864E8",
+    Decline: "#FF3F5E",
     Pending: "#F67A03",
   };
 

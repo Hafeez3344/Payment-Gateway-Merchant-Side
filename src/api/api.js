@@ -216,17 +216,17 @@ export const fn_BankUpdate = async (id, data) => {
 };
 
 // -------------------------------- get All Merchant api----------------------------------------
-export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQuery, searchTrnId) => {
+export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQuery, searchTrnId, bankId) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=manual&trnStatus=${merchant || ""}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}`,
+        const response = await axios.get(
+            `${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=manual&trnStatus=${merchant || ""}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}&bankId=${bankId || ""}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
             });
-        // console.log(response);
         return {
             status: true,
             message: "Merchants show successfully",
@@ -245,17 +245,17 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
     }
 };
 
-export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, searchQuery, searchTrnId) => {
+export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, searchQuery, searchTrnId, bankId) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=direct&trnStatus=${merchant}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}`,
+        const response = await axios.get(
+            `${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=direct&trnStatus=${merchant || ""}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}&bankId=${bankId || ""}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
             });
-        // console.log(response);
         return {
             status: true,
             message: "Merchants show successfully",
@@ -363,10 +363,10 @@ export const fn_getAllVerifiedTransactionApi = async (status) => {
 };
 
 // -----------------------------------Get All Transactions api---------------------------------
-export const fn_getAllTransactionApi = async () => {
+export const fn_getAllTransactionApi = async (bankId) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/cardMerchantData`,
+        const response = await axios.get(`${BACKEND_URL}/ledger/cardMerchantData${bankId ? `&bankId=${bankId}` : ''}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -675,5 +675,50 @@ export const fn_getCardDataByStatus = async (status, filter) => {
         return { status: false, message: "Network Error" };
     }
 };
+
+//------------------------------------Get all banks API---------------------------------------------
+export const fn_getAllBanksData = async (accountType) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const url = `${BACKEND_URL}/bank/getAll?${accountType === "disabledBanks"
+            ? "disable=true"
+            : `accountType=${accountType}&disable=false`
+            }`;
+
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return { status: false, message: "Network Error" };
+    }
+};
+
+export const fn_getAllBanksData2 = async () => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const url = `${BACKEND_URL}/bank/allBank`;
+
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return { status: false, message: "Network Error" };
+    }
+};
+
 
 export default BACKEND_URL;
