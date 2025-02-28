@@ -659,9 +659,9 @@ const MerchantManagement = ({
                     >
                       Website Management
                     </Button>
-                    <Button type="primary" onClick={handleAddAccount}>
+                    {/* <Button type="primary" onClick={handleAddAccount}>
                       Add Account
-                    </Button>
+                    </Button> */}
                   </>
                 )}
                 <Modal

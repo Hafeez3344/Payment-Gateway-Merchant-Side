@@ -120,17 +120,6 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
             />
             {/* <Menu
               onClick={() => {
-                setSelectedPage("reports-and-analytics");
-                navigate("/reports-and-analytics");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Reports & Analytics"
-              name="reports-and-analytics"
-              selectedPage={selectedPage}
-              icon={<IoAnalytics className="text-[20px]" />}
-            /> */}
-            {/* <Menu
-              onClick={() => {
                 setSelectedPage("help-center");
                 navigate("/support-help-center");
                 if (isMobile()) fn_controlSidebar();
@@ -140,7 +129,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<FaHeadphones className="text-[20px]" />}
             /> */}
-              <Menu
+            <Menu
               onClick={() => {
                 setSelectedPage("reports");
                 navigate("/reports");
@@ -162,17 +151,6 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<IoSettingsOutline className="text-[20px]" />}
             />
-            {/* <Menu
-              onClick={() => {
-                setSelectedPage("upload-statement");
-                navigate("/upload-statement");
-                if (isMobile()) fn_controlSidebar();
-              }}
-              label="Upload Statement"
-              name="upload-statement"
-              selectedPage={selectedPage}
-              icon={<TbBookUpload className="text-[20px]" />}
-            /> */}
             <Menu
               onClick={() => {
                 setSelectedPage("staff");
@@ -280,17 +258,17 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
             {permissionsData?.reportsAnalytics?.view && (
               <Menu
                 onClick={() => {
-                  setSelectedPage("reports-and-analytics");
-                  navigate("/reports-and-analytics");
+                  setSelectedPage("reports");
+                  navigate("/reports");
                   if (isMobile()) fn_controlSidebar();
                 }}
-                label="Reports & Analytics"
-                name="reports-and-analytics"
+                label="Reports"
+                name="reports"
                 selectedPage={selectedPage}
-                icon={<IoAnalytics className="text-[20px]" />}
+                icon={<TbReportSearch className="text-[20px]" />}
               />
             )}
-            {permissionsData?.support?.view && (
+            {/* {permissionsData?.support?.view && (
               <Menu
                 onClick={() => {
                   setSelectedPage("help-center");
@@ -302,20 +280,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 selectedPage={selectedPage}
                 icon={<FaHeadphones className="text-[20px]" />}
               />
-            )}
-            {permissionsData?.uploadStatement?.view && (
-              <Menu
-                onClick={() => {
-                  setSelectedPage("upload-statement");
-                  navigate("/upload-statement");
-                  if (isMobile()) fn_controlSidebar();
-                }}
-                label="Upload Statement"
-                name="upload-statement"
-                selectedPage={selectedPage}
-                icon={<TbBookUpload className="text-[20px]" />}
-              />
-            )}
+            )} */}
           </>
         )}
       </div>
