@@ -170,7 +170,7 @@ export const fn_getApiKeys = async () => {
 export const fn_getBankByAccountTypeApi = async (accountType) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/bank/getAll?accountType=${accountType}`, // accountType="bank","upi"
+        const response = await axios.get(`${BACKEND_URL}/withdrawBank/getAll?accountType=${accountType}`, // accountType="bank","upi"
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -194,8 +194,8 @@ export const fn_getBankByAccountTypeApi = async (accountType) => {
 export const fn_BankUpdate = async (id, data) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.post(`${BACKEND_URL}/bank/active?id=${id}&accountType=${data?.accountType}`,
-            {},
+        const response = await axios.put(`${BACKEND_URL}/withdrawBank/update/${id}`,
+            data,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

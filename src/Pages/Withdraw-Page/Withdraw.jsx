@@ -1,90 +1,31 @@
 import axios from "axios";
-import { FiEye} from "react-icons/fi";
+import Cookies from "js-cookie";
+import TextArea from "antd/es/input/TextArea";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
+import { Pagination, Modal, Input, Select, Button, notification } from "antd";
+
+import { FiEye } from "react-icons/fi";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import { Pagination, Modal, Input,Select, Button } from "antd";
-import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi } from "../../api/api";
+import { FaExclamationCircle } from "react-icons/fa";
+import BACKEND_URL, { fn_getBankByAccountTypeApi } from "../../api/api";
 
 const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
+
     const navigate = useNavigate();
-    const [open, setOpen] = useState(false);
-    const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
-    const [withdrawAmount, setWithdrawAmount] = useState('');
-    const [selectedBank, setSelectedBank] = useState(null);
+    const [banks, setBanks] = useState([]);
+    const [exchanges, setChanges] = useState([])
     const containerHeight = window.innerHeight - 120;
-    const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [transactions, setTransactions] = useState([]);
+    const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
 
-
-    const staticTransactions = [
-        {
-            _id: 1,
-            trnNo: "TRN001",
-            createdAt: "2024-01-20T10:30:00",
-            username: "John Doe",
-            bankId: { bankName: "HDFC Bank" },
-            total: 5000,
-            utr: "UTR123456",
-            status: "Approved",
-            approval: true
-        },
-        {
-            _id: 2,
-            trnNo: "TRN002",
-            createdAt: "2024-01-20T11:45:00",
-            username: "Jane Smith",
-            bankId: { bankName: "SBI Bank" },
-            total: 3500,
-            utr: "UTR789012",
-            status: "Pending",
-            approval: false
-        },
-        {
-            _id: 3,
-            trnNo: "TRN003",
-            createdAt: "2024-01-20T09:15:00",
-            username: "GUEST",
-            bankId: { bankName: "ICICI Bank" },
-            total: 7500,
-            utr: "UTR345678",
-            status: "Decline",
-            approval: false
-        },
-        {
-            _id: 1,
-            trnNo: "TRN001",
-            createdAt: "2024-01-20T10:30:00",
-            username: "John Doe",
-            bankId: { bankName: "HDFC Bank" },
-            total: 5000,
-            utr: "UTR123456",
-            status: "Approved",
-            approval: true
-        },
-        {
-            _id: 2,
-            trnNo: "TRN002",
-            createdAt: "2024-01-20T11:45:00",
-            username: "Jane Smith",
-            bankId: { bankName: "SBI Bank" },
-            total: 3500,
-            utr: "UTR789012",
-            status: "Pending",
-            approval: false
-        },
-        {
-            _id: 3,
-            trnNo: "TRN003",
-            createdAt: "2024-01-20T09:15:00",
-            username: "GUEST",
-            bankId: { bankName: "ICICI Bank" },
-            total: 7500,
-            utr: "UTR345678",
-            status: "Decline",
-            approval: false
-        }
-    ];
+    const [note, setNote] = useState("");
+    const [exchange, setExchange] = useState(null);
+    const [exchangeData, setExchangeData] = useState({});
+    const [selectedBank, setSelectedBank] = useState(null);
+    const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [merchantWallet, setMerchantWallet] = useState({});
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -93,18 +34,154 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             return;
         }
         setSelectedPage("withdraw");
+        fn_getMerchantBanks();
+        fn_getExchanges();
+        fn_getWithdraws();
+        fn_merchantWallet();
     }, []);
+
+    useEffect(() => {
+        setNote("");
+        setExchange(null);
+        setSelectedBank(null);
+        setWithdrawAmount('');
+    }, [withdrawModalOpen])
+
+    useEffect(() => {
+        if (exchange) {
+            setExchangeData(exchanges?.find((e) => e?.value === exchange));
+        }
+    }, [exchange]);
+
+    const fn_getMerchantBanks = async () => {
+        const response = await fn_getBankByAccountTypeApi("");
+        if (response?.status) {
+            setBanks(response?.data?.data?.map((item) => {
+                return { value: item?._id, label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.iban}`}` }
+            }));
+        }
+    };
+
+    const fn_getExchanges = async () => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/exchange/get`)
+            if (response?.status === 200) {
+                setChanges(response?.data?.data?.map((item) => {
+                    return { value: item?._id, label: item?.currency, rate: item?.currencyRate, charges: item?.charges }
+                }))
+            }
+        } catch (error) {
+            console.log("error while fetching exchange ", error);
+        }
+    };
+
+    const fn_getWithdraws = async () => {
+        try {
+            const token = Cookies.get("merchantToken");
+            const response = await axios.get(`${BACKEND_URL}/withdraw/getAll?type=merchant`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status === 200) {
+                setTransactions(response?.data?.data);
+            }
+        } catch (error) {
+            console.log("error while withdraws get ", error);
+        }
+    };
+
+    const fn_merchantWallet = async () => {
+        try {
+            const token = Cookies.get("merchantToken");
+            const response = await axios.get(`${BACKEND_URL}/ledger/withdrawData`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status === 200) {
+                setMerchantWallet(response?.data);
+            }
+        } catch (error) {
+            console.log(`error while getting wallet `, error);
+        }
+    }
 
     const handleWithdrawRequest = () => {
         setWithdrawModalOpen(true);
     };
 
-    const handleWithdrawSubmit = () => {
-        // Add your withdraw submission logic here
-        console.log('Withdraw request submitted:', { amount: withdrawAmount, bank: selectedBank });
-        setWithdrawModalOpen(false);
-        setWithdrawAmount('');
-        setSelectedBank(null);
+    const handleWithdrawSubmit = async () => {
+        if (withdrawAmount === "" || withdrawAmount == 0 || exchange === "") {
+            return notification.error({
+                message: "Error",
+                description: "Enter Amount to Withdraw",
+                placement: "topRight",
+            });
+        }
+        if (!exchange) {
+            return notification.error({
+                message: "Error",
+                description: "Select Exchange",
+                placement: "topRight",
+            });
+        }
+        if (exchange === "67c1e65de5d59894e5a19435" && banks?.length === 0) {
+            return notification.error({
+                message: "Error",
+                description: "First Add Bank",
+                placement: "topRight",
+            });
+        }
+        if (exchange === "67c1e65de5d59894e5a19435" && !selectedBank) {
+            return notification.error({
+                message: "Error",
+                description: "Select Bank",
+                placement: "topRight",
+            });
+        }
+        if (merchantWallet?.pendingAmount < parseFloat(withdrawAmount)) {
+            return notification.error({
+                message: "Error",
+                description: "Not Enough Balance",
+                placement: "topRight",
+            });
+        }
+        const data = {
+            amount: ((parseFloat(withdrawAmount) - parseFloat(exchangeData?.charges)) * parseFloat(exchangeData?.rate)).toFixed(2),
+            withdrawBankId: exchange === "67c1e65de5d59894e5a19435" ? selectedBank : null,
+            note: note,
+            exchangeId: exchange,
+            amountINR: withdrawAmount
+        };
+        try {
+            const token = Cookies.get("merchantToken");
+            const response = await axios.post(`${BACKEND_URL}/withdraw/create`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            if (response?.status === 200) {
+                fn_getWithdraws();
+                fn_merchantWallet();
+                setWithdrawModalOpen(false);
+                notification.success({
+                    message: "Success",
+                    description: "Withdraw Request Created!",
+                    placement: "topRight",
+                });
+            }
+        } catch (error) {
+            console.log("error while creating withdraw request ", error);
+            notification.error({
+                message: "Error",
+                description: error?.response?.data?.message || "Network Error",
+                placement: "topRight",
+            });
+        }
     };
 
     return (
@@ -137,59 +214,38 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             <table className="min-w-full border">
                                 <thead>
                                     <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                                        <th className="p-4 text-nowrap">TRN-ID</th>
+                                        <th className="p-4 text-nowrap">Sr No.</th>
                                         <th className="p-4">DATE</th>
-                                        <th className="p-4 text-nowrap">User Name</th>
-                                        <th className="p-4 text-nowrap">BANK NAME</th>
-                                        <th className="p-4 text-nowrap">TOTAL AMOUNT</th>
-                                        <th className="p-4">UTR#</th>
+                                        <th className="p-4 text-nowrap">Amount</th>
+                                        <th className="p-4 text-nowrap">Exchange</th>
                                         <th className="pl-8">Status</th>
-                                        <th className="pl-7">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {staticTransactions.map((transaction) => (
-                                        <tr key={transaction._id} className="text-gray-800 text-sm border-b">
-                                            <td className="p-4 text-[13px] font-[600] text-[#000000B2]">{transaction.trnNo}</td>
+                                    {transactions?.length > 0 ? transactions?.map((transaction, index) => (
+                                        <tr key={transaction?._id} className="text-gray-800 text-sm border-b">
+                                            <td className="p-4 text-[13px] font-[600] text-[#000000B2]">{index + 1}</td>
                                             <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                                                {new Date(transaction.createdAt).toDateString()},{" "}
-                                                {new Date(transaction.createdAt).toLocaleTimeString()}
+                                                {new Date(transaction?.createdAt).toDateString()},{" "}
+                                                {new Date(transaction?.createdAt).toLocaleTimeString()}
                                             </td>
-                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction.username}</td>
-                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction.bankId.bankName}</td>
-                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">
-                                                <FaIndianRupeeSign className="inline-block mt-[-1px]" />{" "}
-                                                {transaction.total}
-                                            </td>
-                                            <td className="p-4 text-[12px] font-[700] text-[#0864E8]">{transaction.utr}</td>
+                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
+                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[500]">
-                                                <span className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center${transaction.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" :
-                                                    transaction.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" :
+                                                <span className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" :
+                                                    transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" :
                                                         "bg-[#10CB0026] text-[#0DA000]"}`}>
-                                                    {transaction.status}
+                                                    {transaction?.status}
                                                 </span>
                                             </td>
-                                            <td className="p-4">
-                                                <button
-                                                    className="bg-blue-100 text-blue-600 rounded-full px-2 py-2"
-                                                    title="View"
-                                                    onClick={() => handleViewTransaction(transaction)}
-                                                >
-                                                    <FiEye />
-                                                </button>
-                                            </td>
                                         </tr>
-                                    ))}
+                                    )) : (
+                                        <tr>
+                                            <td colSpan={8} className="text-center w-full text-gray-600 italic py-[15px] text-[14px] font-[500]"><FaExclamationCircle className="inline-block text-[20px] mt-[-4px] me-[7px]" />No Transaction Found</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
-                        </div>
-                        <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
-                            <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
-                            <Pagination
-                                className="self-center md:self-auto"
-                                defaultCurrent={1}
-                                total={30}
-                            />
                         </div>
                     </div>
                 </div>
@@ -215,26 +271,54 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             value={withdrawAmount}
                             onChange={(e) => setWithdrawAmount(e.target.value)}
                         />
+                        <p className="text-gray-500 text-[13px] font-[500]">Avaiable for Withdraw: <span className="text-green-500">{merchantWallet?.pendingAmount || 0} INR</span></p>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Select Bank
+                            Exchange
                         </label>
                         <Select
                             style={{ width: '100%' }}
-                            placeholder="Select your bank"
-                            onChange={(value) => setSelectedBank(value)}
-                            value={selectedBank}
-                            options={[
-                                { value: 'hdfc', label: 'HDFC Bank' },
-                                { value: 'sbi', label: 'SBI Bank' },
-                                { value: 'icici', label: 'ICICI Bank' },
-                            ]}
+                            placeholder="Select Exchange"
+                            value={exchange}
+                            onChange={(e) => setExchange(e)}
+                            options={exchanges}
+                        />
+                    </div>
+                    {exchange && (
+                        <div>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Rate:</span>{" "}1 INR = {exchangeData?.rate} {exchangeData?.label}</p>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Charges:</span>{" "}{exchangeData?.charges} INR</p>
+                            <p className="text-[13px] font-[500] flex items-center text-green-500"><span className="text-gray-500 w-[150px] block">Withdrawal Amount:</span>{" "}{((parseFloat(withdrawAmount) - parseFloat(exchangeData?.charges)) * parseFloat(exchangeData?.rate)).toFixed(2)} {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}</p>
+                        </div>
+                    )}
+                    {exchange === "67c1e65de5d59894e5a19435" && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Select Bank
+                            </label>
+                            <Select
+                                style={{ width: '100%' }}
+                                placeholder="Select Your Bank"
+                                onChange={(value) => setSelectedBank(value)}
+                                value={selectedBank}
+                                options={banks}
+                            />
+                        </div>
+                    )}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Note
+                        </label>
+                        <TextArea
+                            placeholder="Write anything about Transaction"
+                            autoSize={{ minRows: 4, maxRows: 8 }}
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
                         />
                     </div>
                 </div>
             </Modal>
-
         </>
     );
 };

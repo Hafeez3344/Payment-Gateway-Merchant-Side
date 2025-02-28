@@ -2,54 +2,41 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { Switch, Button, Modal, Input, notification } from "antd";
 import { FiEdit, FiCamera, FiTrash2 } from "react-icons/fi";
+import { Switch, Button, Modal, Input, notification } from "antd";
 
 import { Banks } from "../../json-data/banks";
 import upilogo2 from "../../assets/upilogo2.svg";
 import Rectangle from "../../assets/Rectangle.jpg";
-import BACKEND_URL, {
-  fn_BankUpdate,
-  fn_getBankByAccountTypeApi,
-  fn_getMerchantData,
-} from "../../api/api";
+import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi, fn_getMerchantData } from "../../api/api";
 
-const MerchantManagement = ({
-  setSelectedPage,
-  authorization,
-  showSidebar,
-  permissionsData,
-}) => {
+const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
+
   const navigate = useNavigate();
-  const containerHeight = window.innerHeight - 120;
   const [open, setOpen] = React.useState(false);
   const [banksData, setBanksData] = useState([]);
-  const [activeTab, setActiveTab] = useState("bank");
-  const [merchantData, setMerchantData] = useState(null);
   const [phoneData, setPhoneData] = useState(null);
+  const containerHeight = window.innerHeight - 120;
+  const [state, setState] = useState({ bank: "" });
+  const [activeTab, setActiveTab] = useState("bank");
   const [websiteList, setWebsiteList] = useState([]);
+  const [websiteName, setWebsiteName] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedBank, setSelectedBank] = useState(null);
+  const [merchantData, setMerchantData] = useState(null);
+  const [editAccountId, setEditAccountId] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [websiteModalOpen, setWebsiteModalOpen] = useState(false);
+  const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.merchantProfile?.edit : true;
+
   const [data, setData] = useState({
     image: null,
     bankName: "",
     accountNo: "",
     accountType: "",
     iban: "",
-    accountLimit: "",
     accountHolderName: "",
   });
-  const [state, setState] = useState({
-    bank: "",
-  });
-  const [selectedBank, setSelectedBank] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editAccountId, setEditAccountId] = useState(null);
-  const editablePermission =
-    Object.keys(permissionsData).length > 0
-      ? permissionsData?.merchantProfile?.edit
-      : true;
-  const [websiteModalOpen, setWebsiteModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [websiteName, setWebsiteName] = useState("");
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -67,7 +54,6 @@ const MerchantManagement = ({
     }
   }, [state.bank]);
 
-
   const fetchMerchantData = async () => {
     const token = Cookies.get("merchantToken");
     if (token) {
@@ -82,7 +68,6 @@ const MerchantManagement = ({
   };
 
   useEffect(() => {
-
     fn_getWebsiteList();
     fetchMerchantData();
   }, []);
@@ -130,7 +115,7 @@ const MerchantManagement = ({
     } catch (error) {
       console.log("error => ", error);
     };
-  }
+  };
 
   const handleEdit = (account) => {
     setData({
@@ -138,7 +123,6 @@ const MerchantManagement = ({
       bankName: account.bankName,
       accountNo: account.accountNo,
       iban: account.iban,
-      accountLimit: account.accountLimit,
       accountHolderName: account.accountHolderName,
     });
     setEditAccountId(account._id);
@@ -153,7 +137,6 @@ const MerchantManagement = ({
       accountNo: "",
       accountType: "",
       iban: "",
-      accountLimit: "",
       accountHolderName: "",
     });
     setIsEditMode(false);
@@ -201,22 +184,6 @@ const MerchantManagement = ({
         });
         return;
       }
-      if (data?.accountLimit === "") {
-        notification.error({
-          message: "Error",
-          description: "Enter Account Limit",
-          placement: "topRight",
-        });
-        return;
-      }
-      if (!phoneData) {
-        notification.error({
-          message: "Error",
-          description: "Must enter phone number",
-          placement: "topRight",
-        });
-        return;
-      }
       if (data?.accountHolderName === "") {
         notification.error({
           message: "Error",
@@ -236,7 +203,6 @@ const MerchantManagement = ({
         formData.append("accountNo", data?.accountNo);
         formData.append("accountType", activeTab);
         formData.append("iban", data?.iban);
-        formData.append("accountLimit", data?.accountLimit);
         formData.append("accountHolderName", data?.accountHolderName);
         formData.append("block", true);
       } else {
@@ -245,7 +211,6 @@ const MerchantManagement = ({
         formData.append("image", data?.image);
         formData.append("accountType", activeTab);
         formData.append("iban", data?.iban);
-        formData.append("accountLimit", data?.accountLimit);
         formData.append("accountHolderName", data?.accountHolderName);
         formData.append("block", true);
       }
@@ -253,7 +218,7 @@ const MerchantManagement = ({
       let response;
       if (isEditMode) {
         response = await axios.put(
-          `${BACKEND_URL}/bank/update/${editAccountId}`,
+          `${BACKEND_URL}/withdrawBank/update/${editAccountId}`,
           formData,
           {
             headers: {
@@ -262,7 +227,7 @@ const MerchantManagement = ({
           }
         );
       } else {
-        response = await axios.post(`${BACKEND_URL}/bank/create`, formData, {
+        response = await axios.post(`${BACKEND_URL}/withdrawBank/create`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -282,7 +247,6 @@ const MerchantManagement = ({
           bankName: "",
           accountNo: "",
           iban: "",
-          accountLimit: "",
           accountHolderName: "",
         });
         setIsEditMode(false);
@@ -298,10 +262,6 @@ const MerchantManagement = ({
       });
     }
   };
-
-
-
-
 
   const fn_edit_phone = async () => {
     try {
@@ -451,11 +411,15 @@ const MerchantManagement = ({
       <div className="p-7">
         {/* header */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
-          <h1 className="text-[25px] font-[500]">Banks Details</h1>
-          <h1 className="hidden md:block text-[25px] font-[500] mr-[260px] md:mr-0 lg:mr-[260px]">Withdraw</h1>
-          <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
-            Dashboard - Data Table
-          </p>
+          <div className="w-full md:w-2/6">
+            <h1 className="text-[25px] font-[500]">Banks Details</h1>
+          </div>
+          <div className="w-full md:w-3/4 flex items-center justify-between">
+            <h1 className="hidden md:block text-[25px] font-[500] ps-[15px]">Withdraw</h1>
+            <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
+              Dashboard - Data Table
+            </p>
+          </div>
         </div>
         <div className="flex flex-col gap-7 md:flex-row bg-gray-100 ">
           {/* Left side card section */}
@@ -564,91 +528,6 @@ const MerchantManagement = ({
                   UPI Accounts
                 </button>
               </div>
-              <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
-                {/* {editablePermission && (
-                  <Button
-                    type="primary"
-                    onClick={() => setWebsiteModalOpen(true)}
-                  >
-                    Website Management
-                  </Button>
-                )} */}
-                <Modal
-                  centered
-                  width={600}
-                  style={{ fontFamily: "sans-serif" }}
-                  title={
-                    <p className="text-[16px] font-[700]">Website Management</p>
-                  }
-                  open={websiteModalOpen}
-                  onCancel={() => setWebsiteModalOpen(false)}
-                  footer={null}
-                >
-                  <div className="flex flex-col gap-4">
-                    {/* Top Section */}
-                    <div className="flex flex-col gap-3">
-                      <Input
-                        placeholder="Enter Website Name"
-                        value={websiteName}
-                        onChange={(e) => setWebsiteName(e.target.value)}
-                        className="text-[12px]"
-                      />
-                      <Button
-                        type="primary"
-                        className="w-24"
-                        onClick={fn_createWebsite}
-                      >
-                        Submit
-                      </Button>
-                    </div>
-
-                    {/* Divider Line */}
-                    <div className="border-b-2 border-gray-200 my-4"></div>
-
-                    {/* Table Section */}
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="bg-[#ECF0FA]">
-                            <th className="p-3 text-[13px] font-[600] text-left">
-                              Sr. No
-                            </th>
-                            <th className="p-3 text-[13px] font-[600] text-left">
-                              Website Name
-                            </th>
-                            <th className="p-3 text-[13px] font-[600] text-left">
-                              Action
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {websiteList?.length > 0 ? websiteList?.map((web, index) => (
-                            <tr className="border-b">
-                              <td className="p-3 text-[13px]">{index + 1}</td>
-                              <td className="p-3 text-[13px]">{web?.url}</td>
-                              <td className="p-3 text-[13px]">
-                                <Button
-                                  className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
-                                  title="Delete"
-                                  onClick={() => fn_deleteWebsute(web?._id)}
-                                >
-                                  <FiTrash2 size={16} />
-                                </Button>
-                              </td>
-                            </tr>
-                          )) : (
-                            <tr>
-                              <td colSpan="3" className="text-center text-[13px]">
-                                No data found
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </Modal>
-              </div>
 
               <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
                 {editablePermission && (
@@ -659,184 +538,11 @@ const MerchantManagement = ({
                     >
                       Website Management
                     </Button>
-                    {/* <Button type="primary" onClick={handleAddAccount}>
-                      Add Account
-                    </Button> */}
+                    <Button type="primary" onClick={handleAddAccount}>
+                      Add Bank Account
+                    </Button>
                   </>
                 )}
-                <Modal
-                  centered
-                  width={600}
-                  style={{ fontFamily: "sans-serif" }}
-                  title={
-                    <p className="text-[16px] font-[700]">
-                      {isEditMode
-                        ? "Edit Your Bank Account"
-                        : "Add New Bank Account"}
-                    </p>
-                  }
-                  footer={
-                    <div className="flex gap-4 mt-6">
-                      <Button
-                        className="flex start px-10 text-[12px]"
-                        type="primary"
-                        onClick={fn_submit}
-                      >
-                        Save
-                      </Button>
-
-                      <Button
-                        className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
-                        type=""
-                        onClick={() => setOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  }
-                  open={open}
-                  onCancel={() => setOpen(false)}
-                  onClose={() => setOpen(false)}
-                >
-                  {activeTab === "bank" && (
-                    <>
-                      {/* bank image */}
-                      {selectedBank && (
-                        <div className="w-[120px] h-[120px]">
-                          <img alt="" src={selectedBank?.img} />
-                        </div>
-                      )}
-                      <div className="flex gap-4 ">
-                        {/* bank name */}
-                        <div className="flex-1 my-2">
-                          <p className="text-[12px] font-[500] pb-1">
-                            Bank Name <span className="text-[#D50000]">*</span>
-                          </p>
-                          <select
-                            name="bank"
-                            value={data?.bankName || ""}
-                            onChange={handleInputChange}
-                            className="w-full  text-[12px] border border-[#d9d9d9] h-[28.84px] px-[11px] py-[4px] rounded-[6px]"
-                          >
-                            <option value="" disabled>
-                              ---Select Bank---
-                            </option>
-                            {Banks.map((item, index) => (
-                              <option key={index} value={item.title}>
-                                {item.title}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        {/* Account Number */}
-                        <div className="flex-1 my-2">
-                          <p className="text-[12px] font-[500] pb-1">
-                            Account Number{" "}
-                            <span className="text-[#D50000]">*</span>
-                          </p>
-                          <Input
-                            value={data?.accountNo}
-                            onChange={(e) =>
-                              setData((prev) => ({
-                                ...prev,
-                                accountNo: e.target.value,
-                              }))
-                            }
-                            className="w-full  text-[12px]"
-                            placeholder="Enter Account Number"
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  <div className="flex gap-4">
-                    {/* IFCS No. */}
-                    <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
-                        {activeTab === "bank" ? (
-                          <>
-                            IFSC No. <span className="text-[#D50000]">*</span>
-                          </>
-                        ) : (
-                          <>
-                            UPI ID <span className="text-[#D50000]">*</span>
-                          </>
-                        )}
-                      </p>
-                      <Input
-                        value={data?.iban}
-                        onChange={(e) =>
-                          setData((prev) => ({
-                            ...prev,
-                            iban: e.target.value,
-                          }))
-                        }
-                        className="w-full text-[12px]"
-                        placeholder={`${activeTab === "bank"
-                          ? "Enter IFSC Number"
-                          : "Enter UPI ID"
-                          }`}
-                      />
-                    </div>
-                    {/* account Holder Name */}
-                    <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
-                        Account Holder Name{" "}
-                        <span className="text-[#D50000]">*</span>
-                      </p>
-                      <Input
-                        value={data?.accountHolderName}
-                        onChange={(e) =>
-                          setData((prev) => ({
-                            ...prev,
-                            accountHolderName: e.target.value,
-                          }))
-                        }
-                        className="w-full text-[12px]"
-                        placeholder="Account Holder Name"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    {/* Account Limit */}
-                    <div className="flex-1 my-2">
-                      <p className="text-[12px] font-[500] pb-1">
-                        Account Limit <span className="text-[#D50000]">*</span>
-                      </p>
-                      <Input
-                        value={data?.accountLimit}
-                        onChange={(e) =>
-                          setData((prev) => ({
-                            ...prev,
-                            accountLimit: e.target.value,
-                          }))
-                        }
-                        className="w-full text-[12px]"
-                        placeholder="Account Limit "
-                      />
-                    </div>
-                    {/* Account QR Code - only show for UPI */}
-                    {activeTab === "upi" && (
-                      <div className="flex-1 my-2">
-                        <p className="text-[12px] font-[500] pb-1">
-                          UPI QR Code <span className="text-[#D50000]">*</span>
-                        </p>
-                        <Input
-                          type="file"
-                          required
-                          onChange={(e) => {
-                            setData((prev) => ({
-                              ...prev,
-                              image: e.target.files[0],
-                            }));
-                          }}
-                          className="w-full text-[12px]"
-                          placeholder="Select QR Code"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </Modal>
               </div>
             </div>
 
@@ -854,11 +560,6 @@ const MerchantManagement = ({
                     <th className="p-5 text-[13px] font-[600] whitespace-nowrap">
                       Account Title
                     </th>
-                    <th className="p-5 text-[13px] font-[600]">Limit</th>
-                    <th className="p-5 text-[13px] font-[600] text-nowrap">
-                      Remaining Limit
-                    </th>
-                    <th className="p-5 text-[13px] font-[600]">Status</th>
                     <th className="p-5 text-[13px] font-[600] pl-10">Action</th>
                   </tr>
                 </thead>
@@ -911,13 +612,7 @@ const MerchantManagement = ({
                             {account.accountHolderName}
                           </div>
                         </td>
-                        <td className="p-3 text-[13px] font-[400] text-nowrap">
-                          <div className="ml-1">₹ {account.accountLimit}</div>
-                        </td>
-                        <td className="p-3 text-[13px] font-[400]">
-                          <div className="ml-3">₹ {account.remainingLimit}</div>
-                        </td>
-                        <td className="text-center">
+                        {/* <td className="text-center">
                           <button
                             className={`px-3 py-[5px]  rounded-[20px] w-20 flex items-center justify-center text-[11px] font-[500] ${account?.block === false
                               ? "bg-[#10CB0026] text-[#0DA000]"
@@ -926,10 +621,17 @@ const MerchantManagement = ({
                           >
                             {!account?.block ? "Active" : "Inactive"}
                           </button>
-                        </td>
+                        </td> */}
                         <td className="p-3 text-center">
-                          <div className="flex justify-center items-center ml-6">
-                            {editablePermission && (
+                          <div className="flex ms-[10px]">
+                            <Button
+                              className="bg-green-100 text-green-600 rounded-full px-2 py-2 mx-2"
+                              title="Edit"
+                              onClick={() => handleEdit(account)}
+                            >
+                              <FiEdit />
+                            </Button>
+                            {/* {editablePermission && (
                               <>
                                 <Switch
                                   size="small"
@@ -939,8 +641,7 @@ const MerchantManagement = ({
                                     const response = await fn_BankUpdate(
                                       account?._id,
                                       {
-                                        block: !newStatus,
-                                        accountType: activeTab,
+                                        block: !newStatus
                                       }
                                     );
 
@@ -970,7 +671,7 @@ const MerchantManagement = ({
                                   <FiEdit />
                                 </Button>
                               </>
-                            )}
+                            )} */}
                             {!editablePermission && (
                               <p className="italic text-[12px] text-red-500 mt-[2px] text-nowrap">
                                 Action Not Allowed
@@ -988,8 +689,7 @@ const MerchantManagement = ({
         </div>
       </div>
 
-
-
+      {/* edit phone modal */}
       <Modal
         centered
         width={600}
@@ -1023,9 +723,240 @@ const MerchantManagement = ({
         </div>
       </Modal>
 
+      {/* website management modal */}
+      <Modal
+        centered
+        width={600}
+        style={{ fontFamily: "sans-serif" }}
+        title={
+          <p className="text-[16px] font-[700]">Website Management</p>
+        }
+        open={websiteModalOpen}
+        onCancel={() => setWebsiteModalOpen(false)}
+        footer={null}
+      >
+        <div className="flex flex-col gap-4">
+          {/* Top Section */}
+          <div className="flex flex-col gap-3">
+            <Input
+              placeholder="Enter Website Name"
+              value={websiteName}
+              onChange={(e) => setWebsiteName(e.target.value)}
+              className="text-[12px]"
+            />
+            <Button
+              type="primary"
+              className="w-24"
+              onClick={fn_createWebsite}
+            >
+              Submit
+            </Button>
+          </div>
 
+          {/* Divider Line */}
+          <div className="border-b-2 border-gray-200 my-4"></div>
 
+          {/* Table Section */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-[#ECF0FA]">
+                  <th className="p-3 text-[13px] font-[600] text-left">
+                    Sr. No
+                  </th>
+                  <th className="p-3 text-[13px] font-[600] text-left">
+                    Website Name
+                  </th>
+                  <th className="p-3 text-[13px] font-[600] text-left">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {websiteList?.length > 0 ? websiteList?.map((web, index) => (
+                  <tr className="border-b">
+                    <td className="p-3 text-[13px]">{index + 1}</td>
+                    <td className="p-3 text-[13px]">{web?.url}</td>
+                    <td className="p-3 text-[13px]">
+                      <Button
+                        className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
+                        title="Delete"
+                        onClick={() => fn_deleteWebsute(web?._id)}
+                      >
+                        <FiTrash2 size={16} />
+                      </Button>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="3" className="text-center text-[13px]">
+                      No data found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </Modal>
 
+      {/* Add bank modal */}
+      <Modal
+        centered
+        width={600}
+        style={{ fontFamily: "sans-serif" }}
+        title={
+          <p className="text-[16px] font-[700]">
+            {isEditMode
+              ? "Edit Your Bank Account"
+              : "Add New Bank Account"}
+          </p>
+        }
+        footer={
+          <div className="flex gap-4 mt-6">
+            <Button
+              className="flex start px-10 text-[12px]"
+              type="primary"
+              onClick={fn_submit}
+            >
+              Save
+            </Button>
+
+            <Button
+              className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
+              type=""
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        }
+        open={open}
+        onCancel={() => setOpen(false)}
+        onClose={() => setOpen(false)}
+      >
+        {activeTab === "bank" && (
+          <>
+            {/* bank image */}
+            {selectedBank && (
+              <div className="w-[120px] h-[120px]">
+                <img alt="" src={selectedBank?.img} />
+              </div>
+            )}
+            <div className="flex gap-4 ">
+              {/* bank name */}
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Bank Name <span className="text-[#D50000]">*</span>
+                </p>
+                <select
+                  name="bank"
+                  value={data?.bankName || ""}
+                  onChange={handleInputChange}
+                  className="w-full  text-[12px] border border-[#d9d9d9] h-[28.84px] px-[11px] py-[4px] rounded-[6px]"
+                >
+                  <option value="" disabled>
+                    ---Select Bank---
+                  </option>
+                  {Banks.map((item, index) => (
+                    <option key={index} value={item.title}>
+                      {item.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Account Number */}
+              <div className="flex-1 my-2">
+                <p className="text-[12px] font-[500] pb-1">
+                  Account Number{" "}
+                  <span className="text-[#D50000]">*</span>
+                </p>
+                <Input
+                  value={data?.accountNo}
+                  onChange={(e) =>
+                    setData((prev) => ({
+                      ...prev,
+                      accountNo: e.target.value,
+                    }))
+                  }
+                  className="w-full  text-[12px]"
+                  placeholder="Enter Account Number"
+                />
+              </div>
+            </div>
+          </>
+        )}
+        <div className="flex gap-4">
+          {/* IFCS No. */}
+          <div className="flex-1 my-2">
+            <p className="text-[12px] font-[500] pb-1">
+              {activeTab === "bank" ? (
+                <>
+                  IFSC No. <span className="text-[#D50000]">*</span>
+                </>
+              ) : (
+                <>
+                  UPI ID <span className="text-[#D50000]">*</span>
+                </>
+              )}
+            </p>
+            <Input
+              value={data?.iban}
+              onChange={(e) =>
+                setData((prev) => ({
+                  ...prev,
+                  iban: e.target.value,
+                }))
+              }
+              className="w-full text-[12px]"
+              placeholder={`${activeTab === "bank"
+                ? "Enter IFSC Number"
+                : "Enter UPI ID"
+                }`}
+            />
+          </div>
+          {/* account Holder Name */}
+          <div className="flex-1 my-2">
+            <p className="text-[12px] font-[500] pb-1">
+              Account Holder Name{" "}
+              <span className="text-[#D50000]">*</span>
+            </p>
+            <Input
+              value={data?.accountHolderName}
+              onChange={(e) =>
+                setData((prev) => ({
+                  ...prev,
+                  accountHolderName: e.target.value,
+                }))
+              }
+              className="w-full text-[12px]"
+              placeholder="Account Holder Name"
+            />
+          </div>
+        </div>
+        <div className="flex gap-4">
+          {/* Account QR Code - only show for UPI */}
+          {activeTab === "upi" && (
+            <div className="flex-1 my-2">
+              <p className="text-[12px] font-[500] pb-1">
+                UPI QR Code <span className="text-[#D50000]">*</span>
+              </p>
+              <Input
+                type="file"
+                required
+                onChange={(e) => {
+                  setData((prev) => ({
+                    ...prev,
+                    image: e.target.files[0],
+                  }));
+                }}
+                className="w-full text-[12px]"
+                placeholder="Select QR Code"
+              />
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

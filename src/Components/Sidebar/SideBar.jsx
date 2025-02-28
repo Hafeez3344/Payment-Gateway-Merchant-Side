@@ -96,7 +96,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<LuShieldCheck className="text-[20px] scale-[1.1]" />}
             />
-            {/* <Menu
+            <Menu
               onClick={() => {
                 setSelectedPage("withdraw");
                 navigate("/withdraw");
@@ -106,7 +106,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="withdraw"
               selectedPage={selectedPage}
               icon={<PiHandWithdraw className="text-[20px] scale-[1.1]" />}
-            /> */}
+            />
             <Menu
               onClick={() => {
                 setSelectedPage("merchant-profile");
@@ -240,6 +240,19 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 name="approval-points"
                 selectedPage={selectedPage}
                 icon={<LuShieldCheck className="text-[20px] scale-[1.1]" />}
+              />
+            )}
+            {permissionsData?.merchantProfile?.view && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("withdraw");
+                  navigate("/withdraw");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Withdraw Requests"
+                name="withdraw"
+                selectedPage={selectedPage}
+                icon={<PiHandWithdraw className="text-[20px] scale-[1.1]" />}
               />
             )}
             {permissionsData?.merchantProfile?.view && (
