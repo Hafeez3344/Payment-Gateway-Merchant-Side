@@ -4,7 +4,7 @@ import TextArea from "antd/es/input/TextArea";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, Select, Button, notification } from "antd";
+import { Modal, Input, Select, Button, notification } from "antd";
 
 import { FiEye } from "react-icons/fi";
 import { FaIndianRupeeSign } from "react-icons/fa6";
@@ -192,10 +192,21 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             >
                 <div className="p-7">
                     <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
-                        <h1 className="text-[25px] font-[500]">Withdraw Transaction</h1>
-                        <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
-                            Dashboard - Data Table
-                        </p>
+                        <h1 className="text-[25px] font-[500]">vailable Amount:</h1>
+                        <div className="flex items-center gap-[20px]">
+                            <div className="text-[12px]">
+                                <p className="text-gray-600">Withdraw Amount:</p>
+                                <p className="text-green-500 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.approvedWithdraw || 0}</p>
+                            </div>
+                            <div className="text-[12px]">
+                                <p className="text-gray-600">Pending Withdrawal:</p>
+                                <p className="text-yellow-500 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.withdrawAmounts || 0}</p>
+                            </div>
+                            <div className="text-[12px]">
+                                <p className="text-gray-600">Available Amount:</p>
+                                <p className="text-blue-600 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.pendingAmount || 0}</p>
+                            </div>
+                        </div>
                     </div>
                     <div className="bg-white rounded-lg p-4">
                         <div className="flex flex-col md:flex-row items-center justify-between pb-3">
@@ -206,7 +217,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
 
                             </div>
                             <Button type="primary" onClick={handleWithdrawRequest}>
-                                Withdraw Request
+                                Create Withdraw Request
                             </Button>
                         </div>
                         <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
@@ -218,6 +229,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                         <th className="p-4">DATE</th>
                                         <th className="p-4 text-nowrap">Amount</th>
                                         <th className="p-4 text-nowrap">Exchange</th>
+                                        <th className="p-4 text-nowrap">UTR</th>
                                         <th className="pl-8">Status</th>
                                     </tr>
                                 </thead>
@@ -231,12 +243,12 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             </td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.exchangeId?.currency}</td>
+                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{(transaction?.utr && transaction?.utr !== "") ? transaction?.utr : "-"}</td>
                                             <td className="p-4 text-[13px] font-[500]">
-                                                <span className={`px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] min-w-20 flex items-center justify-center${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" :
-                                                    transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" :
-                                                        "bg-[#10CB0026] text-[#0DA000]"}`}>
+                                                <span className={`relative px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] max-w-20 flex items-center justify-center ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : "bg-[#10CB0026] text-[#0DA000]"}`}>
                                                     {transaction?.status}
                                                 </span>
+
                                             </td>
                                         </tr>
                                     )) : (
