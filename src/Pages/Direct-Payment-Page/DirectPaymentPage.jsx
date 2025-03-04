@@ -15,12 +15,16 @@ import { FiEye, FiTrash2 } from "react-icons/fi";
 import { RiFindReplaceLine } from "react-icons/ri";
 import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
 
+// import { io } from "socket.io-client";
+
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllDirectPaymentApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
 
 const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
+
+  // const socket = io(`${BACKEND_URL}/payment`);
 
   const { RangePicker } = DatePicker;
   const [open, setOpen] = useState(false);
@@ -41,6 +45,21 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.directPayment?.edit : true;
   const [allBanks, setAllBanks] = useState([]);
   const [selectedFilteredBank, setSelectedFilteredBank] = useState("");
+
+
+  // useEffect(() => {
+  //   socket.on("getMerchantLedger", (data) => {
+
+  //     console.log("data ", data);
+  //     fetchTransactions(currentPage || 1, merchant);
+  //   });
+
+
+  //   socket.on("error", (error) => {
+  //     console.error("Socket Error:", error.message);
+  //   });
+
+  // }, []);
 
 
   const fetchTransactions = async (pageNumber) => {
@@ -402,7 +421,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                   </div>
                 )}
                 {/* Search by Bank */}
-                <div>
+                {/* <div>
                   <Select
                     className="w-40"
                     placeholder="Select Bank"
@@ -420,7 +439,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                       ...allBanks,
                     ]}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
             <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>

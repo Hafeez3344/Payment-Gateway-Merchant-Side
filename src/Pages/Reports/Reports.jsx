@@ -9,7 +9,7 @@ import * as XLSX from "xlsx";
 
 import { FaDownload } from "react-icons/fa6";
 
-import BACKEND_URL, { fn_getAllBanksData, fn_getAllBanksData2 } from "../../api/api";
+import BACKEND_URL, { fn_getAllBanksData2 } from "../../api/api";
 
 const columns = [
     {
@@ -26,11 +26,6 @@ const columns = [
         title: 'Merchant',
         dataIndex: 'merchant',
         key: 'merchant',
-    },
-    {
-        title: 'Bank',
-        dataIndex: 'bank',
-        key: 'bank',
     },
     {
         title: 'Status',
@@ -50,8 +45,6 @@ const Reports = ({ authorization, showSidebar }) => {
     const { RangePicker } = DatePicker;
 
     const containerHeight = window.innerHeight - 120;
-    const [banksOption, setBanksOption] = useState([]);
-    const [merchantOptions, setMerchantOption] = useState([]);
     const statusOptions = [
         { label: "All", value: "" },
         { label: "Approved", value: "Approved" },
@@ -66,9 +59,7 @@ const Reports = ({ authorization, showSidebar }) => {
     const [selectedStatus, setSelectedStatus] = useState("");
     const [dateRange, setDateRange] = useState([null, null]);
     const [disableButton, setDisableButton] = useState(false);
-    const [selectedMerchant, setSelectedMerchant] = useState("");
-    const [selectedMerchantName, setSelectedMerchantName] = useState("All");
-    const [selectedBankName, setSelectedBankName] = useState("All");
+    const selectedMerchantName = localStorage.getItem('userName');
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -78,7 +69,6 @@ const Reports = ({ authorization, showSidebar }) => {
     }, [authorization]);
 
     useEffect(() => {
-        fn_getAllBanks();
         fn_getReportsLog();
     }, []);
 
@@ -88,27 +78,6 @@ const Reports = ({ authorization, showSidebar }) => {
             setToDate(new Date(dateRange[1]?.$d));
         }
     }, [dateRange]);
-
-    const fn_getAllBanks = async () => {
-        const response = await fn_getAllBanksData2();
-        if (response?.status) {
-            setBanksOption(response?.data?.data?.map((item) => {
-                return { value: item?._id, label: `${item?.bankName} - ${item?.bankName === "UPI" ? item?.iban : item?.accountHolderName}${item?.bankName !== "UPI" ? ` - ${item?.iban}` : ''}` }
-            }));
-        }
-    };
-
-    const fn_changeMerchant = (value) => {
-        setSelectedMerchant(value);
-        const merchant = merchantOptions?.find((m) => m?.value === value);
-        setSelectedMerchantName(merchant?.label);
-    };
-
-    const fn_changeBank = (value) => {
-        setSelectedBank(value);
-        const bank = banksOption?.find((m) => m?.value === value);
-        setSelectedBankName(bank?.label);
-    };
 
     const fn_changeStatus = (value) => {
         setSelectedStatus(value);
@@ -126,7 +95,7 @@ const Reports = ({ authorization, showSidebar }) => {
             const token = Cookies.get("merchantToken");
             const merchantId = Cookies.get("merchantId");
             setDisableButton(true);
-            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${merchantId}&status=${selectedStatus}&bankId=${selectedBank}&startDate=${fromDate}&endDate=${toDate}&filterByMerchantId=${merchantId}`, {
+            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${merchantId}&status=${selectedStatus}&startDate=${fromDate}&endDate=${toDate}&filterByMerchantId=${merchantId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
@@ -151,13 +120,12 @@ const Reports = ({ authorization, showSidebar }) => {
             format: "a4"
         });
 
-        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+        const tableColumn = ["Date", "Merchant", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
 
         const tableRows = data?.data?.map((item) => {
             return [
                 item.Date || "All",
                 selectedMerchantName === "" ? "All" : selectedMerchantName,
-                selectedBankName === "" ? "All" : selectedBankName,
                 (!item.Status || item.Status === "") ? "All" : item.Status,
                 item.NoOfTransaction || "0",
                 item.PayIn || "0",
@@ -166,7 +134,7 @@ const Reports = ({ authorization, showSidebar }) => {
             ];
         }) || [];
 
-        tableRows.push(["Total", "", "", "", "", data.totalPayIn.toFixed(2), data.totalCharges.toFixed(2), data.totalAmount.toFixed(2)]);
+        tableRows.push(["Total", "", "", "", data.totalPayIn.toFixed(2), data.totalCharges.toFixed(2), data.totalAmount.toFixed(2)]);
 
         doc.autoTable({
             head: [tableColumn],
@@ -181,12 +149,11 @@ const Reports = ({ authorization, showSidebar }) => {
     };
 
     const downloadExcel = (data) => {
-        const tableColumn = ["Date", "Merchant", "Bank", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+        const tableColumn = ["Date", "Merchant", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
         const tableRows = data?.data?.map((item) => {
             return {
                 Date: item.Date || "All",
                 Merchant: selectedMerchantName === "" ? "All" : selectedMerchantName,
-                Bank: selectedBankName === "" ? "All" : selectedBankName,
                 Status: (!item.Status || item.Status === "") ? "All" : item.Status,
                 "No. of Transactions": item.NoOfTransaction || "0",
                 "Pay In (INR)": item.PayIn || "0",
@@ -198,7 +165,6 @@ const Reports = ({ authorization, showSidebar }) => {
         tableRows.push({
             Date: "Total",
             Merchant: "",
-            Bank: "",
             Status: "",
             "No. of Transactions": "",
             "Pay In (INR)": data.totalPayIn.toFixed(2),
@@ -232,7 +198,6 @@ const Reports = ({ authorization, showSidebar }) => {
                             reportId: `${index + 1}`,
                             createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
                             merchant: item?.merchantId?.merchantName || "All",
-                            bank: `${item?.bankId?.bankName === "UPI" ? `${item?.bankId?.bankName} - ${item?.bankId?.iban}` : item?.bankId?.bankName}` || "All",
                             status: item?.status && item?.status !== "" ? item?.status : "All",
                             dateRange: item?.startDate && item?.endDate ? `${new Date(item?.startDate).toDateString()} - ${new Date(item?.endDate).toDateString()}` : "All"
                         }
@@ -262,15 +227,6 @@ const Reports = ({ authorization, showSidebar }) => {
                     </p>
                 </div>
                 <div className="grid grid-cols-3 gap-[20px]">
-                    <div className="flex flex-col gap-[2px]">
-                        <p className="text-[13px] font-[500]">Select Bank</p>
-                        <Select
-                            style={{ width: '100%', height: "38px" }}
-                            placeholder="Please Select Bank"
-                            onChange={fn_changeBank}
-                            options={[{ value: "", label: "All" }, ...banksOption]}
-                        />
-                    </div>
                     <div className="flex flex-col gap-[2px]">
                         <p className="text-[13px] font-[500]">Select Status</p>
                         <Select

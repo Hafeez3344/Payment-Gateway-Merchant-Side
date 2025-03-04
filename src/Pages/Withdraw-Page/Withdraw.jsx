@@ -2,14 +2,17 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import TextArea from "antd/es/input/TextArea";
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Modal, Input, Select, Button, notification } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Modal, Input, Select, Button, notification, Radio, Divider, Space, Pagination } from "antd";
+
+import { Banks } from "../../json-data/banks";
+import BACKEND_URL, { fn_getBankByAccountTypeApi } from "../../api/api";
 
 import { FiEye } from "react-icons/fi";
+import { TiPlusOutline } from "react-icons/ti";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { FaExclamationCircle } from "react-icons/fa";
-import BACKEND_URL, { fn_getBankByAccountTypeApi } from "../../api/api";
 
 const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
 
@@ -20,12 +23,36 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [transactions, setTransactions] = useState([]);
     const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
 
+    const inputRef = useRef(null);
+    const [utr, setUtr] = useState("");
     const [note, setNote] = useState("");
+    const [name, setName] = useState(null);
+    const [image, setImage] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [open, setOpen] = useState(false);
+    const [newOpen, setNewOpen] = useState(false);
     const [exchange, setExchange] = useState(null);
+    const [totalPages, setTotalPages] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [activeTab, setActiveTab] = useState("bank");
+    const [isEditMode, setIsEditMode] = useState(false);
     const [exchangeData, setExchangeData] = useState({});
-    const [selectedBank, setSelectedBank] = useState(null);
+    const [editAccountId, setEditAccountId] = useState(null);
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [merchantWallet, setMerchantWallet] = useState({});
+    const [disableButton, setDisableButton] = useState(false);
+    const [newSelectedBank, setNewSelectedBank] = useState(null);
+    const [items, setItems] = useState(Banks.map((bank) => bank.title));
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
+
+    const [data, setData] = useState({
+        image: null,
+        bankName: null,
+        accountNo: "",
+        accountType: "",
+        iban: "",
+        accountHolderName: "",
+    });
 
     useEffect(() => {
         window.scroll(0, 0);
@@ -41,9 +68,13 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     }, []);
 
     useEffect(() => {
+        fn_getWithdraws();
+    }, [currentPage]);
+
+    useEffect(() => {
         setNote("");
         setExchange(null);
-        setSelectedBank(null);
+        setNewSelectedBank(null);
         setWithdrawAmount('');
     }, [withdrawModalOpen])
 
@@ -78,16 +109,19 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const fn_getWithdraws = async () => {
         try {
             const token = Cookies.get("merchantToken");
-            const response = await axios.get(`${BACKEND_URL}/withdraw/getAll?type=merchant`, {
+            const response = await axios.get(`${BACKEND_URL}/withdraw/getAll?type=merchant&page=${currentPage}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
             });
             if (response?.status === 200) {
+                setLoading(false);
                 setTransactions(response?.data?.data);
+                setTotalPages(response?.data?.totalPages);
             }
         } catch (error) {
+            setLoading(false);
             console.log("error while withdraws get ", error);
         }
     };
@@ -135,7 +169,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 placement: "topRight",
             });
         }
-        if (exchange === "67c1e65de5d59894e5a19435" && !selectedBank) {
+        if (exchange === "67c1e65de5d59894e5a19435" && !newSelectedBank) {
             return notification.error({
                 message: "Error",
                 description: "Select Bank",
@@ -150,14 +184,16 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             });
         }
         const data = {
-            amount: ((parseFloat(withdrawAmount) - parseFloat(exchangeData?.charges)) * parseFloat(exchangeData?.rate)).toFixed(2),
-            withdrawBankId: exchange === "67c1e65de5d59894e5a19435" ? selectedBank : null,
+            amount: ((parseFloat(withdrawAmount) - (parseFloat(exchangeData?.charges) * parseFloat(withdrawAmount)) / 100) / parseFloat(exchangeData?.rate)).toFixed(2),
+            withdrawBankId: exchange === "67c1e65de5d59894e5a19435" ? newSelectedBank : null,
             note: note,
             exchangeId: exchange,
-            amountINR: withdrawAmount
+            amountINR: withdrawAmount,
+            merchantId: Cookies.get('merchantId')
         };
         try {
             const token = Cookies.get("merchantToken");
+            setDisableButton(true);
             const response = await axios.post(`${BACKEND_URL}/withdraw/create`, data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -166,7 +202,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             });
             if (response?.status === 200) {
                 fn_getWithdraws();
+                setCurrentPage(1);
                 fn_merchantWallet();
+                setDisableButton(false);
                 setWithdrawModalOpen(false);
                 notification.success({
                     message: "Success",
@@ -176,12 +214,185 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             }
         } catch (error) {
             console.log("error while creating withdraw request ", error);
+            setDisableButton(false);
             notification.error({
                 message: "Error",
                 description: error?.response?.data?.message || "Network Error",
                 placement: "topRight",
             });
         }
+    };
+
+    const handleAddAccount = () => {
+        setData({
+            image: null,
+            bankName: "",
+            accountNo: "",
+            accountType: "",
+            iban: "",
+            accountHolderName: "",
+        });
+        setIsEditMode(false);
+        setEditAccountId(null);
+        setOpen(true);
+    };
+
+    const fn_submit = async () => {
+        try {
+            if (activeTab === "upi" && !data?.image) {
+                notification.error({
+                    message: "Error",
+                    description: "QR Code is required",
+                    placement: "topRight",
+                });
+                return;
+            }
+            if (data?.bankName === "") {
+                if (activeTab === "bank") {
+                    notification.error({
+                        message: "Error",
+                        description: "Enter Bank Name",
+                        placement: "topRight",
+                    });
+                    return;
+                }
+            }
+            if (data?.accountNo === "") {
+                if (activeTab === "bank") {
+                    notification.error({
+                        message: "Error",
+                        description: "Enter Account Number",
+                        placement: "topRight",
+                    });
+                    return;
+                }
+            }
+            if (data?.iban === "") {
+                notification.error({
+                    message: "Error",
+                    description: `Enter ${activeTab === "bank" ? "IFSC Number" : "UPI ID"}`,
+                    placement: "topRight",
+                });
+                return;
+            }
+            if (data?.accountHolderName === "") {
+                notification.error({
+                    message: "Error",
+                    description: "Enter Account Holder Name",
+                    placement: "topRight",
+                });
+                return;
+            }
+            const formData = new FormData();
+            setDisableButton(true);
+            if (activeTab === "bank") {
+                if (data?.image) {
+                    formData.append("image", data?.image);
+                }
+                formData.append("bankName", data?.bankName);
+                formData.append("accountNo", data?.accountNo);
+                formData.append("accountType", activeTab);
+                formData.append("iban", data?.iban);
+                formData.append("accountHolderName", data?.accountHolderName);
+                formData.append("block", true);
+            } else {
+                if (!data?.image) return;
+                formData.append("image", data?.image);
+                formData.append("accountType", activeTab);
+                formData.append("iban", data?.iban);
+                formData.append("accountHolderName", data?.accountHolderName);
+                formData.append("block", true);
+            };
+            const token = Cookies.get("merchantToken");
+            let response;
+            if (isEditMode) {
+                response = await axios.put(`${BACKEND_URL}/withdrawBank/update/${editAccountId}`, formData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+            } else {
+                response = await axios.post(`${BACKEND_URL}/withdrawBank/create`, formData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+            }
+            if (response?.status === 200) {
+                setOpen(false);
+                setDisableButton(false);
+                notification.success({
+                    message: "Success",
+                    description: isEditMode
+                        ? "Bank Updated Successfully!"
+                        : "Bank Created Successfully!",
+                    placement: "topRight",
+                });
+                setData({
+                    image: null,
+                    bankName: "",
+                    accountNo: "",
+                    iban: "",
+                    accountHolderName: "",
+                });
+                setIsEditMode(false);
+                setEditAccountId(null);
+                fn_getMerchantBanks();
+            }
+        } catch (error) {
+            setDisableButton(false);
+            const errorMessage = error?.response?.data?.message || "Network Error";
+            notification.error({
+                message: "Error",
+                description: errorMessage,
+                placement: "topRight",
+            });
+        }
+    };
+
+    const handleModeChange = (e) => {
+        setActiveTab(e.target.value);
+    };
+
+    const handleChange = (value) => {
+        setData((prevData) => ({
+            ...prevData,
+            bankName: value,
+        }));
+    };
+
+    const addItem = (e) => {
+        e.preventDefault();
+        if (name && !items.includes(name)) {
+            setItems([...items, name]);
+        }
+        setName("");
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 0);
+    };
+
+    const onNameChange = (event) => {
+        setName(event.target.value);
+    };
+
+    const handleViewTransaction = (transaction) => {
+        setUtr("");
+        setImage(null);
+        setSelectedTransaction(transaction);
+        setNewOpen(true);
+    };
+
+    const handleModalClose = () => {
+        setUtr("");
+        setImage(null);
+        setNewOpen(false);
+    };
+
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        const cleanPath = imagePath.replace('uploads/', '');
+        return `${BACKEND_URL}/uploads/${cleanPath}`;
     };
 
     return (
@@ -192,7 +403,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
             >
                 <div className="p-7">
                     <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
-                        <h1 className="text-[25px] font-[500]">vailable Amount:</h1>
+                        <h1 className="text-[25px] font-[500]">Withdraw Transactions</h1>
                         <div className="flex items-center gap-[20px]">
                             <div className="text-[12px]">
                                 <p className="text-gray-600">Withdraw Amount:</p>
@@ -212,13 +423,18 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                         <div className="flex flex-col md:flex-row items-center justify-between pb-3">
                             <div>
                                 <p className="text-black font-medium text-lg">
-                                    List of withdraw Transaction
+                                    List of withdraw Transactions
                                 </p>
 
                             </div>
-                            <Button type="primary" onClick={handleWithdrawRequest}>
-                                Create Withdraw Request
-                            </Button>
+                            <div className="flex flex-row items-center gap-[10px]">
+                                <Button type="primary" onClick={handleAddAccount}>
+                                    Add Bank Account
+                                </Button>
+                                <Button type="primary" onClick={handleWithdrawRequest}>
+                                    Create Withdraw Request
+                                </Button>
+                            </div>
                         </div>
                         <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
                         <div className="overflow-x-auto">
@@ -231,10 +447,11 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                         <th className="p-4 text-nowrap">Exchange</th>
                                         <th className="p-4 text-nowrap">UTR</th>
                                         <th className="pl-8">Status</th>
+                                        <th className="">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {transactions?.length > 0 ? transactions?.map((transaction, index) => (
+                                    {!loading ? transactions?.length > 0 ? transactions?.map((transaction, index) => (
                                         <tr key={transaction?._id} className="text-gray-800 text-sm border-b">
                                             <td className="p-4 text-[13px] font-[600] text-[#000000B2]">{index + 1}</td>
                                             <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
@@ -244,24 +461,44 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{(transaction?.utr && transaction?.utr !== "") ? transaction?.utr : "-"}</td>
-                                            <td className="p-4 text-[13px] font-[500]">
-                                                <span className={`relative px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] max-w-20 flex items-center justify-center ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : "bg-[#10CB0026] text-[#0DA000]"}`}>
+                                            <td className="p-4 text-[13px] font-[500] flex items-center gap-[10px]">
+                                                <span className={`relative px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] w-20 flex items-center justify-center ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : "bg-[#10CB0026] text-[#0DA000]"}`}>
                                                     {transaction?.status}
                                                 </span>
-
+                                            </td>
+                                            <td >
+                                                <button
+                                                    onClick={() => handleViewTransaction(transaction)}
+                                                    className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
+                                                    title="View"
+                                                >
+                                                    <FiEye />
+                                                </button>
                                             </td>
                                         </tr>
                                     )) : (
                                         <tr>
                                             <td colSpan={8} className="text-center w-full text-gray-600 italic py-[15px] text-[14px] font-[500]"><FaExclamationCircle className="inline-block text-[20px] mt-[-4px] me-[7px]" />No Transaction Found</td>
                                         </tr>
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={8} className="text-center w-full text-gray-600 italic py-[15px] text-[14px] font-[500]">Loading...</td>
+                                        </tr>
                                     )}
                                 </tbody>
                             </table>
+                            <div className="flex justify-end">
+                                <Pagination
+                                    onChange={(e) => setCurrentPage(e)}
+                                    className="self-center md:self-end mt-[15px]"
+                                    defaultCurrent={1}
+                                    total={totalPages * 10}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
             <Modal
                 title="Withdraw Request"
@@ -270,6 +507,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 onCancel={() => setWithdrawModalOpen(false)}
                 okText="Submit"
                 cancelText="Cancel"
+                confirmLoading={disableButton}
             >
                 <div className="space-y-4">
                     <div>
@@ -299,9 +537,15 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                     </div>
                     {exchange && (
                         <div>
-                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Rate:</span>{" "}1 INR = {exchangeData?.rate} {exchangeData?.label}</p>
-                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Charges:</span>{" "}{exchangeData?.charges} INR</p>
-                            <p className="text-[13px] font-[500] flex items-center text-green-500"><span className="text-gray-500 w-[150px] block">Withdrawal Amount:</span>{" "}{((parseFloat(withdrawAmount) - parseFloat(exchangeData?.charges)) * parseFloat(exchangeData?.rate)).toFixed(2)} {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}</p>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Rate:</span>{" "}1 {exchangeData?.label} = {exchangeData?.rate} INR</p>
+                            <p className="text-[12px] font-[500] flex items-center"><span className="text-gray-400 w-[150px] block">Exchange Charges:</span>{" "}{exchangeData?.charges}%</p>
+                            <p className="text-[13px] font-[500] flex items-center text-green-500">
+                                <span className="text-gray-500 w-[150px] block">Withdrawal Amount:</span>
+                                {" "}
+                                {((parseFloat(withdrawAmount) - (parseFloat(exchangeData?.charges) * parseFloat(withdrawAmount)) / 100) / parseFloat(exchangeData?.rate)).toFixed(2)}
+                                {" "}
+                                {exchangeData?.label === "Bank/UPI" ? "INR" : exchangeData?.label === "By Cash" ? "INR" : exchangeData?.label}
+                            </p>
                         </div>
                     )}
                     {exchange === "67c1e65de5d59894e5a19435" && (
@@ -312,8 +556,8 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             <Select
                                 style={{ width: '100%' }}
                                 placeholder="Select Your Bank"
-                                onChange={(value) => setSelectedBank(value)}
-                                value={selectedBank}
+                                onChange={(value) => setNewSelectedBank(value)}
+                                value={newSelectedBank}
                                 options={banks}
                             />
                         </div>
@@ -330,6 +574,356 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                         />
                     </div>
                 </div>
+            </Modal>
+
+            {/* Add bank modal */}
+            <Modal
+                centered
+                width={600}
+                style={{ fontFamily: "sans-serif" }}
+                confirmLoading={disableButton}
+                title={
+                    <p className="text-[16px] font-[700]">
+                        {isEditMode ? "Edit Your Bank Account" : "Add New Bank Account"}
+                    </p>
+                }
+
+                footer={
+                    <div className="flex gap-4 mt-6">
+                        <Button
+                            className="flex start px-10 text-[12px]"
+                            type="primary"
+                            onClick={fn_submit}
+                        >
+                            Save
+                        </Button>
+
+                        <Button
+                            className="flex start px-10 bg-white text-[#FF3D5C] border border-[#FF7A8F] text-[12px]"
+                            type=""
+                            onClick={() => setOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                }
+                open={open}
+                onCancel={() => setOpen(false)}
+                onClose={() => setOpen(false)}
+            >
+                <>
+                    <Radio.Group
+                        onChange={handleModeChange}
+                        value={activeTab}
+                        style={{ marginBottom: 8, marginTop: 8 }}
+                    >
+                        <Radio.Button style={{ width: "100px", textAlign: "center" }} value="bank">Bank</Radio.Button>
+                        <Radio.Button style={{ width: "100px", textAlign: "center" }} value="upi">UPI</Radio.Button>
+                    </Radio.Group>
+                    {activeTab === "bank" && (
+                        <>
+                            <div className="flex gap-4 ">
+                                {/* bank name */}
+                                <div className="flex-1 my-2">
+                                    <p className="text-[12px] font-[500] pb-1">
+                                        Bank Name <span className="text-[#D50000]">*</span>
+                                    </p>
+                                    <Select
+                                        style={{ width: "100%" }}
+                                        placeholder="Select or Add Bank"
+                                        value={data?.bankName || undefined}
+                                        onChange={handleChange}
+                                        dropdownRender={(menu) => (
+                                            <>
+                                                {menu}
+                                                <Divider style={{ margin: "8px 0" }} />
+                                                <Space style={{ padding: "0 8px 4px" }}>
+                                                    <Input
+                                                        placeholder="Add Bank"
+                                                        ref={inputRef}
+                                                        value={name}
+                                                        onChange={onNameChange}
+                                                        onKeyDown={(e) => e.stopPropagation()}
+                                                    />
+                                                    <Button type="primary" icon={<TiPlusOutline />} onClick={addItem}>
+                                                        Add bank
+                                                    </Button>
+                                                </Space>
+                                            </>
+                                        )}
+                                        options={items.map((item) => ({ label: item, value: item }))}
+                                    />
+                                </div>
+                                {/* Account Number */}
+                                <div className="flex-1 my-2">
+                                    <p className="text-[12px] font-[500] pb-1">
+                                        Account Number{" "}
+                                        <span className="text-[#D50000]">*</span>
+                                    </p>
+                                    <Input
+                                        value={data?.accountNo}
+                                        onChange={(e) =>
+                                            setData((prev) => ({
+                                                ...prev,
+                                                accountNo: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full  text-[12px]"
+                                        placeholder="Enter Account Number"
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    )}
+                    <div className="flex gap-4">
+                        {/* IFCS No. */}
+                        <div className="flex-1 my-2">
+                            <p className="text-[12px] font-[500] pb-1">
+                                {activeTab === "bank" ? (
+                                    <>
+                                        IFSC No. <span className="text-[#D50000]">*</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        UPI ID <span className="text-[#D50000]">*</span>
+                                    </>
+                                )}
+                            </p>
+                            <Input
+                                value={data?.iban}
+                                onChange={(e) =>
+                                    setData((prev) => ({
+                                        ...prev,
+                                        iban: e.target.value,
+                                    }))
+                                }
+                                className="w-full text-[12px]"
+                                placeholder={`${activeTab === "bank"
+                                    ? "Enter IFSC Number"
+                                    : "Enter UPI ID"
+                                    }`}
+                            />
+                        </div>
+                        {/* account Holder Name */}
+                        <div className="flex-1 my-2">
+                            <p className="text-[12px] font-[500] pb-1">
+                                Account Holder Name{" "}
+                                <span className="text-[#D50000]">*</span>
+                            </p>
+                            <Input
+                                value={data?.accountHolderName}
+                                onChange={(e) =>
+                                    setData((prev) => ({
+                                        ...prev,
+                                        accountHolderName: e.target.value,
+                                    }))
+                                }
+                                className="w-full text-[12px]"
+                                placeholder="Account Holder Name"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        {/* Account QR Code - only show for UPI */}
+                        {activeTab === "upi" && (
+                            <div className="flex-1 my-2">
+                                <p className="text-[12px] font-[500] pb-1">
+                                    UPI QR Code <span className="text-[#D50000]">*</span>
+                                </p>
+                                <Input
+                                    type="file"
+                                    required
+                                    onChange={(e) => {
+                                        setData((prev) => ({
+                                            ...prev,
+                                            image: e.target.files[0],
+                                        }));
+                                    }}
+                                    className="w-full text-[12px]"
+                                    placeholder="Select QR Code"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </>
+            </Modal>
+
+            {/* view withdraw */}
+            <Modal
+                title="Transaction Details"
+                open={newOpen}
+                onOk={handleModalClose}
+                onCancel={handleModalClose}
+                width={selectedTransaction?.status === "Pending" || selectedTransaction?.status === "Decline" || (selectedTransaction?.status === "Approved" && !selectedTransaction?.utr) ? 600 : 900}
+                style={{ fontFamily: "sans-serif" }}
+                footer={null}
+            >
+                {selectedTransaction && (
+                    <div className="flex justify-between gap-4">
+                        <div className={`${(selectedTransaction.status === "Pending" ||
+                            (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) ? "w-full" : "w-[450px]"}`}>
+                            <div className="flex flex-col gap-2 mt-3">
+                                <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">Request Creation Time: <span className="font-[600]">{new Date(selectedTransaction?.createdAt).toDateString()}, {new Date(selectedTransaction?.createdAt).toLocaleTimeString()}</span></p>
+                                {/* Merchant Name */}
+                                <div className="flex items-center gap-4 mt-[10px]">
+                                    <p className="text-[12px] font-[600] w-[200px]">Merchant Name:</p>
+                                    <Input
+                                        className="text-[12px] bg-gray-200"
+                                        readOnly
+                                        value={selectedTransaction?.merchantId?.merchantName || 'N/A'}
+                                    />
+                                </div>
+
+                                {/* Exchange */}
+                                <div className="flex items-center gap-4">
+                                    <p className="text-[12px] font-[600] w-[200px]">Exchange:</p>
+                                    <Input
+                                        className="text-[12px] bg-gray-200"
+                                        readOnly
+                                        value={selectedTransaction?.exchangeId?.currency || 'N/A'}
+                                    />
+                                </div>
+
+                                {/* Withdrawal Amount */}
+                                <div className="flex items-center gap-4">
+                                    <p className="text-[12px] font-[600] w-[200px]">Withdrawal Amount:</p>
+                                    <Input
+                                        className="text-[12px] bg-gray-200"
+                                        readOnly
+                                        value={`${selectedTransaction?.amount} ${selectedTransaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : selectedTransaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : selectedTransaction?.exchangeId?.currency}`}
+                                    />
+                                </div>
+
+                                {/* Bank Details Section */}
+                                {selectedTransaction?.withdrawBankId && (
+                                    <>
+                                        <div className="border-t mt-2 mb-1"></div>
+                                        <p className="font-[600] text-[14px] mb-2">Bank Details</p>
+
+                                        <div className="flex items-center gap-4">
+                                            <p className="text-[12px] font-[600] w-[200px]">Bank Name:</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-200"
+                                                readOnly
+                                                value={selectedTransaction?.withdrawBankId?.bankName || 'N/A'}
+                                            />
+                                        </div>
+                                        {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
+                                            <div className="flex items-center gap-4">
+                                                <p className="text-[12px] font-[600] w-[200px]">Account Title:</p>
+                                                <Input
+                                                    className="text-[12px] bg-gray-200"
+                                                    readOnly
+                                                    value={selectedTransaction?.withdrawBankId?.accountHolderName || 'N/A'}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-4">
+                                            <p className="text-[12px] font-[600] w-[200px]">{selectedTransaction?.withdrawBankId?.bankName !== "UPI" ? "IFSC Code:" : "UPI ID:"}</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-200"
+                                                readOnly
+                                                value={selectedTransaction?.withdrawBankId?.iban || 'N/A'}
+                                            />
+                                        </div>
+
+                                        {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
+                                            <div className="flex items-center gap-4">
+                                                <p className="text-[12px] font-[600] w-[200px]">Account Number:</p>
+                                                <Input
+                                                    className="text-[12px] bg-gray-200"
+                                                    readOnly
+                                                    value={selectedTransaction?.withdrawBankId?.accountNo || 'N/A'}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Note Section */}
+                                <div className="border-t mt-2 mb-1"></div>
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-[12px] font-[600]">Note From Merchant:</p>
+                                    <textarea
+                                        className="w-full p-2 text-[12px] border rounded resize-none outline-none"
+                                        rows={3}
+                                        readOnly
+                                        value={selectedTransaction?.note || 'N/A'} F
+                                    />
+                                </div>
+                                {(selectedTransaction.status === "Decline" || (selectedTransaction.status === "Approved" && !selectedTransaction.utr)) ? (
+                                    <>
+                                        <div className="border-t mt-2 mb-1"></div>
+                                        <div>
+                                            <div className={`w-[250px] px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] ${selectedTransaction.status === "Decline" ?
+                                                "bg-[#FF7A8F33] text-[#FF002A]" :
+                                                "bg-[#10CB0026] text-[#0DA000]"
+                                                }`}>
+                                                {selectedTransaction.status}
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="border-t mt-2 mb-1"></div>
+                                        <div>
+                                            <div className={`w-[250px] px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] bg-[#FFC70126] text-[#FFB800]`}>
+                                                Pending
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right Column - Only show for Approved with UTR */}
+                        {selectedTransaction.status !== "Pending" &&
+                            selectedTransaction.status !== "Decline" &&
+                            selectedTransaction.utr && (
+                                <div className="w-[350px] border-l pl-4">
+                                    <div className="flex flex-col gap-4">
+                                        {/* Current Status */}
+                                        <div>
+                                            <div className="px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] bg-[#10CB0026] text-[#0DA000]">
+                                                {selectedTransaction.status}
+                                            </div>
+                                        </div>
+
+                                        {/* UTR Details */}
+                                        <div>
+                                            <p className="text-[14px] font-[600] mb-2">UTR Number</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-100"
+                                                readOnly
+                                                value={selectedTransaction.utr}
+                                            />
+                                        </div>
+
+                                        {/* Proof Image */}
+                                        {selectedTransaction.image && (
+                                            <div>
+                                                <p className="text-[14px] font-[600] mb-2">Payment Proof</p>
+                                                <div className="max-h-[400px] overflow-auto">
+                                                    <img
+                                                        src={getImageUrl(selectedTransaction.image)}
+                                                        alt="Payment Proof"
+                                                        className="w-full object-contain cursor-pointer"
+                                                        style={{ maxHeight: '400px' }}
+                                                        onClick={() => window.open(getImageUrl(selectedTransaction.image), '_blank')}
+                                                        onError={(e) => {
+                                                            console.error('Image load error:', e);
+                                                            e.target.src = 'fallback-image-url';
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                    </div>
+                )}
             </Modal>
         </>
     );

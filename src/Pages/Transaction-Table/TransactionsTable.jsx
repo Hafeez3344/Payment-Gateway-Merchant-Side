@@ -16,10 +16,14 @@ import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTr
 import { RxCross2 } from "react-icons/rx";
 import axios from "axios";
 
+// import { io } from "socket.io-client";
+
 const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
+
+  // const socket = io(`${BACKEND_URL}/payment`);
 
   const { RangePicker } = DatePicker;
   const [open, setOpen] = useState(false);
@@ -40,6 +44,20 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.transactionHistory?.edit : true;
   const [allBanks, setAllBanks] = useState([]);
   const [selectedFilteredBank, setSelectedFilteredBank] = useState("");
+
+  // useEffect(() => {
+  //   socket.on("getMerchantLedger", (data) => {
+
+  //     console.log("data ", data);
+  //     fetchTransactions(currentPage || 1, merchant);
+  //   });
+
+
+  //   socket.on("error", (error) => {
+  //     console.error("Socket Error:", error.message);
+  //   });
+
+  // }, []);
 
   const fetchTransactions = async (pageNumber) => {
     try {
@@ -340,7 +358,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 </div>
 
                 {/* Search by Bank */}
-                <div>
+                {/* <div>
                   <Select
                     className="w-40"
                     placeholder="Select Bank"
@@ -358,7 +376,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                       ...allBanks,
                     ]}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
             <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>

@@ -23,6 +23,8 @@ export const fn_loginMerchantApi = async (data, setPermissionsData) => {
             website = response?.data?.data?.website;
             message = "Merchant Logged in successfully";
             merchantVerified = response?.data?.data?.verify;
+
+            localStorage.setItem("userName", response?.data?.data?.merchantName);
         } else {
             type = response?.data?.data?.type;
             message = "Staff Logged in successfully";
@@ -44,6 +46,7 @@ export const fn_loginMerchantApi = async (data, setPermissionsData) => {
             };
             setPermissionsData(permissions);
             localStorage.setItem("permissions", JSON.stringify(permissions));
+            localStorage.setItem("userName", response?.data?.data?.userName);
         };
         Cookies.set("merchantId", id);
         Cookies.set("loginType", type);

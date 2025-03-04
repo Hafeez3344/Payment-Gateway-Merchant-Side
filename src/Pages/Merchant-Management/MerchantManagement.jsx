@@ -1,18 +1,21 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiEdit, FiCamera, FiTrash2 } from "react-icons/fi";
-import { Switch, Button, Modal, Input, notification } from "antd";
+import { Switch, Button, Modal, Input, notification, Select, Divider, Space } from "antd";
 
 import { Banks } from "../../json-data/banks";
 import upilogo2 from "../../assets/upilogo2.svg";
 import Rectangle from "../../assets/Rectangle.jpg";
 import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi, fn_getMerchantData } from "../../api/api";
+import { TiPlusOutline } from "react-icons/ti";
 
 const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
 
   const navigate = useNavigate();
+  const inputRef = useRef(null);
+  const [name, setName] = useState(null);
   const [open, setOpen] = React.useState(false);
   const [banksData, setBanksData] = useState([]);
   const [phoneData, setPhoneData] = useState(null);
@@ -27,6 +30,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
   const [editAccountId, setEditAccountId] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [websiteModalOpen, setWebsiteModalOpen] = useState(false);
+  const [items, setItems] = useState(Banks.map((bank) => bank.title));
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.merchantProfile?.edit : true;
 
   const [data, setData] = useState({
@@ -400,7 +404,22 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
         placement: "topRight",
       });
     }
-  }
+  };
+
+  const addItem = (e) => {
+    e.preventDefault();
+    if (name && !items.includes(name)) {
+      setItems([...items, name]);
+    }
+    setName("");
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
+
+  const onNameChange = (event) => {
+    setName(event.target.value);
+  };
 
   return (
     <div
@@ -538,9 +557,9 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                     >
                       Website Management
                     </Button>
-                    <Button type="primary" onClick={handleAddAccount}>
+                    {/* <Button type="primary" onClick={handleAddAccount}>
                       Add Bank Account
-                    </Button>
+                    </Button> */}
                   </>
                 )}
               </div>
@@ -575,7 +594,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                           <div className="flex items-center space-x-2 flex-wrap md:flex-nowrap">
                             {activeTab === "bank" ? (
                               <div className="flex items-center gap-[3px]">
-                                <img
+                                {/* <img
                                   src={
                                     Banks?.find(
                                       (bank) =>
@@ -584,7 +603,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                                   }
                                   alt=""
                                   className="w-[50px]"
-                                />
+                                /> */}
                                 <span className="whitespace-nowrap">
                                   {account.bankName}
                                 </span>
@@ -849,21 +868,31 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                 <p className="text-[12px] font-[500] pb-1">
                   Bank Name <span className="text-[#D50000]">*</span>
                 </p>
-                <select
-                  name="bank"
-                  value={data?.bankName || ""}
-                  onChange={handleInputChange}
-                  className="w-full  text-[12px] border border-[#d9d9d9] h-[28.84px] px-[11px] py-[4px] rounded-[6px]"
-                >
-                  <option value="" disabled>
-                    ---Select Bank---
-                  </option>
-                  {Banks.map((item, index) => (
-                    <option key={index} value={item.title}>
-                      {item.title}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  style={{ width: "100%" }}
+                  placeholder="Select or Add Bank"
+                  value={data?.bankName || undefined}
+                  onChange={(value) => setData((prevData) => ({ ...prevData, bankName: value }))}
+                  dropdownRender={(menu) => (
+                    <>
+                      {menu}
+                      <Divider style={{ margin: "8px 0" }} />
+                      <Space style={{ padding: "0 8px 4px" }}>
+                        <Input
+                          placeholder="Add Bank"
+                          ref={inputRef}
+                          value={name}
+                          onChange={onNameChange}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                        <Button type="primary" icon={<TiPlusOutline />} onClick={addItem}>
+                          Add bank
+                        </Button>
+                      </Space>
+                    </>
+                  )}
+                  options={items.map((item) => ({ label: item, value: item }))}
+                />
               </div>
               {/* Account Number */}
               <div className="flex-1 my-2">

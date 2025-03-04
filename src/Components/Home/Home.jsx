@@ -23,6 +23,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
   const [transactionData, setTransactionData] = useState({ amount: "", username: "", });
+  const [total, setTotal] = useState(0);
 
 
   useEffect(() => {
@@ -56,6 +57,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setTotalTransactions(approvedData?.data?.totalTransaction || 0);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
+      setTotal(totalData?.data || 0);
 
       if (merchantData.status) {
         setTransactions(merchantData?.data?.data || []);
@@ -94,7 +96,8 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setTotalTransactions(approvedData?.data?.totalTransaction || 0);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
-
+      setTotal(totalData?.data || 0);
+      console.log(totalData)
       if (merchantData.status) {
         setTransactions(merchantData?.data?.data || []);
       } else {
@@ -283,7 +286,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-7 text-nowrap">
           <Boxes
             number={verifiedTransactions}
-            amount={totalTransaction}
+            amount={total}
             title={"SYSTEM APPROVED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))"
@@ -292,7 +295,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
           />
           <Boxes
             number={unverifiedTransactions}
-            amount={totalTransaction}
+            amount={total}
             title={"PENDING TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(245, 118, 0, 1), rgba(255, 196, 44, 1))"
@@ -301,7 +304,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
           />
           <Boxes
             number={declineTransactions}
-            amount={totalTransaction}
+            amount={total}
             title={"FAILED TRANSACTIONS"}
             bgColor={
               "linear-gradient(to right, rgba(255, 61, 92, 1), rgba(255, 122, 143, 1))"
