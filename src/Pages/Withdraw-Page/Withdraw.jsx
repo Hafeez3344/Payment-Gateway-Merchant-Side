@@ -461,10 +461,13 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{(transaction?.utr && transaction?.utr !== "") ? transaction?.utr : "-"}</td>
-                                            <td className="p-4 text-[13px] font-[500] flex items-center gap-[10px]">
+                                            <td className="relative p-4 text-[13px] font-[500] flex items-center gap-[10px]">
                                                 <span className={`relative px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] w-20 flex items-center justify-center ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : "bg-[#10CB0026] text-[#0DA000]"}`}>
                                                     {transaction?.status}
                                                 </span>
+                                                {transaction?.createdBy === "admin" && (
+                                                    <p className="absolute bottom-[-2px] left-[20px] text-[10px] text-gray-600">Created by Admin</p>
+                                                )}
                                             </td>
                                             <td >
                                                 <button
@@ -856,7 +859,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                     <>
                                         <div className="border-t mt-2 mb-1"></div>
                                         <div>
-                                            <div className={`w-[250px] px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] ${selectedTransaction.status === "Decline" ?
+                                            <div className={`w-[100px] px-3 py-2 rounded-[20px] text-center text-[13px] font-[600] ${selectedTransaction.status === "Decline" ?
                                                 "bg-[#FF7A8F33] text-[#FF002A]" :
                                                 "bg-[#10CB0026] text-[#0DA000]"
                                                 }`}>
@@ -864,11 +867,11 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             </div>
                                         </div>
                                     </>
-                                ) : (
+                                ) : selectedTransaction.status === "Pending" && (
                                     <>
                                         <div className="border-t mt-2 mb-1"></div>
                                         <div>
-                                            <div className={`w-[250px] px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] bg-[#FFC70126] text-[#FFB800]`}>
+                                            <div className={`w-[100px] px-3 py-2 rounded-[20px] text-center text-[13px] font-[600] bg-[#FFC70126] text-[#FFB800]`}>
                                                 Pending
                                             </div>
                                         </div>
@@ -883,23 +886,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             selectedTransaction.utr && (
                                 <div className="w-[350px] border-l pl-4">
                                     <div className="flex flex-col gap-4">
-                                        {/* Current Status */}
-                                        <div>
-                                            <div className="px-3 py-3 rounded-[20px] text-center text-[15px] font-[500] bg-[#10CB0026] text-[#0DA000]">
-                                                {selectedTransaction.status}
-                                            </div>
-                                        </div>
-
-                                        {/* UTR Details */}
-                                        <div>
-                                            <p className="text-[14px] font-[600] mb-2">UTR Number</p>
-                                            <Input
-                                                className="text-[12px] bg-gray-100"
-                                                readOnly
-                                                value={selectedTransaction.utr}
-                                            />
-                                        </div>
-
                                         {/* Proof Image */}
                                         {selectedTransaction.image && (
                                             <div>
@@ -919,6 +905,23 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* UTR Details */}
+                                        <div>
+                                            <p className="text-[14px] font-[600] mb-2">UTR Number</p>
+                                            <Input
+                                                className="text-[12px] bg-gray-100"
+                                                readOnly
+                                                value={selectedTransaction.utr}
+                                            />
+                                        </div>
+
+                                        {/* Current Status */}
+                                        <div>
+                                            <div className="px-3 w-[100px] py-2 rounded-[20px] text-center text-[13px] font-[600] bg-[#10CB0026] text-[#0DA000]">
+                                                {selectedTransaction.status}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
