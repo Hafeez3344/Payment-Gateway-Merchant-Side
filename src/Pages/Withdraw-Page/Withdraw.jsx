@@ -444,6 +444,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                         <th className="p-4 text-nowrap">Sr No.</th>
                                         <th className="p-4">DATE</th>
                                         <th className="p-4 text-nowrap">Amount</th>
+                                        <th className="p-4 text-nowrap">Withdraw Amount</th>
                                         <th className="p-4 text-nowrap">Exchange</th>
                                         <th className="p-4 text-nowrap">UTR</th>
                                         <th className="pl-8">Status</th>
@@ -458,6 +459,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                                 {new Date(transaction?.createdAt).toDateString()},{" "}
                                                 {new Date(transaction?.createdAt).toLocaleTimeString()}
                                             </td>
+                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amountINR} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{(transaction?.utr && transaction?.utr !== "") ? transaction?.utr : "-"}</td>
