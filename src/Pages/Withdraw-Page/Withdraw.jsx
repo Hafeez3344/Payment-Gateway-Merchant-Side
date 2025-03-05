@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Modal, Input, Select, Button, notification, Radio, Divider, Space, Pagination } from "antd";
 
 import { Banks } from "../../json-data/banks";
-import BACKEND_URL, { fn_getBankByAccountTypeApi } from "../../api/api";
+import BACKEND_URL, { fn_getBankByAccountTypeApi, fn_getAllBankNames } from "../../api/api";
 
 import { FiEye } from "react-icons/fi";
 import { TiPlusOutline } from "react-icons/ti";
@@ -23,7 +23,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [transactions, setTransactions] = useState([]);
     const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
 
-    const inputRef = useRef(null);
+            const inputRef = useRef(null);
     const [utr, setUtr] = useState("");
     const [note, setNote] = useState("");
     const [name, setName] = useState(null);
@@ -44,6 +44,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [newSelectedBank, setNewSelectedBank] = useState(null);
     const [items, setItems] = useState(Banks.map((bank) => bank.title));
     const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [bankNames, setBankNames] = useState([]);
 
     const [data, setData] = useState({
         image: null,
@@ -395,6 +396,36 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         return `${BACKEND_URL}/uploads/${cleanPath}`;
     };
 
+    const fetchBankNames = async () => {
+        const response = await fn_getAllBankNames();
+        if (response.status) {
+            setBankNames(response.data.map(bank => ({
+                label: bank.bankName.toUpperCase(),
+                value: bank.bankName.toUpperCase()
+            })));
+        }
+    };
+
+    const handleEdit = (account) => {
+        setData({
+            image: account.image,
+            bankName: account.bankName?.toUpperCase(),
+            accountNo: account.accountNo,
+            iban: account.iban,
+            accountHolderName: account.accountHolderName,
+        });
+        setActiveTab(account.accountType);
+        setEditAccountId(account._id);
+        setIsEditMode(true);
+        setOpen(true);
+    };
+
+    useEffect(() => {
+        if (open) {
+            fetchBankNames();
+        }
+    }, [open]);
+
     return (
         <>
             <div
@@ -635,28 +666,10 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                     </p>
                                     <Select
                                         style={{ width: "100%" }}
-                                        placeholder="Select or Add Bank"
+                                        placeholder="Select Bank"
                                         value={data?.bankName || undefined}
                                         onChange={handleChange}
-                                        dropdownRender={(menu) => (
-                                            <>
-                                                {menu}
-                                                <Divider style={{ margin: "8px 0" }} />
-                                                <Space style={{ padding: "0 8px 4px" }}>
-                                                    <Input
-                                                        placeholder="Add Bank"
-                                                        ref={inputRef}
-                                                        value={name}
-                                                        onChange={onNameChange}
-                                                        onKeyDown={(e) => e.stopPropagation()}
-                                                    />
-                                                    <Button type="primary" icon={<TiPlusOutline />} onClick={addItem}>
-                                                        Add bank
-                                                    </Button>
-                                                </Space>
-                                            </>
-                                        )}
-                                        options={items.map((item) => ({ label: item, value: item }))}
+                                        options={bankNames}
                                     />
                                 </div>
                                 {/* Account Number */}

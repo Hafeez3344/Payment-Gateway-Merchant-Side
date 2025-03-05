@@ -8,7 +8,7 @@ import { Switch, Button, Modal, Input, notification, Select, Divider, Space } fr
 import { Banks } from "../../json-data/banks";
 import upilogo2 from "../../assets/upilogo2.svg";
 import Rectangle from "../../assets/Rectangle.jpg";
-import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi, fn_getMerchantData } from "../../api/api";
+import BACKEND_URL, { fn_BankUpdate, fn_getBankByAccountTypeApi, fn_getMerchantData, fn_getAllBankNames } from "../../api/api";
 import { TiPlusOutline } from "react-icons/ti";
 
 const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
@@ -41,6 +41,24 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
     iban: "",
     accountHolderName: "",
   });
+
+  const [bankNames, setBankNames] = useState([]);
+
+  const fetchBankNames = async () => {
+    const response = await fn_getAllBankNames();
+    if (response.status) {
+      setBankNames(response.data.map(bank => ({
+        label: bank.bankName.toUpperCase(),
+        value: bank.bankName.toUpperCase()
+      })));
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      fetchBankNames();
+    }
+  }, [open]);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -124,7 +142,7 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
   const handleEdit = (account) => {
     setData({
       image: account.image,
-      bankName: account.bankName,
+      bankName: account.bankName?.toUpperCase(),
       accountNo: account.accountNo,
       iban: account.iban,
       accountHolderName: account.accountHolderName,
@@ -385,24 +403,24 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
     try {
       const token = Cookies.get("merchantToken");
       const response = await axios.delete(`${BACKEND_URL}/website/delete/${id}`, {
-        headers: {
+        headers: {                                      
           Authorization: `Bearer ${token}`,
         }
-      });
+      });                      
       if (response?.status === 200) {
         notification.success({
           message: "Success",
           description: "Website Deleted Successfully!",
           placement: "topRight",
         });
-        fn_getWebsiteList();
+        fn_getWebsiteList();                                                    
       }
-    } catch (error) {
-      notification.error({
+    } catch (error) {                                                   
+      notification.error({                           
         message: "Error",
         description: error?.response?.data?.message || "Failed to delete website",
         placement: "topRight",
-      });
+      });                                                                                
     }
   };
 
@@ -870,28 +888,10 @@ const MerchantManagement = ({ setSelectedPage, authorization, showSidebar, permi
                 </p>
                 <Select
                   style={{ width: "100%" }}
-                  placeholder="Select or Add Bank"
+                  placeholder="Select Bank"
                   value={data?.bankName || undefined}
-                  onChange={(value) => setData((prevData) => ({ ...prevData, bankName: value }))}
-                  dropdownRender={(menu) => (
-                    <>
-                      {menu}
-                      <Divider style={{ margin: "8px 0" }} />
-                      <Space style={{ padding: "0 8px 4px" }}>
-                        <Input
-                          placeholder="Add Bank"
-                          ref={inputRef}
-                          value={name}
-                          onChange={onNameChange}
-                          onKeyDown={(e) => e.stopPropagation()}
-                        />
-                        <Button type="primary" icon={<TiPlusOutline />} onClick={addItem}>
-                          Add bank
-                        </Button>
-                      </Space>
-                    </>
-                  )}
-                  options={items.map((item) => ({ label: item, value: item }))}
+                  onChange={(value) => setData(prev => ({ ...prev, bankName: value }))}
+                  options={bankNames}
                 />
               </div>
               {/* Account Number */}

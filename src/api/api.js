@@ -724,4 +724,30 @@ export const fn_getAllBanksData2 = async () => {
 };
 
 
+//------------------------------------Get all banks API---------------------------------------------
+export const fn_getAllBankNames = async () => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(
+            `${BACKEND_URL}/bankNames/getAll`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data?.data || []
+        };
+    } catch (error) {
+        return { 
+            status: false, 
+            message: error?.response?.data?.message || "Failed to fetch bank names" 
+        };
+    }
+};
+
+
 export default BACKEND_URL;
