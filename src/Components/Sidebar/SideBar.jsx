@@ -5,6 +5,7 @@ import { IoAnalytics } from "react-icons/io5";
 import { FaHeadphones } from "react-icons/fa";
 import { TbBookUpload } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+import { FaMoneyBillWave } from "react-icons/fa";
 import { TbReportSearch } from "react-icons/tb";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -139,6 +140,17 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="reports"
               selectedPage={selectedPage}
               icon={<TbReportSearch className="text-[20px]" />}
+            />
+             <Menu
+              onClick={() => {
+                setSelectedPage("payout");
+                navigate("/payout");
+                if (isMobile()) fn_controlSidebar();
+              }}
+              label="Payout"
+              name="payout"
+              selectedPage={selectedPage}
+              icon={<FaMoneyBillWave   className="text-[20px]" />}
             />
             <Menu
               onClick={() => {

@@ -17,7 +17,7 @@ import {
   fn_deleteTransactionSlipApi,
 } from "../../api/api";
 
-const UploadStatement = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
+const Payout = ({ setSelectedPage, authorization, showSidebar, permissionsData }) => {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -471,4 +471,4 @@ const UploadStatement = ({ setSelectedPage, authorization, showSidebar, permissi
   );
 };
 
-export default UploadStatement;
+export default Payout;
