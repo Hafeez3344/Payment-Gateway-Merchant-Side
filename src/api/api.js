@@ -742,12 +742,114 @@ export const fn_getAllBankNames = async () => {
             data: response.data?.data || []
         };
     } catch (error) {
-        return { 
-            status: false, 
-            message: error?.response?.data?.message || "Failed to fetch bank names" 
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to fetch bank names"
         };
     }
 };
 
+//------------------------------------ Upload Excel File API --------------------------------------
+export const fn_uploadExcelFile = async (formData) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.post(
+            `${BACKEND_URL}/excelWithdraw/uploadExcel`,
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+            message: "Excel File uploaded successfully"
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to upload excel file"
+        };
+    }
+};
+
+//------------------------------------  Get Upload Excel File API --------------------------------------
+export const fn_getUploadExcelFile = async () => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(
+            `${BACKEND_URL}/excelFile/getAll`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to get excel file data"
+        };
+    }
+}
+
+//------------------------------------  Get Upload Excel File Data API --------------------------------------
+export const fn_getUploadExcelFileData = async (id) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.get(
+            `${BACKEND_URL}/excelWithdraw/getAll?excelFileId=${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to get excel file data"
+        };
+    }
+}
+
+//------------------------------------  Get Upload Excel File Update API --------------------------------------
+
+export const fn_updateExcelWithdraw = async(id) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.put(
+            `${BACKEND_URL}/excelWithdraw/update/${id}`, { status: "Cancel" },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to get excel file data"
+        };
+    }
+}
 
 export default BACKEND_URL;

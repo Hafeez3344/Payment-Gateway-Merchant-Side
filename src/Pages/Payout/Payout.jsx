@@ -7,81 +7,98 @@ import { FiUpload } from "react-icons/fi";
 import { FiEye } from "react-icons/fi";
 import Cookies from "js-cookie";
 import * as XLSX from "xlsx";
+import { fn_uploadExcelFile, fn_getUploadExcelFile } from "../../api/api";
 
 const Payout = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
-
-  const [open, setOpen] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [slipData, setSlipData] = useState([
-    {
-      _id: "1",
-      excelName: "Sample1.xlsx",
-      createdAt: new Date().toISOString(),
-      data: [
-        {
-          date: "2025-03-06",
-          utr: "1234567890",
-          total: "1000",
-          description: "Sample transaction 1",
-        },
-      
-      ],
-    },
-  ]);
+  const [slipData, setSlipData] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (event) => {
     setLoading(true);
     try {
       const fileInput = event.target;
-      const file = fileInput.files[0];
+      const csv = fileInput.files[0];
 
-      if (!file) {
+      if (!csv) {
         console.error("No file selected");
         setLoading(false);
         return;
       }
 
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Simulate file upload and processing
-        setTimeout(() => {
+        console.log("Excel File Data:", jsonData); 
+
+        const formData = new FormData();
+        formData.append('csv', csv);
+
+        const response = await fn_uploadExcelFile(formData);
+        
+        if (response.status) {
           setLoading(false);
+          getExcelFile();
           notification.success({
-            message: "File uploaded successfully",
-            description: "Your file has been uploaded and processed.",
+            message: "Success",
+            description: response.message,
             placement: "topRight",
           });
-          setSlipData((prevData) => [
-            ...prevData,
-            {
-              _id: (prevData.length + 1).toString(),
-              excelName: file.name,
-              createdAt: new Date().toISOString(),
-              data: jsonData,
-            },
-          ]);
-        }, 2000);
+        } else {
+          setLoading(false);
+          notification.error({
+            message: "Error",
+            description: response.message,
+            placement: "topRight",
+          });
+        }
       };
-      reader.readAsArrayBuffer(file);
+      reader.readAsArrayBuffer(csv);
     } catch (error) {
       setLoading(false);
-      console.error("Error during file upload:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to process file",
+        placement: "topRight",
+      });
     }
   };
 
-  const handleViewTransaction = (transaction) => {
-    navigate("/payout-details", { state: { transaction } });
+  const getExcelFile = async () => {
+    try {
+      const response = await fn_getUploadExcelFile(currentPage);
+      console.log("Excel files response:", response); 
+      if (response?.status) {
+        console.log("Excel data:", response?.data?.data); 
+        setTotalPages(response?.data?.totalPages);
+        setSlipData(response?.data?.data);
+      } else {
+        notification.error({
+          message: "Error",
+          description: response?.message,
+          placement: "topRight",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching excel data:", error);
+    }
+  };
+
+
+  useEffect(() => {
+    getExcelFile();
+  }, [currentPage]);
+
+  const handleViewTransaction = (withraw) => {
+    navigate("/payout-details", { state: { withraw } });
   };
 
   useEffect(() => {
@@ -145,17 +162,17 @@ const Payout = ({ authorization, showSidebar }) => {
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4">S_ID</th>
-                  <th className="p-4">Excel File Name</th>
+                  <th className="p-4 text-nowrap">Excel File Name</th>
                   <th className="p-4">DATE</th>
-                  <th className="p-4">No Of Withdraw</th>
+                  <th className="p-4 text-nowrap">No Of Withdraw</th>
                   <th className="p-4 cursor-pointer">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {slipData?.length > 0 ? (
-                  slipData?.map((transaction, index) => (
+                  slipData?.map((withraw, index) => (
                     <tr
-                      key={transaction?._id}
+                      key={withraw?._id}
                       className="text-gray-800 text-sm border-b"
                     >
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
@@ -163,21 +180,21 @@ const Payout = ({ authorization, showSidebar }) => {
                       </td>
                       <td className="p-4">
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
-                          {transaction?.excelName}
+                          {withraw?.fileName || withraw?.csv}
                         </span>
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
-                        {new Date(transaction?.createdAt).toDateString()},
-                        {new Date(transaction?.createdAt).toLocaleTimeString()}
+                        {new Date(withraw?.createdAt).toDateString()},
+                        {new Date(withraw?.createdAt).toLocaleTimeString()}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
-                        {transaction?.data?.length || 0}
+                        {withraw?.withdrawCount || withraw?.noOfWithdraws || withraw?.data?.length || 0}
                       </td>
                       <td className="p-4 flex space-x-2 transaction-view-model">
                         <button
                           className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
                           title="View"
-                          onClick={() => handleViewTransaction(transaction)}
+                          onClick={() => handleViewTransaction(withraw)}
                         >
                           <FiEye />
                         </button>
