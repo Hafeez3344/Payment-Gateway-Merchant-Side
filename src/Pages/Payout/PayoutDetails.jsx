@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { notification, Pagination } from "antd";
+import { notification, Pagination, Modal, Input } from "antd";
 import { useLocation } from "react-router-dom";
 import { RxCross2 } from "react-icons/rx";
-import { FiXCircle } from "react-icons/fi";
+import { FiXCircle, FiEye } from "react-icons/fi";
 import { fn_getUploadExcelFileData, fn_updateExcelWithdraw } from "../../api/api";
 
 const PayoutDetails = ({ showSidebar }) => {
@@ -12,6 +12,8 @@ const PayoutDetails = ({ showSidebar }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [slipData, setSlipData] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedWithdrawData, setSelectedWithdrawData] = useState(null);
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -55,6 +57,11 @@ const PayoutDetails = ({ showSidebar }) => {
     }
   }, [withraw?._id, currentPage]);
 
+  const handleViewDetails = (item) => {
+    setSelectedWithdrawData(item);
+    setIsModalVisible(true);
+  };
+
   const handleCancelPayout = async(item) => {
     const response = await fn_updateExcelWithdraw(item?._id);
     if (response?.status) {
@@ -71,6 +78,10 @@ const PayoutDetails = ({ showSidebar }) => {
         placement: "topRight",
       });
     }
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
   };
 
   return (
@@ -115,13 +126,20 @@ const PayoutDetails = ({ showSidebar }) => {
                       {item?.status === "Cancel" ? "Cancelled" : item?.status}
                     </span>
                   </td>
-                  <td className="p-4 text-[12px] font-[600]">
+                  <td className="p-4 text-[12px] font-[600] flex space-x-2">
                     <button
                       className={`px-4 py-1 rounded-[20px] text-[11px] font-[600] min-w-10 flex items-center justify-center ${item?.status === "Cancel" ? "bg-gray-300 text-black cursor-not-allowed" : "bg-[#FF173D33] text-[#D50000]"}`}
                       onClick={() => handleCancelPayout(item)}
                       disabled={item?.status === "Cancel"}
                     >
                       <RxCross2 className="text-[14px] mr-1" />Cancel
+                    </button>
+                    <button
+                      className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
+                      title="View"
+                      onClick={() => handleViewDetails(item)}
+                    >
+                      <FiEye />
                     </button>
                   </td>
                 </tr>
@@ -139,6 +157,106 @@ const PayoutDetails = ({ showSidebar }) => {
           />
         </div>
       </div>
+      <Modal
+        title="Payout Details"
+        open={isModalVisible}
+        onCancel={handleModalClose}
+        width={selectedWithdrawData?.status === "Pending" ? 600 : 900}
+        style={{ fontFamily: "sans-serif" }}
+        footer={null}
+      >
+        {selectedWithdrawData && (
+          <div className="flex justify-between gap-4">
+            {/* Left Column */}
+            <div className={`${
+              selectedWithdrawData.status === "Pending" ? "w-full" : "w-[450px]"
+            }`}>
+              <div className="flex flex-col gap-2 mt-3">
+                {/* Transaction Time */}
+                <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">
+                  Transaction Time:{" "}
+                  <span className="font-[600]">
+                    {new Date(selectedWithdrawData?.createdAt).toDateString()}, 
+                    {new Date(selectedWithdrawData?.createdAt).toLocaleTimeString()}
+                  </span>
+                </p>
+
+                {/* Username */}
+                <div className="flex items-center gap-4 mt-[10px]">
+                  <p className="text-[12px] font-[600] w-[200px]">Username:</p>
+                  <Input
+                    className="text-[12px] bg-gray-200"
+                    readOnly
+                    value={selectedWithdrawData?.username || "N/A"}
+                  />
+                </div>
+
+                {/* Amount */}
+                <div className="flex items-center gap-4">
+                  <p className="text-[12px] font-[600] w-[200px]">Amount:</p>
+                  <Input
+                    className="text-[12px] bg-gray-200"
+                    readOnly
+                    value={`₹ ${selectedWithdrawData?.amount}` || "N/A"}
+                  />
+                </div>
+
+                {/* Account Details */}
+                <div className="border-t mt-2 mb-1"></div>
+                <p className="font-[600] text-[14px] mb-2">Account Details</p>
+
+                <div className="flex items-center gap-4">
+                  <p className="text-[12px] font-[600] w-[200px]">Account Info:</p>
+                  <Input
+                    className="text-[12px] bg-gray-200"
+                    readOnly
+                    value={selectedWithdrawData?.account || "N/A"}
+                  />
+                </div>
+
+                {/* Status Section */}
+                <div className="border-t mt-2 mb-1"></div>
+                <div className="flex items-center gap-4">
+                  <p className="text-[12px] font-[600] w-[200px]">Status:</p>
+                  <div
+                    className={`px-3 py-2 rounded-[20px] text-[13px] font-[600] ${getStatusClass(selectedWithdrawData?.status)}`}
+                  >
+                    {selectedWithdrawData?.status}
+                  </div>
+                </div>
+
+                {/* UTR */}
+                <p className="text-[12px] font-[600] w-[200px]">UTR:</p>
+                <p className="text-[12px]">{selectedWithdrawData.utr}</p>
+              </div>
+            </div>
+
+            {/* Right Column - Only show for non-pending status */}
+            {selectedWithdrawData.status !== "Pending" && (
+              <div className="w-[350px] border-l pl-4">
+                <div className="flex flex-col gap-4">
+                  {/* Payment Proof */}
+                  {selectedWithdrawData.paymentProof && (
+                    <div>
+                      <p className="text-[14px] font-[600] mb-2">Payment Proof</p>
+                      <div className="max-h-[400px] overflow-auto">
+                        <img
+                          src={selectedWithdrawData.paymentProof}
+                          alt="Payment Proof"
+                          className="w-full object-contain cursor-pointer"
+                          onClick={() =>
+                            window.open(selectedWithdrawData.paymentProof || "", "_blank")
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

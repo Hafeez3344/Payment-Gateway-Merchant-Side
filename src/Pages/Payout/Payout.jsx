@@ -161,7 +161,7 @@ const Payout = ({ authorization, showSidebar }) => {
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                  <th className="p-4">S_ID</th>
+                  <th className="p-4">Payout ID</th>
                   <th className="p-4 text-nowrap">Excel File Name</th>
                   <th className="p-4">DATE</th>
                   <th className="p-4 text-nowrap">No Of Withdraw</th>
@@ -176,7 +176,7 @@ const Payout = ({ authorization, showSidebar }) => {
                       className="text-gray-800 text-sm border-b"
                     >
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2]">
-                        {index + 1}
+                        {withraw?.payoutId}
                       </td>
                       <td className="p-4">
                         <span className="text-[12px] font-[700] text-black whitespace-nowrap">
