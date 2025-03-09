@@ -141,7 +141,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<TbReportSearch className="text-[20px]" />}
             />
-             <Menu
+            <Menu
               onClick={() => {
                 setSelectedPage("payout");
                 navigate("/payout");
@@ -150,7 +150,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               label="Payout"
               name="payout"
               selectedPage={selectedPage}
-              icon={<FaMoneyBillWave   className="text-[20px]" />}
+              icon={<FaMoneyBillWave className="text-[20px]" />}
             />
             <Menu
               onClick={() => {
@@ -291,6 +291,19 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 name="reports"
                 selectedPage={selectedPage}
                 icon={<TbReportSearch className="text-[20px]" />}
+              />
+            )}
+            {permissionsData?.reportsAnalytics?.view && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("payout");
+                  navigate("/payout");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Payout"
+                name="payout"
+                selectedPage={selectedPage}
+                icon={<FaMoneyBillWave className="text-[20px]" />}
               />
             )}
             {/* {permissionsData?.support?.view && (

@@ -214,7 +214,7 @@ function App() {
               />
             }
           />
-           <Route
+          <Route
             path="/payout"
             element={
               <Payout
@@ -227,7 +227,7 @@ function App() {
             }
           />
           <Route path="/payout-details" element={<PayoutDetails showSidebar={showSidebar} />} />
-          
+
         </Routes>
         {authorization && <Footer />}
       </div>

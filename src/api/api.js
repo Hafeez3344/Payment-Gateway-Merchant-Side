@@ -777,11 +777,11 @@ export const fn_uploadExcelFile = async (formData) => {
 };
 
 //------------------------------------  Get Upload Excel File API --------------------------------------
-export const fn_getUploadExcelFile = async () => {
+export const fn_getUploadExcelFile = async (page) => {
     try {
         const token = Cookies.get("merchantToken");
         const response = await axios.get(
-            `${BACKEND_URL}/excelFile/getAll`,
+            `${BACKEND_URL}/excelFile/getAll?type=merchant&page=${page}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -802,11 +802,11 @@ export const fn_getUploadExcelFile = async () => {
 }
 
 //------------------------------------  Get Upload Excel File Data API --------------------------------------
-export const fn_getUploadExcelFileData = async (id) => {
+export const fn_getUploadExcelFileData = async (id, page) => {
     try {
         const token = Cookies.get("merchantToken");
         const response = await axios.get(
-            `${BACKEND_URL}/excelWithdraw/getAll?excelFileId=${id}`,
+            `${BACKEND_URL}/excelWithdraw/getAll?excelFileId=${id}&page=${page}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -828,7 +828,7 @@ export const fn_getUploadExcelFileData = async (id) => {
 
 //------------------------------------  Get Upload Excel File Update API --------------------------------------
 
-export const fn_updateExcelWithdraw = async(id) => {
+export const fn_updateExcelWithdraw = async (id) => {
     try {
         const token = Cookies.get("merchantToken");
         const response = await axios.put(

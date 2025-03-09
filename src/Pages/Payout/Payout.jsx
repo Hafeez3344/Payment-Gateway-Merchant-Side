@@ -1,21 +1,23 @@
-import { MagnifyingGlass } from "react-loader-spinner";
-import { Pagination, notification } from "antd";
-import "react-datepicker/dist/react-datepicker.css";
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { FiUpload } from "react-icons/fi";
-import { FiEye } from "react-icons/fi";
-import Cookies from "js-cookie";
 import * as XLSX from "xlsx";
+import { useNavigate } from "react-router-dom";
+import { Pagination, notification } from "antd";
+import React, { useState, useEffect } from "react";
+import "react-datepicker/dist/react-datepicker.css";
+import { MagnifyingGlass } from "react-loader-spinner";
+
+import { FiEye } from "react-icons/fi";
+import { FiUpload } from "react-icons/fi";
+
 import { fn_uploadExcelFile, fn_getUploadExcelFile } from "../../api/api";
 
 const Payout = ({ authorization, showSidebar }) => {
+
   const navigate = useNavigate();
+  const [slipData, setSlipData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
-  const [slipData, setSlipData] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (event) => {
     setLoading(true);
@@ -37,13 +39,13 @@ const Payout = ({ authorization, showSidebar }) => {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        console.log("Excel File Data:", jsonData); 
+        console.log("Excel File Data:", jsonData);
 
         const formData = new FormData();
         formData.append('csv', csv);
 
         const response = await fn_uploadExcelFile(formData);
-        
+
         if (response.status) {
           setLoading(false);
           getExcelFile();
@@ -75,9 +77,9 @@ const Payout = ({ authorization, showSidebar }) => {
   const getExcelFile = async () => {
     try {
       const response = await fn_getUploadExcelFile(currentPage);
-      console.log("Excel files response:", response); 
+      console.log("Excel files response:", response);
       if (response?.status) {
-        console.log("Excel data:", response?.data?.data); 
+        console.log("Excel data:", response?.data?.data);
         setTotalPages(response?.data?.totalPages);
         setSlipData(response?.data?.data);
       } else {
@@ -91,7 +93,6 @@ const Payout = ({ authorization, showSidebar }) => {
       console.error("Error fetching excel data:", error);
     }
   };
-
 
   useEffect(() => {
     getExcelFile();
@@ -164,7 +165,7 @@ const Payout = ({ authorization, showSidebar }) => {
                   <th className="p-4">Payout ID</th>
                   <th className="p-4 text-nowrap">Excel File Name</th>
                   <th className="p-4">DATE</th>
-                  <th className="p-4 text-nowrap">No Of Withdraw</th>
+                  <th className="p-4 text-nowrap">No Of Withdraws</th>
                   <th className="p-4 cursor-pointer">Action</th>
                 </tr>
               </thead>
@@ -184,7 +185,7 @@ const Payout = ({ authorization, showSidebar }) => {
                         </span>
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
-                        {new Date(withraw?.createdAt).toDateString()},
+                        {new Date(withraw?.createdAt).toDateString()},{" "}
                         {new Date(withraw?.createdAt).toLocaleTimeString()}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
