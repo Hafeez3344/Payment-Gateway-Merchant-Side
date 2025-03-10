@@ -26,51 +26,53 @@ const Payout = ({ authorization, showSidebar }) => {
       const csv = fileInput.files[0];
 
       if (!csv) {
-        console.error("No file selected");
         setLoading(false);
         return;
       }
 
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        console.log("Excel File Data:", jsonData);
+          const formData = new FormData();
+          formData.append('csv', csv);
 
-        const formData = new FormData();
-        formData.append('csv', csv);
-
-        const response = await fn_uploadExcelFile(formData);
-
-        if (response.status) {
+          const response = await fn_uploadExcelFile(formData);
           setLoading(false);
+
+          if (!response.status) {
+            notification.error({
+              message: "Excel File Error",
+              description: response.message,
+              placement: "topRight",
+              duration: 3
+            });
+            return;
+          }
+
           getExcelFile();
           notification.success({
             message: "Success",
-            description: response.message,
-            placement: "topRight",
+            description: "Excel file uploaded successfully",
+            placement: "topRight"
           });
-        } else {
+        } catch (err) {
           setLoading(false);
           notification.error({
             message: "Error",
-            description: response.message,
-            placement: "topRight",
+            description: "Failed to process Excel file",
+            placement: "topRight"
           });
         }
       };
       reader.readAsArrayBuffer(csv);
     } catch (error) {
       setLoading(false);
-      notification.error({
-        message: "Error",
-        description: "Failed to process file",
-        placement: "topRight",
-      });
     }
   };
 

@@ -306,6 +306,19 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
                 icon={<FaMoneyBillWave className="text-[20px]" />}
               />
             )}
+            {permissionsData?.merchantProfile?.view && (
+              <Menu
+                onClick={() => {
+                  setSelectedPage("staff");
+                  navigate("/staff");
+                  if (isMobile()) fn_controlSidebar();
+                }}
+                label="Staff"
+                name="staff"
+                selectedPage={selectedPage}
+                icon={<FaPeopleGroup className="text-[20px]" />}
+              />
+            )}
             {/* {permissionsData?.support?.view && (
               <Menu
                 onClick={() => {

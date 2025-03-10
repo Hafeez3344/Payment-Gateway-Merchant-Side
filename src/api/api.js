@@ -769,9 +769,15 @@ export const fn_uploadExcelFile = async (formData) => {
             message: "Excel File uploaded successfully"
         };
     } catch (error) {
+        if (error?.response?.status === 400) {
+            return {
+                status: false,
+                message: error?.response?.data?.message || "Invalid Excel file format"
+            };
+        }
         return {
             status: false,
-            message: error?.response?.data?.message || "Failed to upload excel file"
+            message: "Failed to upload excel file"
         };
     }
 };
