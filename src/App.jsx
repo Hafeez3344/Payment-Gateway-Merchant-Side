@@ -2,11 +2,16 @@ import "./App.css";
 import Cookies from "js-cookie";
 import { Routes, Route } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+
 import Home from "./Components/Home/Home";
+import Payout from "./Pages/Payout/Payout";
 import Staff from "./Pages/Staff-Page/Staff";
+import Reports from "./Pages/Reports/Reports";
 import NavBar from "./Components/NabBar/NavBar";
 import Footer from "./Components/Footer/Footer";
 import SideBar from "./Components/Sidebar/SideBar";
+import Withdraw from "./Pages/Withdraw-Page/Withdraw";
+import PayoutDetails from "./Pages/Payout/PayoutDetails";
 import NotVerfiedBar from "./Components/NotVerifiedBar/page";
 import MerchantLogin from "./Pages/Merchant-Login/MerchantLogin";
 import ApprovalPoints from "./Pages/ApprovalPoints/ApprovalPoints";
@@ -17,10 +22,6 @@ import SupportHelpCenter from "./Pages/Support-Help-Center/SupportHelpCenter";
 import MerchantManagement from "./Pages/Merchant-Management/MerchantManagement";
 import ReportsAndAnalytics from "./Pages/Reports-&-Analytics/ReportsAndAnalytics";
 import SystemConfigurationIntegration from "./Pages/System-Configuration-Integration/SystemConfigurationIntegration";
-import Withdraw from "./Pages/Withdraw-Page/Withdraw";
-import Reports from "./Pages/Reports/Reports";
-import Payout from "./Pages/Payout/Payout";
-import PayoutDetails from "./Pages/Payout/PayoutDetails";
 
 function App() {
 
