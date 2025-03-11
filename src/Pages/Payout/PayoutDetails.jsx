@@ -103,10 +103,9 @@ const PayoutDetails = ({ showSidebar }) => {
   const handleCopyDetails = (item, index) => {
     const isUPI = item?.account?.includes("@");
     const detailsToCopy = `Account Holder Name: ${item.username}
-    Bank Account: ${item.account}${!isUPI ? `\nIFSC Number: ${item.ifsc || "IFSC Code"}` : ''}
-     Amount: ₹ ${item.amount}
-      UTR Number: ${item.utr || "N/A"}`;
-
+Bank Account: ${item.account}${!isUPI ? `\nIFSC Number: ${item.ifsc || "IFSC Code"}` : ''}
+Amount: ₹ ${item.amount}
+UTR Number: ${item.utr || "N/A"}`;
     navigator.clipboard.writeText(detailsToCopy).then(() => {
       setCopiedId(index);
       notification.success({
@@ -117,7 +116,7 @@ const PayoutDetails = ({ showSidebar }) => {
       });
       setTimeout(() => setCopiedId(null), 2000);
     });
-  };
+};
 
   return (
     <>
