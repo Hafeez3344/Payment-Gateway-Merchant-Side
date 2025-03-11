@@ -1,28 +1,27 @@
+import { TiTick } from "react-icons/ti";
+import { FiEye } from "react-icons/fi";
 import { RxCross2 } from "react-icons/rx";
+import { FaRegCopy } from "react-icons/fa6";
+import { LuImageMinus } from "react-icons/lu";
 import { useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { notification, Pagination, Modal, Input } from "antd";
-
-import { FiEye } from "react-icons/fi";
-import { FaRegCopy } from "react-icons/fa6";
-import { TiTick } from "react-icons/ti";
-
 import BACKEND_URL, { fn_getUploadExcelFileData, fn_updateExcelWithdraw } from "../../api/api";
-import { LuImageMinus } from "react-icons/lu";
+
 
 const PayoutDetails = ({ showSidebar }) => {
 
   const location = useLocation();
   const { withraw } = location.state;
   const [slipData, setSlipData] = useState([]);
+  const [copiedId, setCopiedId] = useState(null); ``
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedWithdrawData, setSelectedWithdrawData] = useState(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [selectedWithdrawData, setSelectedWithdrawData] = useState(null);
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.target.getBoundingClientRect();
@@ -39,7 +38,7 @@ const PayoutDetails = ({ showSidebar }) => {
         return "bg-[#FFC70126] text-[#FFB800]";
       case "Manual Verified":
         return "bg-[#0865e851] text-[#0864E8]";
-      case "Declined":
+      case "Decline":
         return "bg-[#FF7A8F33] text-[#FF002A]";
       case "Cancel":
         return "bg-[rgba(0,0,0,0.1)] text-[#000]";
@@ -116,7 +115,7 @@ UTR Number: ${item.utr || "N/A"}`;
       });
       setTimeout(() => setCopiedId(null), 2000);
     });
-};
+  };
 
   return (
     <>
@@ -126,18 +125,29 @@ UTR Number: ${item.utr || "N/A"}`;
         style={{ minHeight: `${containerHeight}px` }}
       >
         <div className="p-7">
-          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
+          <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
             <h1 className="text-[25px] font-[500]">Payouts Details</h1>
+            <p className="text-[#7987A1] text-[13px] md:text-[15px] font-[400]">
+              Dashboard - Payout Details
+            </p>
           </div>
-          <div className="bg-white">
+          <div className="bg-white rounded-lg p-4">
+            <div className="flex flex-col md:flex-row items-center justify-between pb-3">
+              <div>
+                <p className="text-black font-medium text-lg">
+                  List of Payout
+                </p>
+              </div>
+            </div>
+            <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
                   <th className="p-4">S_ID</th>
                   <th className="p-4">Account Holder Name</th>
                   <th className="p-4">Account Number</th>
-                  <th className="p-4">Amount</th>
                   <th className="p-4">IFSC Number</th>
+                  <th className="p-4">Amount</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Action</th>
                 </tr>
@@ -154,15 +164,11 @@ UTR Number: ${item.utr || "N/A"}`;
                     <td className="p-4 text-[12px] font-[600] text-[#000000B2] text-nowrap">
                       {item?.account}
                     </td>
+                    <td className="p-4 text-[12px] font-[600] text-[#000000B2] text-nowrap">
+                          {item?.ifsc || "IFSC Number"}
+                    </td>
                     <td className="p-4 text-[12px] font-[700] text-[#000000B2]">
                       ₹ {item?.amount}
-                    </td>
-                    <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
-                      {item?.accountType === "bank" ? (
-                        item?.ifsc || "IFSC Number"
-                      ) : (
-                        <span className="text-center inline-block w-full">-</span>
-                      )}
                     </td>
                     <td className="p-4 text-[13px] font-[500]">
                       <div className="flex items-center gap-2">
@@ -259,6 +265,16 @@ UTR Number: ${item.utr || "N/A"}`;
                   />
                 </div>
 
+                {/* IFSC Number */}
+                <div className="flex items-center gap-4">
+                  <p className="text-[12px] font-[600] w-[200px]">IFSC Number:</p>
+                  <Input
+                    className="text-[12px] bg-gray-200"
+                    readOnly
+                    value={selectedWithdrawData?.ifsc || "-"}
+                  />
+                </div>
+
                 {/* Amount */}
                 <div className="flex items-center gap-4">
                   <p className="text-[12px] font-[600] w-[200px]">Amount:</p>
@@ -269,14 +285,14 @@ UTR Number: ${item.utr || "N/A"}`;
                   />
                 </div>
 
-                <div className="flex items-center gap-4">
+                {/* <div className="flex items-center gap-4">
                   <p className="text-[12px] font-[600] w-[200px]">Account Type:</p>
                   <Input
                     className="text-[12px] bg-gray-200"
                     readOnly
                     value={selectedWithdrawData?.account?.includes("@") ? "UPI" : "Bank"}
                   />
-                </div>
+                </div> */}
 
 
 
@@ -309,8 +325,6 @@ UTR Number: ${item.utr || "N/A"}`;
             {selectedWithdrawData.status !== "Pending" && selectedWithdrawData.status !== "Cancel" && selectedWithdrawData?.status !== "Decline" && (
               <div className="w-[350px] border-l pl-4">
                 <div className="flex flex-col gap-4">
-
-
                   {/* Payment Proof */}
                   {selectedWithdrawData?.image ? (
                     <div>

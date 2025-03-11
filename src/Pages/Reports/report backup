@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, notification, Select, Space, Table, Modal } from "antd";
+import { Button, DatePicker, notification, Select, Space, Table } from "antd";
 import * as XLSX from "xlsx";
 
 import { FaDownload } from "react-icons/fa6";
@@ -59,8 +59,6 @@ const Reports = ({ authorization, showSidebar }) => {
     const [selectedStatus, setSelectedStatus] = useState("");
     const [dateRange, setDateRange] = useState([null, null]);
     const [disableButton, setDisableButton] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [reportData, setReportData] = useState(null);
     const selectedMerchantName = localStorage.getItem('userName');
 
     useEffect(() => {
@@ -105,32 +103,14 @@ const Reports = ({ authorization, showSidebar }) => {
             });
             if (response?.status) {
                 if (response?.data?.status === "ok") {
-                    setReportData(response?.data);
-                    setIsModalOpen(true);
+                    fn_getReportsLog();
+                    downloadPDF(response?.data);
+                    downloadExcel(response?.data);
                 }
             }
         } catch (error) {
             console.log("error while download report ", error);
-            setDisableButton(false);
         }
-    };
-
-    const handleDownload = (type) => {
-        if (type === 'pdf') {
-            downloadPDF(reportData);
-        } else {
-            downloadExcel(reportData);
-        }
-        fn_getReportsLog();
-        setIsModalOpen(false);
-        setReportData(null);
-        setDisableButton(false);
-    };
-
-    const handleModalCancel = () => {
-        setIsModalOpen(false);
-        setReportData(null);
-        setDisableButton(false);
     };
 
     const downloadPDF = (data) => {
@@ -274,21 +254,6 @@ const Reports = ({ authorization, showSidebar }) => {
                     <Table dataSource={tableData} columns={columns} />
                 </div>
             </div>
-            <Modal
-                title="Select Download Format"
-                open={isModalOpen}
-                onCancel={handleModalCancel}
-                footer={null}
-            >
-                <div className="flex justify-center gap-4 py-4">
-                    <Button type="primary" onClick={() => handleDownload('pdf')} icon={<FaDownload />}>
-                        Download PDF
-                    </Button>
-                    <Button type="primary" onClick={() => handleDownload('excel')} icon={<FaDownload />}>
-                        Download Excel
-                    </Button>
-                </div>
-            </Modal>
         </div>
     );
 };

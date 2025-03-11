@@ -1,20 +1,18 @@
-import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
-import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button } from "antd";
+import axios from "axios";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-
+import { RxCross2 } from "react-icons/rx";
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
 import { GoCircleSlash } from "react-icons/go";
+import { useNavigate } from "react-router-dom";
 import { FiEye, FiTrash2 } from "react-icons/fi";
 import { RiFindReplaceLine } from "react-icons/ri";
+import React, { useState, useEffect } from "react";
+import "react-datepicker/dist/react-datepicker.css";
 import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
-
+import { Pagination, Modal, Input, notification, DatePicker, Space, Select, Button } from "antd";
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
-import { RxCross2 } from "react-icons/rx";
-import axios from "axios";
 
 // import { io } from "socket.io-client";
 
@@ -22,9 +20,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-
   // const socket = io(`${BACKEND_URL}/payment`);
-
   const { RangePicker } = DatePicker;
   const [open, setOpen] = useState(false);
   const status = searchParams.get("status");
@@ -61,18 +57,18 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      console.log('Fetching with bank:', selectedFilteredBank); // Debug log
+      console.log('Fetching with bank:', selectedFilteredBank);
       const result = await fn_getAllMerchantApi(
         status || null,
         pageNumber,
         merchant,
         searchQuery,
         searchTrnId,
-        selectedFilteredBank  // Add bank filter
+        selectedFilteredBank
       );
       if (result?.status) {
         if (result?.data?.status === "ok") {
-          console.log('Received transactions:', result?.data?.data); // Debug log
+          console.log('Received transactions:', result?.data?.data);
           setTransactions(result?.data?.data);
           setTotalPages(result?.data?.totalPages);
         } else {
@@ -116,7 +112,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage, merchant, searchQuery, searchTrnId, selectedFilteredBank]); // Add selectedFilteredBank to dependencies
+  }, [currentPage, merchant, searchQuery, searchTrnId, selectedFilteredBank]);
 
   const filteredTransactions = transactions;
 
@@ -166,62 +162,232 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
     };
   };
 
+  // const downloadPDF = async () => {
+  //   try {
+  //     // Fetch all transactions
+  //     const allTransactions = [];
+  //     let page = 1;
+  //     let hasMore = true;
+
+  //     while (hasMore) {
+  //       const result = await fn_getAllMerchantApi(status || null, page, merchant, searchQuery, searchTrnId);
+  //       if (result?.status && result?.data?.status === "ok") {
+  //         allTransactions.push(...result.data.data);
+  //         if (result.data.data.length < 10) {
+  //           hasMore = false;
+  //         }
+  //         page++;
+  //       } else {
+  //         hasMore = false;
+  //       }
+  //     }
+
+  //     // Create PDF in landscape mode with larger width
+  //     const doc = new jsPDF('landscape', 'mm', 'a4');
+
+  //     // Add title
+  //     doc.setFontSize(16);
+  //     doc.text('Transactions Report', 14, 15);
+  //     doc.setFontSize(10);
+  //     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
+
+  //     // Define the columns for the table
+  //     const columns = [
+  //       { header: 'TRN-ID', dataKey: 'trnNo' },
+  //       { header: 'Date', dataKey: 'date' },
+  //       { header: 'User Name', dataKey: 'username' },
+  //       { header: 'Bank', dataKey: 'bank' },
+  //       { header: 'Amount', dataKey: 'amount' },
+  //       { header: 'UTR', dataKey: 'utr' },
+  //       { header: 'Status', dataKey: 'status' }
+  //     ];
+
+  //     // Prepare the data
+  //     const data = allTransactions.map(transaction => ({
+  //       trnNo: transaction.trnNo,
+  //       date: new Date(transaction.createdAt).toLocaleDateString(),
+  //       username: transaction.username || 'GUEST',
+  //       bank: transaction.bankId?.bankName || 'UPI',
+  //       amount: transaction.total,
+  //       utr: transaction.utr,
+  //       status: transaction.status === "Decline" ? "Transaction Decline"
+  //         : transaction.status === "Pending" ? "Transaction Pending"
+  //           : transaction.approval === true ? "Points Approved"
+  //             : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+  //               : "Points Pending"
+  //     }));
+
+  //     // Generate the table with wider columns
+  //     doc.autoTable({
+  //       head: [columns.map(col => col.header)],
+  //       body: data.map(item => columns.map(col => item[col.dataKey])),
+  //       startY: 35,
+  //       styles: {
+  //         fontSize: 8,
+  //         cellPadding: 3,
+  //         overflow: 'visible',
+  //         halign: 'left',
+  //         textColor: [0, 0, 0]
+  //       },
+  //       headStyles: {
+  //         fillColor: [66, 139, 202],
+  //         fontSize: 9,
+  //         fontStyle: 'bold',
+  //         halign: 'center'
+  //       },
+  //       columnStyles: {
+  //         0: { cellWidth: 30 },  // TRN-ID
+  //         1: { cellWidth: 35 },  // Date
+  //         2: { cellWidth: 40 },  // User Name
+  //         3: { cellWidth: 35 },  // Bank
+  //         4: { cellWidth: 25 },  // Amount
+  //         5: { cellWidth: 40 },  // UTR
+  //         6: { cellWidth: 40 }   // Status
+  //       },
+  //       bodyStyles: {
+  //         valign: 'middle',
+  //       },
+  //       margin: { top: 35, left: 10, right: 10, bottom: 20 },
+  //       tableWidth: 'auto',
+  //       didDrawPage: function (data) {
+  //         // Add page number at the bottom
+  //         doc.setFontSize(8);
+  //         doc.text(
+  //           `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
+  //           doc.internal.pageSize.width - 20,
+  //           doc.internal.pageSize.height - 10,
+  //           { align: 'right' }
+  //         );
+  //       },
+  //     });
+
+  //     // Add total count at the bottom of the last page
+  //     const lastPage = doc.internal.getNumberOfPages();
+  //     doc.setPage(lastPage);
+  //     doc.setFontSize(10);
+  //     doc.text(`Total Transactions: ${data.length}`, 14, doc.internal.pageSize.height - 10);
+
+  //     // Save the PDF
+  //     doc.save('transactions-report.pdf');
+
+  //   } catch (error) {
+  //     console.error("Error generating PDF:", error);
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Failed to generate PDF report",
+  //       placement: "topRight",
+  //     });
+  //   }
+  // };
+
   const downloadPDF = async () => {
     try {
+      // Show initial notification
+      notification.info({
+        message: "Generating PDF",
+        description: "Fetching transactions. This may take a moment...",
+        placement: "topRight",
+        duration: 3
+      });
+  
       // Fetch all transactions
       const allTransactions = [];
       let page = 1;
       let hasMore = true;
-
+      let progressCounter = 0;
+  
       while (hasMore) {
-        const result = await fn_getAllMerchantApi(status || null, page, merchant, searchQuery, searchTrnId);
-        if (result?.status && result?.data?.status === "ok") {
-          allTransactions.push(...result.data.data);
-          if (result.data.data.length < 10) {
+        try {
+          const result = await fn_getAllMerchantApi(status || null, page, merchant, searchQuery, searchTrnId);
+          
+          if (result?.status && result?.data?.status === "ok") {
+            allTransactions.push(...result.data.data);
+            
+            // Show progress every 3 pages
+            progressCounter++;
+            if (progressCounter % 3 === 0) {
+              notification.info({
+                message: "Progress",
+                description: `Fetched ${allTransactions.length} transactions so far...`,
+                placement: "topRight",
+                duration: 2
+              });
+            }
+            
+            if (result.data.data.length < 10) {
+              hasMore = false;
+            }
+            page++;
+          } else {
             hasMore = false;
           }
-          page++;
-        } else {
-          hasMore = false;
+        } catch (error) {
+          console.error("Error fetching page:", error);
+          page++; // Try next page even if current fails
         }
       }
-
+  
+      if (allTransactions.length === 0) {
+        notification.warning({
+          message: "No Data",
+          description: "No transactions found to generate PDF",
+          placement: "topRight"
+        });
+        return;
+      }
+  
       // Create PDF in landscape mode with larger width
       const doc = new jsPDF('landscape', 'mm', 'a4');
-
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+  
       // Add title
       doc.setFontSize(16);
       doc.text('Transactions Report', 14, 15);
       doc.setFontSize(10);
       doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
-
+  
       // Define the columns for the table
       const columns = [
         { header: 'TRN-ID', dataKey: 'trnNo' },
         { header: 'Date', dataKey: 'date' },
         { header: 'User Name', dataKey: 'username' },
+        { header: 'Website', dataKey: 'website' }, // Added website column
         { header: 'Bank', dataKey: 'bank' },
         { header: 'Amount', dataKey: 'amount' },
         { header: 'UTR', dataKey: 'utr' },
         { header: 'Status', dataKey: 'status' }
       ];
-
-      // Prepare the data
-      const data = allTransactions.map(transaction => ({
-        trnNo: transaction.trnNo,
-        date: new Date(transaction.createdAt).toLocaleDateString(),
-        username: transaction.username || 'GUEST',
-        bank: transaction.bankId?.bankName || 'UPI',
-        amount: transaction.total,
-        utr: transaction.utr,
-        status: transaction.status === "Decline" ? "Transaction Decline"
-          : transaction.status === "Pending" ? "Transaction Pending"
-            : transaction.approval === true ? "Points Approved"
-              : (transaction.reason && transaction.reason !== "") ? "Points Decline"
-                : "Points Pending"
-      }));
-
-      // Generate the table with wider columns
+  
+      // Prepare the data with better error handling and formatting
+      const data = allTransactions.map(transaction => {
+        let formattedDate = '-';
+        try {
+          if (transaction.createdAt) {
+            formattedDate = new Date(transaction.createdAt).toLocaleDateString();
+          }
+        } catch (e) {
+          console.error("Date formatting error:", e);
+        }
+  
+        return {
+          trnNo: transaction.trnNo || '-',
+          date: formattedDate,
+          username: transaction.username || 'GUEST',
+          website: transaction.website || transaction.websiteName || '-', // Website field
+          bank: transaction.bankId?.bankName || 
+                (transaction.paymentMethod === "UPI" ? "UPI" : '-'),
+          amount: transaction.total ? transaction.total.toString() : '-',
+          utr: transaction.utr || '-',
+          status: transaction.status === "Decline" ? "Transaction Decline"
+            : transaction.status === "Pending" ? "Transaction Pending"
+              : transaction.approval === true ? "Points Approved"
+                : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+                  : "Points Pending"
+        };
+      });
+  
+      // Generate the table with improved formatting
       doc.autoTable({
         head: [columns.map(col => col.header)],
         body: data.map(item => columns.map(col => item[col.dataKey])),
@@ -229,8 +395,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         styles: {
           fontSize: 8,
           cellPadding: 3,
-          overflow: 'visible',
-          halign: 'left',
+          overflow: 'ellipsize', // Changed from 'visible' to prevent overflow issues
           textColor: [0, 0, 0]
         },
         headStyles: {
@@ -240,13 +405,14 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
           halign: 'center'
         },
         columnStyles: {
-          0: { cellWidth: 30 },  // TRN-ID
-          1: { cellWidth: 35 },  // Date
-          2: { cellWidth: 40 },  // User Name
-          3: { cellWidth: 35 },  // Bank
-          4: { cellWidth: 25 },  // Amount
-          5: { cellWidth: 40 },  // UTR
-          6: { cellWidth: 40 }   // Status
+          0: { cellWidth: 25, halign: 'left' },     // TRN-ID
+          1: { cellWidth: 25, halign: 'center' },   // Date
+          2: { cellWidth: 35, halign: 'left' },     // User Name
+          3: { cellWidth: 35, halign: 'left' },     // Website
+          4: { cellWidth: 25, halign: 'left' },     // Bank
+          5: { cellWidth: 20, halign: 'right' },    // Amount - right aligned
+          6: { cellWidth: 35, halign: 'left' },     // UTR
+          7: { cellWidth: 35, halign: 'left' }      // Status
         },
         bodyStyles: {
           valign: 'middle',
@@ -254,26 +420,57 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         margin: { top: 35, left: 10, right: 10, bottom: 20 },
         tableWidth: 'auto',
         didDrawPage: function (data) {
+          // Add headers on each page after the first
+          if (data.pageCount > 1) {
+            doc.setFontSize(10);
+            doc.text('Transactions Report (Continued)', 14, 15);
+            doc.setFontSize(8);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
+          }
+        
           // Add page number at the bottom
           doc.setFontSize(8);
           doc.text(
             `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
-            doc.internal.pageSize.width - 20,
-            doc.internal.pageSize.height - 10,
+            pageWidth - 20,
+            pageHeight - 10,
             { align: 'right' }
           );
         },
+        didParseCell: function(data) {
+          // Special formatting for amount column
+          if (data.column.dataKey === 'amount' && data.section === 'body') {
+            data.cell.styles.halign = 'right'; // Ensure right alignment for amounts
+          }
+        }
       });
-
-      // Add total count at the bottom of the last page
+  
+      // Add total count and summary at the bottom of the last page
       const lastPage = doc.internal.getNumberOfPages();
       doc.setPage(lastPage);
       doc.setFontSize(10);
-      doc.text(`Total Transactions: ${data.length}`, 14, doc.internal.pageSize.height - 10);
-
-      // Save the PDF
-      doc.save('transactions-report.pdf');
-
+      
+      const yPos = doc.autoTable.previous.finalY + 10;
+      doc.text(`Total Transactions: ${data.length}`, 14, yPos);
+      
+      // Calculate and show total amount
+      const totalAmount = data.reduce((sum, item) => {
+        const amount = parseFloat(item.amount) || 0;
+        return sum + amount;
+      }, 0);
+      
+      doc.text(`Total Amount: ${totalAmount.toFixed(2)}`, 14, yPos + 7);
+  
+      // Save the PDF with date in filename
+      const dateStr = new Date().toISOString().slice(0, 10);
+      doc.save(`transactions-report-${dateStr}.pdf`);
+  
+      notification.success({
+        message: "Success",
+        description: `PDF generated with ${data.length} transactions`,
+        placement: "topRight"
+      });
+  
     } catch (error) {
       console.error("Error generating PDF:", error);
       notification.error({

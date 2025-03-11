@@ -23,7 +23,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [transactions, setTransactions] = useState([]);
     const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
 
-            const inputRef = useRef(null);
+    const inputRef = useRef(null);
     const [utr, setUtr] = useState("");
     const [note, setNote] = useState("");
     const [name, setName] = useState(null);
@@ -437,16 +437,23 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                         <h1 className="text-[25px] font-[500]">Withdraw Transactions</h1>
                         <div className="flex items-center gap-[20px]">
                             <div className="text-[12px]">
-                                <p className="text-gray-600">Withdraw Amount:</p>
+                                <p className="text-gray-600 text-nowrap">Withdraw Amount:</p>
                                 <p className="text-green-500 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.approvedWithdraw || 0}</p>
                             </div>
                             <div className="text-[12px]">
                                 <p className="text-gray-600">Pending Withdrawal:</p>
                                 <p className="text-yellow-500 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.withdrawAmounts || 0}</p>
                             </div>
-                            <div className="text-[12px]">
+                            {/* <div className="text-[12px]">
                                 <p className="text-gray-600">Available Amount:</p>
                                 <p className="text-blue-600 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.pendingAmount || 0}</p>
+                            </div> */}
+                            <div className="text-[12px]">
+                                <p className="text-gray-600">Available Amount:</p>
+                                <p className="text-blue-600 font-[500]">
+                                    <FaIndianRupeeSign className="inline-block mt-[-1px]" />
+                                    {merchantWallet?.pendingAmount ? merchantWallet.pendingAmount.toFixed(2) : 0}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -490,9 +497,9 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                                 {new Date(transaction?.createdAt).toDateString()},{" "}
                                                 {new Date(transaction?.createdAt).toLocaleTimeString()}
                                             </td>
-                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amountINR} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
-                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
-                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.exchangeId?.currency}</td>
+                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">{transaction?.amountINR} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
+                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">{transaction?.amount} {transaction?.exchangeId?._id === "67c1cb2ffd672c91b4a769b2" ? "INR" : transaction?.exchangeId?._id === "67c1e65de5d59894e5a19435" ? "INR" : transaction?.exchangeId?.currency}</td>
+                                            <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">{transaction?.exchangeId?.currency}</td>
                                             <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{(transaction?.utr && transaction?.utr !== "") ? transaction?.utr : "-"}</td>
                                             <td className="relative p-4 text-[13px] font-[500] flex items-center gap-[10px]">
                                                 <span className={`relative px-2 py-1 rounded-[20px] text-nowrap text-[11px] font-[600] w-20 flex items-center justify-center ${transaction?.status === "Decline" ? "bg-[#FF7A8F33] text-[#FF002A]" : transaction?.status === "Pending" ? "bg-[#FFC70126] text-[#FFB800]" : "bg-[#10CB0026] text-[#0DA000]"}`}>
@@ -557,7 +564,12 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             value={withdrawAmount}
                             onChange={(e) => setWithdrawAmount(e.target.value)}
                         />
-                        <p className="text-gray-500 text-[13px] font-[500]">Avaiable for Withdraw: <span className="text-green-500">{merchantWallet?.pendingAmount || 0} INR</span></p>
+                        {/* <p className="text-gray-500 text-[13px] font-[500]">Avaiable for Withdraw: <span className="text-green-500">{merchantWallet?.pendingAmount || 0} INR</span></p> */}
+                        <p className="text-gray-500 text-[13px] font-[500]">
+                            Available for Withdraw: <span className="text-green-500">
+                                {merchantWallet?.pendingAmount ? merchantWallet.pendingAmount.toFixed(2) : 0} INR
+                            </span>
+                        </p>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -837,22 +849,32 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                                             </div>
                                         )}
 
-                                        <div className="flex items-center gap-4">
-                                            <p className="text-[12px] font-[600] w-[200px]">{selectedTransaction?.withdrawBankId?.bankName !== "UPI" ? "IFSC Code:" : "UPI ID:"}</p>
-                                            <Input
-                                                className="text-[12px] bg-gray-200"
-                                                readOnly
-                                                value={selectedTransaction?.withdrawBankId?.iban || 'N/A'}
-                                            />
-                                        </div>
-
-                                        {selectedTransaction?.withdrawBankId?.bankName !== "UPI" && (
+                                        {selectedTransaction?.withdrawBankId?.accountType === "bank" ? (
+                                            <>
+                                                <div className="flex items-center gap-4">
+                                                    <p className="text-[12px] font-[600] w-[200px]">IFSC Code:</p>
+                                                    <Input
+                                                        className="text-[12px] bg-gray-200"
+                                                        readOnly
+                                                        value={selectedTransaction?.withdrawBankId?.iban || 'N/A'}
+                                                    />
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    <p className="text-[12px] font-[600] w-[200px]">Account Number:</p>
+                                                    <Input
+                                                        className="text-[12px] bg-gray-200"
+                                                        readOnly
+                                                        value={selectedTransaction?.withdrawBankId?.accountNo || 'N/A'}
+                                                    />
+                                                </div>
+                                            </>
+                                        ) : (
                                             <div className="flex items-center gap-4">
-                                                <p className="text-[12px] font-[600] w-[200px]">Account Number:</p>
+                                                <p className="text-[12px] font-[600] w-[200px]">UPI ID:</p>
                                                 <Input
                                                     className="text-[12px] bg-gray-200"
                                                     readOnly
-                                                    value={selectedTransaction?.withdrawBankId?.accountNo || 'N/A'}
+                                                    value={selectedTransaction?.withdrawBankId?.iban || 'N/A'}
                                                 />
                                             </div>
                                         )}

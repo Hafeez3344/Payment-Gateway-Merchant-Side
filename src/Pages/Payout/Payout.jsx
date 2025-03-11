@@ -1,17 +1,15 @@
 import * as XLSX from "xlsx";
+import { FiDownload, FiEye } from "react-icons/fi";
+import { FiUpload } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { Pagination, notification } from "antd";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { MagnifyingGlass } from "react-loader-spinner";
-
-import { FiEye } from "react-icons/fi";
-import { FiUpload } from "react-icons/fi";
-
 import { fn_uploadExcelFile, fn_getUploadExcelFile } from "../../api/api";
 
-const Payout = ({ authorization, showSidebar }) => {
 
+const Payout = ({ authorization, showSidebar }) => {
   const navigate = useNavigate();
   const [slipData, setSlipData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -108,6 +106,19 @@ const Payout = ({ authorization, showSidebar }) => {
     if (!authorization) navigate("/login");
   }, [authorization, currentPage]);
 
+  const handleDownloadSample = () => {
+    const sampleData = [
+      ["Account Holder Name", "Account Number", "IFSC Number", "Amount"],
+      ["Hafeez", "HBL -1234567890", "ABCD123456", 1000],
+      ["Irfan", "upi@irfan.com", "-", 2000],
+      ["Arbaz", "UBL-8842492", "7472784", 1500],
+    ];
+    const worksheet = XLSX.utils.aoa_to_sheet(sampleData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, "sample.xlsx");
+  };
+  
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
@@ -154,6 +165,13 @@ const Payout = ({ authorization, showSidebar }) => {
               )}
             </div>
             <span className="text-[11px] text-[#00000040]">Excel Files Only</span>
+            <button
+              onClick={handleDownloadSample}
+              className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2 mt-3 mb-3"
+            >
+              <FiDownload />
+              Download Sample File
+            </button>
           </div>
         </div>
         <div className="flex justify-between my-4">
@@ -230,3 +248,8 @@ const Payout = ({ authorization, showSidebar }) => {
 };
 
 export default Payout;
+
+
+
+
+
