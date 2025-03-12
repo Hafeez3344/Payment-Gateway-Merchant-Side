@@ -57,18 +57,25 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      console.log('Fetching with bank:', selectedFilteredBank);
+      // Format dates using moment library
+      const formattedStartDate = dateRange?.[0] ? dateRange[0].format('YYYY-MM-DD') : null;
+      const formattedEndDate = dateRange?.[1] ? dateRange[1].format('YYYY-MM-DD') : null;
+
+      // Only include dates if both start and end are present
+      const dateFilter = formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null;
+
       const result = await fn_getAllMerchantApi(
         status || null,
         pageNumber,
         merchant,
         searchQuery,
         searchTrnId,
-        selectedFilteredBank
+        selectedFilteredBank || null,
+        dateFilter
       );
+
       if (result?.status) {
         if (result?.data?.status === "ok") {
-          console.log('Received transactions:', result?.data?.data);
           setTransactions(result?.data?.data);
           setTotalPages(result?.data?.totalPages);
         } else {
@@ -112,7 +119,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage, merchant, searchQuery, searchTrnId, selectedFilteredBank]);
+  }, [currentPage, merchant, searchQuery, searchTrnId,dateRange, selectedFilteredBank]);
 
   const filteredTransactions = transactions;
 
@@ -162,168 +169,59 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
     };
   };
 
-  // const downloadPDF = async () => {
-  //   try {
-  //     // Fetch all transactions
-  //     const allTransactions = [];
-  //     let page = 1;
-  //     let hasMore = true;
-
-  //     while (hasMore) {
-  //       const result = await fn_getAllMerchantApi(status || null, page, merchant, searchQuery, searchTrnId);
-  //       if (result?.status && result?.data?.status === "ok") {
-  //         allTransactions.push(...result.data.data);
-  //         if (result.data.data.length < 10) {
-  //           hasMore = false;
-  //         }
-  //         page++;
-  //       } else {
-  //         hasMore = false;
-  //       }
-  //     }
-
-  //     // Create PDF in landscape mode with larger width
-  //     const doc = new jsPDF('landscape', 'mm', 'a4');
-
-  //     // Add title
-  //     doc.setFontSize(16);
-  //     doc.text('Transactions Report', 14, 15);
-  //     doc.setFontSize(10);
-  //     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
-
-  //     // Define the columns for the table
-  //     const columns = [
-  //       { header: 'TRN-ID', dataKey: 'trnNo' },
-  //       { header: 'Date', dataKey: 'date' },
-  //       { header: 'User Name', dataKey: 'username' },
-  //       { header: 'Bank', dataKey: 'bank' },
-  //       { header: 'Amount', dataKey: 'amount' },
-  //       { header: 'UTR', dataKey: 'utr' },
-  //       { header: 'Status', dataKey: 'status' }
-  //     ];
-
-  //     // Prepare the data
-  //     const data = allTransactions.map(transaction => ({
-  //       trnNo: transaction.trnNo,
-  //       date: new Date(transaction.createdAt).toLocaleDateString(),
-  //       username: transaction.username || 'GUEST',
-  //       bank: transaction.bankId?.bankName || 'UPI',
-  //       amount: transaction.total,
-  //       utr: transaction.utr,
-  //       status: transaction.status === "Decline" ? "Transaction Decline"
-  //         : transaction.status === "Pending" ? "Transaction Pending"
-  //           : transaction.approval === true ? "Points Approved"
-  //             : (transaction.reason && transaction.reason !== "") ? "Points Decline"
-  //               : "Points Pending"
-  //     }));
-
-  //     // Generate the table with wider columns
-  //     doc.autoTable({
-  //       head: [columns.map(col => col.header)],
-  //       body: data.map(item => columns.map(col => item[col.dataKey])),
-  //       startY: 35,
-  //       styles: {
-  //         fontSize: 8,
-  //         cellPadding: 3,
-  //         overflow: 'visible',
-  //         halign: 'left',
-  //         textColor: [0, 0, 0]
-  //       },
-  //       headStyles: {
-  //         fillColor: [66, 139, 202],
-  //         fontSize: 9,
-  //         fontStyle: 'bold',
-  //         halign: 'center'
-  //       },
-  //       columnStyles: {
-  //         0: { cellWidth: 30 },  // TRN-ID
-  //         1: { cellWidth: 35 },  // Date
-  //         2: { cellWidth: 40 },  // User Name
-  //         3: { cellWidth: 35 },  // Bank
-  //         4: { cellWidth: 25 },  // Amount
-  //         5: { cellWidth: 40 },  // UTR
-  //         6: { cellWidth: 40 }   // Status
-  //       },
-  //       bodyStyles: {
-  //         valign: 'middle',
-  //       },
-  //       margin: { top: 35, left: 10, right: 10, bottom: 20 },
-  //       tableWidth: 'auto',
-  //       didDrawPage: function (data) {
-  //         // Add page number at the bottom
-  //         doc.setFontSize(8);
-  //         doc.text(
-  //           `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
-  //           doc.internal.pageSize.width - 20,
-  //           doc.internal.pageSize.height - 10,
-  //           { align: 'right' }
-  //         );
-  //       },
-  //     });
-
-  //     // Add total count at the bottom of the last page
-  //     const lastPage = doc.internal.getNumberOfPages();
-  //     doc.setPage(lastPage);
-  //     doc.setFontSize(10);
-  //     doc.text(`Total Transactions: ${data.length}`, 14, doc.internal.pageSize.height - 10);
-
-  //     // Save the PDF
-  //     doc.save('transactions-report.pdf');
-
-  //   } catch (error) {
-  //     console.error("Error generating PDF:", error);
-  //     notification.error({
-  //       message: "Error",
-  //       description: "Failed to generate PDF report",
-  //       placement: "topRight",
-  //     });
-  //   }
-  // };
-
   const downloadPDF = async () => {
     try {
-      // Show initial notification
       notification.info({
         message: "Generating PDF",
-        description: "Fetching transactions. This may take a moment...",
-        placement: "topRight",
+        description: "Fetching transactions...",
         duration: 3
       });
   
-      // Fetch all transactions
+      // Format dates correctly
+      const formattedStartDate = dateRange?.[0] ? dateRange[0].format('YYYY-MM-DD') : null;
+      const formattedEndDate = dateRange?.[1] ? dateRange[1].format('YYYY-MM-DD') : null;
+  
       const allTransactions = [];
       let page = 1;
       let hasMore = true;
-      let progressCounter = 0;
+  
+      // Create separate query parameters for the API call
+      const queryParams = {
+        status: status || null,
+        page: page,
+        merchant: merchant,
+        searchQuery: searchQuery,
+        searchTrnId: searchTrnId,
+        bankId: selectedFilteredBank || null,
+        dateRange: formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null
+      };
   
       while (hasMore) {
         try {
-          const result = await fn_getAllMerchantApi(status || null, page, merchant, searchQuery, searchTrnId);
-          
-          if (result?.status && result?.data?.status === "ok") {
+          const result = await fn_getAllMerchantApi(
+            queryParams.status,
+            queryParams.page,
+            queryParams.merchant,
+            queryParams.searchQuery,
+            queryParams.searchTrnId,
+            queryParams.bankId,
+            queryParams.dateRange
+          );
+  
+          if (result?.status && result?.data?.status === "ok" && result.data.data.length > 0) {
             allTransactions.push(...result.data.data);
-            
-            // Show progress every 3 pages
-            progressCounter++;
-            if (progressCounter % 3 === 0) {
-              notification.info({
-                message: "Progress",
-                description: `Fetched ${allTransactions.length} transactions so far...`,
-                placement: "topRight",
-                duration: 2
-              });
-            }
             
             if (result.data.data.length < 10) {
               hasMore = false;
             }
             page++;
+            queryParams.page = page;
           } else {
             hasMore = false;
           }
         } catch (error) {
           console.error("Error fetching page:", error);
-          page++; // Try next page even if current fails
+          hasMore = false;
         }
       }
   
@@ -336,138 +234,115 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         return;
       }
   
-      // Create PDF in landscape mode with larger width
+      // Create PDF
       const doc = new jsPDF('landscape', 'mm', 'a4');
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-  
-      // Add title
+      
+      // Add title and date
       doc.setFontSize(16);
       doc.text('Transactions Report', 14, 15);
       doc.setFontSize(10);
       doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
-  
-      // Define the columns for the table
+      
+      // Define columns
       const columns = [
         { header: 'TRN-ID', dataKey: 'trnNo' },
         { header: 'Date', dataKey: 'date' },
         { header: 'User Name', dataKey: 'username' },
-        { header: 'Website', dataKey: 'website' }, // Added website column
-        { header: 'Bank', dataKey: 'bank' },
-        { header: 'Amount', dataKey: 'amount' },
+        { header: 'Bank Name', dataKey: 'bank' },
+        { header: 'Total Amount', dataKey: 'amount' },
         { header: 'UTR', dataKey: 'utr' },
         { header: 'Status', dataKey: 'status' }
       ];
   
-      // Prepare the data with better error handling and formatting
-      const data = allTransactions.map(transaction => {
-        let formattedDate = '-';
-        try {
-          if (transaction.createdAt) {
-            formattedDate = new Date(transaction.createdAt).toLocaleDateString();
-          }
-        } catch (e) {
-          console.error("Date formatting error:", e);
-        }
+      // Calculate total amount for summary
+      const totalAmount = allTransactions.reduce((sum, transaction) => 
+        sum + (parseFloat(transaction.total) || 0), 0
+      );
   
-        return {
-          trnNo: transaction.trnNo || '-',
-          date: formattedDate,
-          username: transaction.username || 'GUEST',
-          website: transaction.website || transaction.websiteName || '-', // Website field
-          bank: transaction.bankId?.bankName || 
-                (transaction.paymentMethod === "UPI" ? "UPI" : '-'),
-          amount: transaction.total ? transaction.total.toString() : '-',
-          utr: transaction.utr || '-',
-          status: transaction.status === "Decline" ? "Transaction Decline"
-            : transaction.status === "Pending" ? "Transaction Pending"
-              : transaction.approval === true ? "Points Approved"
-                : (transaction.reason && transaction.reason !== "") ? "Points Decline"
-                  : "Points Pending"
-        };
+      // Format the data
+      const data = allTransactions.map(transaction => ({
+        trnNo: transaction.trnNo || '-',
+        date: transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : '-',
+        username: transaction.username || 'GUEST',
+        // Fix for bank display - check if bankId exists and has bankName property
+        bank: transaction.bankId && transaction.bankId.bankName ? 
+          transaction.bankId.bankName : 
+          (transaction.paymentMethod || ''),
+        // Add INR to the amount display
+        amount: transaction.total ? `${transaction.total} INR` : '-',
+        utr: transaction.utr || '-',
+        status: transaction.status === "Decline" ? "Transaction Decline"
+          : transaction.status === "Pending" ? "Transaction Pending"
+          : transaction.approval === true ? "Points Approved"
+          : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+          : "Points Pending"
+      }));
+  
+      // Add subtotal row to data - now with TOTAL in the username column (left of amount)
+      data.push({
+        trnNo: '',
+        date: '',
+        username: 'TOTAL',  // Move TOTAL text to username column which is left of the amount
+        bank: '',
+        amount: `${totalAmount.toFixed(2)} INR`,  // Add INR to the total amount
+        utr: '',
+        status: ''  // Remove TOTAL from status column
       });
   
-      // Generate the table with improved formatting
+      // Generate table with custom styling for the total row
       doc.autoTable({
         head: [columns.map(col => col.header)],
-        body: data.map(item => columns.map(col => item[col.dataKey])),
+        body: data.map((item, index) => columns.map(col => item[col.dataKey])),
         startY: 35,
-        styles: {
-          fontSize: 8,
-          cellPadding: 3,
-          overflow: 'ellipsize', // Changed from 'visible' to prevent overflow issues
-          textColor: [0, 0, 0]
-        },
-        headStyles: {
-          fillColor: [66, 139, 202],
-          fontSize: 9,
-          fontStyle: 'bold',
-          halign: 'center'
-        },
-        columnStyles: {
-          0: { cellWidth: 25, halign: 'left' },     // TRN-ID
-          1: { cellWidth: 25, halign: 'center' },   // Date
-          2: { cellWidth: 35, halign: 'left' },     // User Name
-          3: { cellWidth: 35, halign: 'left' },     // Website
-          4: { cellWidth: 25, halign: 'left' },     // Bank
-          5: { cellWidth: 20, halign: 'right' },    // Amount - right aligned
-          6: { cellWidth: 35, halign: 'left' },     // UTR
-          7: { cellWidth: 35, halign: 'left' }      // Status
-        },
-        bodyStyles: {
-          valign: 'middle',
-        },
-        margin: { top: 35, left: 10, right: 10, bottom: 20 },
-        tableWidth: 'auto',
-        didDrawPage: function (data) {
-          // Add headers on each page after the first
-          if (data.pageCount > 1) {
-            doc.setFontSize(10);
-            doc.text('Transactions Report (Continued)', 14, 15);
-            doc.setFontSize(8);
-            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
-          }
-        
-          // Add page number at the bottom
-          doc.setFontSize(8);
-          doc.text(
-            `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
-            pageWidth - 20,
-            pageHeight - 10,
-            { align: 'right' }
-          );
-        },
-        didParseCell: function(data) {
-          // Special formatting for amount column
-          if (data.column.dataKey === 'amount' && data.section === 'body') {
-            data.cell.styles.halign = 'right'; // Ensure right alignment for amounts
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [66, 139, 202] },
+        // Apply special styling to the last row (total row)
+        didDrawCell: (data) => {
+          if (data.row.index === data.table.body.length - 1) {
+            // Fill entire row with light gray background
+            doc.setFillColor(220, 220, 220);
+            doc.rect(
+              data.cell.x, 
+              data.cell.y, 
+              data.cell.width, 
+              data.cell.height, 
+              'F'
+            );
+            
+            // If this is the amount cell (index 4) in the total row, make it bold
+            if (data.column.index === 4) {
+              doc.setFont(undefined, 'bold');
+              doc.setTextColor(0, 0, 0);
+              doc.text(
+                `${totalAmount.toFixed(2)} INR`,
+                data.cell.x + 2,
+                data.cell.y + data.cell.height / 2 + 1,
+                { baseline: 'middle' }
+              );
+              return false; // Prevent default text rendering
+            }
+            
+            // For the "TOTAL" text in username column (index 2)
+            if (data.column.index === 2) {
+              doc.setFont(undefined, 'bold');
+              doc.text(
+                'TOTAL',
+                data.cell.x + 2,
+                data.cell.y + data.cell.height / 2 + 1,
+                { baseline: 'middle' }
+              );
+              return false; // Prevent default text rendering
+            }
           }
         }
       });
   
-      // Add total count and summary at the bottom of the last page
-      const lastPage = doc.internal.getNumberOfPages();
-      doc.setPage(lastPage);
-      doc.setFontSize(10);
-      
-      const yPos = doc.autoTable.previous.finalY + 10;
-      doc.text(`Total Transactions: ${data.length}`, 14, yPos);
-      
-      // Calculate and show total amount
-      const totalAmount = data.reduce((sum, item) => {
-        const amount = parseFloat(item.amount) || 0;
-        return sum + amount;
-      }, 0);
-      
-      doc.text(`Total Amount: ${totalAmount.toFixed(2)}`, 14, yPos + 7);
-  
-      // Save the PDF with date in filename
-      const dateStr = new Date().toISOString().slice(0, 10);
-      doc.save(`transactions-report-${dateStr}.pdf`);
+      // Save PDF
+      doc.save('transactions-report.pdf');
   
       notification.success({
         message: "Success",
-        description: `PDF generated with ${data.length} transactions`,
+        description: "PDF generated successfully",
         placement: "topRight"
       });
   
@@ -476,11 +351,10 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       notification.error({
         message: "Error",
         description: "Failed to generate PDF report",
-        placement: "topRight",
+        placement: "topRight"
       });
     }
   };
-
   return (
     <>
       <div

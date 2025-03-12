@@ -64,14 +64,17 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      console.log('Fetching with bank:', selectedFilteredBank); // Debug log
+      const formattedStartDate = dateRange?.[0] ? dateRange[0].format('YYYY-MM-DD HH:mm:ss') : '';
+      const formattedEndDate = dateRange?.[1] ? dateRange[1].format('YYYY-MM-DD HH:mm:ss') : '';
+
       const result = await fn_getAllDirectPaymentApi(
         status || null,
         pageNumber,
         merchant,
         searchQuery,
         searchTrnId,
-        selectedFilteredBank  // Add bank filter
+        selectedFilteredBank || null,  // Pass null if no bank selected
+        formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null
       );
       if (result?.status) {
         if (result?.data?.status === "ok") {
@@ -121,7 +124,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
     fetchTransactions(currentPage);
     fetchBanks();
 
-  }, [currentPage, merchant, searchQuery, searchTrnId, selectedFilteredBank]);
+  }, [currentPage, merchant, searchQuery, searchTrnId, dateRange, selectedFilteredBank]);
 
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -220,124 +223,172 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       });
     };
   };
-
+  
   const downloadPDF = async () => {
     try {
-      // Fetch all transactions
+      notification.info({
+        message: "Generating PDF",
+        description: "Fetching transactions...",
+        duration: 3
+      });
+  
+      // Format dates correctly
+      const formattedStartDate = dateRange?.[0] ? dateRange[0].format('YYYY-MM-DD') : null;
+      const formattedEndDate = dateRange?.[1] ? dateRange[1].format('YYYY-MM-DD') : null;
+  
       const allTransactions = [];
       let page = 1;
       let hasMore = true;
-
+  
+      // Create separate query parameters for the API call
+      const queryParams = {
+        status: status || null,
+        page: page,
+        merchant: merchant,
+        searchQuery: searchQuery,
+        searchTrnId: searchTrnId,
+        bankId: selectedFilteredBank || null,
+        dateRange: formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null
+      };
+  
       while (hasMore) {
-        const result = await fn_getAllDirectPaymentApi(status || null, page, merchant, searchQuery, searchTrnId);
-        if (result?.status && result?.data?.status === "ok") {
-          allTransactions.push(...result.data.data);
-          if (result.data.data.length < 10) { // Assuming 10 is your page size
+        try {
+          const result = await fn_getAllDirectPaymentApi(
+            queryParams.status,
+            queryParams.page,
+            queryParams.merchant,
+            queryParams.searchQuery,
+            queryParams.searchTrnId,
+            queryParams.bankId,
+            queryParams.dateRange
+          );
+  
+          if (result?.status && result?.data?.status === "ok" && result.data.data.length > 0) {
+            allTransactions.push(...result.data.data);
+  
+            if (result.data.data.length < 10) {
+              hasMore = false;
+            }
+            page++;
+            queryParams.page = page;
+          } else {
             hasMore = false;
           }
-          page++;
-        } else {
+        } catch (error) {
+          console.error("Error fetching page:", error);
           hasMore = false;
         }
       }
-
-      // Create PDF in landscape mode with larger width
+  
+      if (allTransactions.length === 0) {
+        notification.warning({
+          message: "No Data",
+          description: "No transactions found to generate PDF",
+          placement: "topRight"
+        });
+        return;
+      }
+  
+      // Create PDF
       const doc = new jsPDF('landscape', 'mm', 'a4');
-
-      // Add title
+      const pageWidth = doc.internal.pageSize.width;
+  
+      // Add title and date centered
       doc.setFontSize(16);
-      doc.text('Direct Transactions Report', 14, 15);
+      doc.text('Direct Payment Transactions Report', pageWidth / 2, 15, { align: 'center' });
+  
       doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
-
-      // Define the columns for the table
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 25, { align: 'center' });
+  
+      // Define columns
       const columns = [
-        { header: 'TRN-ID', dataKey: 'trnNo' },
-        { header: 'Date', dataKey: 'date' },
-        { header: 'User Name', dataKey: 'username' },
-        { header: 'Website', dataKey: 'site' },
-        { header: 'Bank', dataKey: 'bank' },
-        { header: 'Amount', dataKey: 'amount' },
-        { header: 'UTR', dataKey: 'utr' },
-        { header: 'Status', dataKey: 'status' }
+        { header: 'TRN-ID', dataKey: 'trnNo', width: 20 },
+        { header: 'Date', dataKey: 'date', width: 25 },
+        { header: 'User Name', dataKey: 'username', width: 30 },
+        { header: 'Website URL', dataKey: 'website', width: 35 },
+        { header: 'Bank Name', dataKey: 'bank', width: 25 },
+        { header: 'Total Amount', dataKey: 'amount', width: 25 },
+        { header: 'UTR', dataKey: 'utr', width: 30 },
+        { header: 'Status', dataKey: 'status', width: 25 }
       ];
-
-      // Prepare the data
+  
+      // Calculate total amount for summary
+      const totalAmount = allTransactions.reduce((sum, transaction) => 
+        sum + (parseFloat(transaction.total) || 0), 0
+      );
+  
+      // Format the data
       const data = allTransactions.map(transaction => ({
-        trnNo: transaction.trnNo,
-        date: new Date(transaction.createdAt).toLocaleDateString(),
+        trnNo: transaction.trnNo || '-',
+        date: transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : '-',
         username: transaction.username || 'GUEST',
-        site: transaction.site,
-        bank: transaction.bankId?.bankName || 'UPI',
-        amount: transaction.total,
-        utr: transaction.utr,
+        website: transaction.site || '-',
+        bank: transaction.bankId && transaction.bankId.bankName ? 
+          (transaction.bankId.bankName === "UPI" ? `UPI - ${transaction.bankId.iban}` : transaction.bankId.bankName)
+          : (transaction.paymentMethod || 'N/A'),
+        amount: transaction.total ? `${transaction.total} INR` : '-',
+        utr: transaction.utr || '-',
         status: transaction.status === "Decline" ? "Transaction Decline"
           : transaction.status === "Pending" ? "Transaction Pending"
-            : transaction.approval === true ? "Points Approved"
-              : (transaction.reason && transaction.reason !== "") ? "Points Decline"
-                : "Points Pending"
+          : transaction.approval === true ? "Points Approved"
+          : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+          : "Points Pending"
       }));
-
-      // Generate the table with wider columns
+  
+      // Add subtotal row to data with TOTAL on the left side
+      data.push({
+        trnNo: '',
+        date: '',
+        username: 'TOTAL',
+        website: '',
+        bank: '',
+        amount: `${totalAmount.toFixed(2)} INR`,
+        utr: '',
+        status: ''
+      });
+  
+      // Generate table
       doc.autoTable({
         head: [columns.map(col => col.header)],
         body: data.map(item => columns.map(col => item[col.dataKey])),
         startY: 35,
         styles: {
           fontSize: 8,
-          cellPadding: 3,
-          overflow: 'visible',
-          halign: 'left',
-          textColor: [0, 0, 0]
+          cellPadding: { top: 2, right: 5, bottom: 2, left: 2 },
         },
         headStyles: {
           fillColor: [66, 139, 202],
           fontSize: 9,
           fontStyle: 'bold',
-          halign: 'center'
+          halign: 'left'
         },
-        columnStyles: {
-          0: { cellWidth: 15 },  // TRN-ID
-          1: { cellWidth: 30 },  // Date
-          2: { cellWidth: 35 },  // User Name
-          3: { cellWidth: 40 },  // Website
-          4: { cellWidth: 30 },  // Bank
-          5: { cellWidth: 25 },  // Amount
-          6: { cellWidth: 35 },  // UTR
-          7: { cellWidth: 35 }   // Status
-        },
-        bodyStyles: {
-          valign: 'middle',
-        },
-        margin: { top: 35, left: 10, right: 10, bottom: 20 },
-        tableWidth: 'auto',
-        didDrawPage: function (data) {
-          // Add page number at the bottom
-          doc.setFontSize(8);
-          doc.text(
-            `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${doc.internal.getNumberOfPages()}`,
-            doc.internal.pageSize.width - 20,
-            doc.internal.pageSize.height - 10,
-            { align: 'right' }
-          );
-        },
+        columnStyles: columns.reduce((acc, col) => {
+          acc[col.dataKey] = { cellWidth: col.width, halign: 'left' };
+          return acc;
+        }, {}),
+        didDrawCell: (data) => {
+          if (data.row.index === data.table.body.length - 1) {
+            doc.setFillColor(180, 220, 240); // Change subtotal row color
+          }
+        }
       });
-
-      // Add total count at the bottom of the last page
-      const lastPage = doc.internal.getNumberOfPages();
-      doc.setPage(lastPage);
-      doc.setFontSize(10);
-      doc.text(`Total Transactions: ${data.length}`, 14, doc.internal.pageSize.height - 10);
-
-      // Save the PDF
-      doc.save('direct-transactions-report.pdf');
-
+  
+      // Save PDF with date in filename
+      const dateStr = new Date().toISOString().slice(0, 10);
+      doc.save(`direct-payment-transactions-${dateStr}.pdf`);
+  
+      notification.success({
+        message: "Success",
+        description: "PDF generated successfully",
+        placement: "topRight"
+      });
+  
     } catch (error) {
       console.error("Error generating PDF:", error);
       notification.error({
         message: "Error",
         description: "Failed to generate PDF report",
-        placement: "topRight",
+        placement: "topRight"
       });
     }
   };

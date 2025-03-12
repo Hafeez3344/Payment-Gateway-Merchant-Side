@@ -27,11 +27,12 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [utr, setUtr] = useState("");
     const [note, setNote] = useState("");
     const [name, setName] = useState(null);
+    const [open, setOpen] = useState(false);
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [open, setOpen] = useState(false);
     const [newOpen, setNewOpen] = useState(false);
     const [exchange, setExchange] = useState(null);
+    const [bankNames, setBankNames] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const [activeTab, setActiveTab] = useState("bank");
@@ -44,7 +45,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
     const [newSelectedBank, setNewSelectedBank] = useState(null);
     const [items, setItems] = useState(Banks.map((bank) => bank.title));
     const [selectedTransaction, setSelectedTransaction] = useState(null);
-    const [bankNames, setBankNames] = useState([]);
 
     const [data, setData] = useState({
         image: null,
@@ -89,7 +89,7 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
         const response = await fn_getBankByAccountTypeApi("");
         if (response?.status) {
             setBanks(response?.data?.data?.map((item) => {
-                return { value: item?._id, label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.iban}`}` }
+                return { value: item?._id, label: `${item?.accountType === "upi" ? `UPI - ${item?.iban}` : `${item?.bankName} - ${item?.accountNo}`}` }
             }));
         }
     };
@@ -564,7 +564,6 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                             value={withdrawAmount}
                             onChange={(e) => setWithdrawAmount(e.target.value)}
                         />
-                        {/* <p className="text-gray-500 text-[13px] font-[500]">Avaiable for Withdraw: <span className="text-green-500">{merchantWallet?.pendingAmount || 0} INR</span></p> */}
                         <p className="text-gray-500 text-[13px] font-[500]">
                             Available for Withdraw: <span className="text-green-500">
                                 {merchantWallet?.pendingAmount ? merchantWallet.pendingAmount.toFixed(2) : 0} INR

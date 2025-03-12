@@ -219,25 +219,45 @@ export const fn_BankUpdate = async (id, data) => {
 };
 
 // -------------------------------- get All Merchant api----------------------------------------
-export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQuery, searchTrnId, bankId) => {
+export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQuery, searchTrnId, bankId, dateRange) => {
     try {
         const token = Cookies.get("merchantToken");
+        const queryParams = new URLSearchParams();
+        
+        // Add required parameters
+        queryParams.append("page", pageNumber);
+        queryParams.append("type", "manual");
+        
+        // Add optional parameters only if they have values
+        if (status) queryParams.append("status", status);
+        if (merchant) queryParams.append("trnStatus", merchant);
+        if (searchQuery) queryParams.append("utr", searchQuery);
+        if (searchTrnId) queryParams.append("trnNo", searchTrnId);
+        if (bankId) queryParams.append("bankId", bankId);
+        
+        // Add date range if both dates exist
+        if (dateRange && dateRange[0] && dateRange[1]) {
+            queryParams.append("startDate", dateRange[0]);
+            queryParams.append("endDate", dateRange[1]);
+        }
+
         const response = await axios.get(
-            `${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=manual&trnStatus=${merchant || ""}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}&bankId=${bankId || ""}`,
+            `${BACKEND_URL}/ledger/getAllMerchant?${queryParams.toString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-            });
+            }
+        );
+
         return {
             status: true,
             message: "Merchants show successfully",
             data: response.data,
         };
     } catch (error) {
-        console.error(error);
-
+        console.error("API Error:", error.response || error);
         if (error?.response) {
             return {
                 status: false,
@@ -248,25 +268,48 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
     }
 };
 
-export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, searchQuery, searchTrnId, bankId) => {
+
+// -------------------------------- get All Dirext Payment api----------------------------------------
+export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, searchQuery, searchTrnId, bankId, dateRange) => {
     try {
         const token = Cookies.get("merchantToken");
+        const queryParams = new URLSearchParams({
+            page: pageNumber,
+            status: status || "",
+            type: "direct",
+            trnStatus: merchant || "",
+            utr: searchQuery || "",
+            trnNo: searchTrnId || ""
+        });
+
+        // Only add bankId if it exists and is not null
+        if (bankId) {
+            queryParams.append("bankId", bankId);
+        }
+
+        // Add date range if provided
+        if (dateRange && dateRange[0] && dateRange[1]) {
+            queryParams.append("startDate", dateRange[0]);
+            queryParams.append("endDate", dateRange[1]);
+        }
+
         const response = await axios.get(
-            `${BACKEND_URL}/ledger/getAllMerchant?page=${pageNumber}&status=${status || ""}&type=direct&trnStatus=${merchant || ""}&utr=${searchQuery || ""}&trnNo=${searchTrnId || ""}&bankId=${bankId || ""}`,
+            `${BACKEND_URL}/ledger/getAllMerchant?${queryParams.toString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-            });
+            }
+        );
+
         return {
             status: true,
             message: "Merchants show successfully",
             data: response.data,
         };
     } catch (error) {
-        console.error(error);
-
+        console.error("API Error:", error.response || error);
         if (error?.response) {
             return {
                 status: false,
@@ -277,6 +320,8 @@ export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, se
     }
 };
 
+
+//----------------------------------Get All Points Payment api--------------------------------------
 export const fn_getAllPointsPaymentApi = async (status, pageNumber) => {
     try {
         const token = Cookies.get("merchantToken");

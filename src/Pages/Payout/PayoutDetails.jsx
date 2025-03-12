@@ -285,6 +285,16 @@ UTR Number: ${item.utr || "N/A"}`;
                   />
                 </div>
 
+                {/* Withdraw Amount  */}
+                <div className="flex items-center gap-4">
+                  <p className="text-[12px] font-[600] w-[200px]">Withdraw Amount:</p>
+                  <Input
+                    className="text-[12px] bg-gray-200"
+                    readOnly
+                    value={`₹ ${selectedWithdrawData?.withdrawAmount}` || "N/A"}
+                  />
+                </div>
+
                 {/* <div className="flex items-center gap-4">
                   <p className="text-[12px] font-[600] w-[200px]">Account Type:</p>
                   <Input

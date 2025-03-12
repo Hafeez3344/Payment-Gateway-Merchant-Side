@@ -22,11 +22,11 @@ const columns = [
         dataIndex: 'createdAt',
         key: 'createdAt',
     },
-    {
-        title: 'Merchant',
-        dataIndex: 'merchant',
-        key: 'merchant',
-    },
+    // {
+    //     title: 'Merchant',
+    //     dataIndex: 'merchant',
+    //     key: 'merchant',
+    // },
     {
         title: 'Status',
         dataIndex: 'status',
@@ -97,7 +97,7 @@ const Reports = ({ authorization, showSidebar }) => {
             const token = Cookies.get("merchantToken");
             const merchantId = Cookies.get("merchantId");
             setDisableButton(true);
-            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=${merchantId}&status=${selectedStatus}&startDate=${fromDate}&endDate=${toDate}&filterByMerchantId=${merchantId}`, {
+            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=["${merchantId}"]&status=${selectedStatus}&startDate=${fromDate}&endDate=${toDate}&filterByMerchantId=${merchantId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
@@ -140,12 +140,12 @@ const Reports = ({ authorization, showSidebar }) => {
             format: "a4"
         });
 
-        const tableColumn = ["Date", "Merchant", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+        const tableColumn = ["Date", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
 
         const tableRows = data?.data?.map((item) => {
             return [
                 item.Date || "All",
-                selectedMerchantName === "" ? "All" : selectedMerchantName,
+                // selectedMerchantName === "" ? "All" : selectedMerchantName,
                 (!item.Status || item.Status === "") ? "All" : item.Status,
                 item.NoOfTransaction || "0",
                 item.PayIn || "0",

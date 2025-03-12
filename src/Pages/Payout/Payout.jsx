@@ -59,6 +59,8 @@ const Payout = ({ authorization, showSidebar }) => {
             description: "Excel file uploaded successfully",
             placement: "topRight"
           });
+
+          fileInput.value = "";
         } catch (err) {
           setLoading(false);
           notification.error({
@@ -118,7 +120,7 @@ const Payout = ({ authorization, showSidebar }) => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
     XLSX.writeFile(workbook, "sample.xlsx");
   };
-  
+
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
@@ -129,15 +131,15 @@ const Payout = ({ authorization, showSidebar }) => {
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-7">
           <h1 className="text-[25px] font-[500]">Payout</h1>
         </div>
-        <div className="bg-white rounded-lg flex justify-center items-center h-40 p-4">
-          <div className="flex flex-col items-center justify-center w-full">
-            <p className="text-[18px] font-[600] text-center mb-3">
+        <div className="bg-white rounded-lg flex justify-center items-center h-45 p-6">
+          <div className="flex flex-col items-center justify-center w-full space-y-4">
+            <p className="text-[18px] font-[600] text-center">
               Please Upload Your Excel Sheet Here
             </p>
-            <div className="flex items-center mb-2 relative justify-center">
+            <div className="flex items-center justify-center relative">
               <label
                 htmlFor="file-upload"
-                className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
+                className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-3"
               >
                 <FiUpload />
                 Choose a file
@@ -167,13 +169,14 @@ const Payout = ({ authorization, showSidebar }) => {
             <span className="text-[11px] text-[#00000040]">Excel Files Only</span>
             <button
               onClick={handleDownloadSample}
-              className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2 mt-3 mb-3"
+              className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
             >
               <FiDownload />
               Download Sample File
             </button>
           </div>
         </div>
+
         <div className="flex justify-between my-4">
           <p className="text-black font-medium text-lg">All Payout Files</p>
         </div>
