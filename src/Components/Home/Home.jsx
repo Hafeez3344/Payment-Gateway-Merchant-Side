@@ -3,13 +3,15 @@ import { GoDotFill } from "react-icons/go";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCircleExclamation } from "react-icons/fa6";
-import { Modal, Button, Input, notification } from "antd";
+import { Modal, Button, Input, notification, Space, DatePicker } from "antd";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend, } from "chart.js";
 import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getAllVerifiedTransactionApi, fn_getCardDataByStatus, } from "../../api/api";
 
 const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissionsData }) => {
   const navigate = useNavigate();
+  const { RangePicker } = DatePicker;
+  const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const containerHeight = window.innerHeight - 105;
@@ -17,13 +19,13 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   const [transactions, setTransactions] = useState([]);
   const [generatedLink, setGeneratedLink] = useState("");
   const [activeFilter, setActiveFilter] = useState('all');
+  const [dateRange, setDateRange] = useState([null, null]);
   const [showLinkField, setShowLinkField] = useState(false);
   const [totalTransaction, setTotalTransactions] = useState(0);
   const [declineTransactions, setDeclineTransactions] = useState(0);
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
   const [transactionData, setTransactionData] = useState({ amount: "", username: "", });
-  const [total, setTotal] = useState(0);
 
 
   useEffect(() => {
@@ -38,6 +40,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   const fetchAllData = async () => {
     try {
       setLoading(true);
+      console.log('Fetching data with:', { activeFilter, dateRange });
       const [
         approvedData,
         pendingData,
@@ -45,12 +48,15 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
         totalData,
         merchantData,
       ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', activeFilter),
-        fn_getCardDataByStatus('Pending', activeFilter),
-        fn_getCardDataByStatus('Decline', activeFilter),
+        fn_getCardDataByStatus('Approved', activeFilter, dateRange),
+        fn_getCardDataByStatus('Pending', activeFilter, dateRange),
+        fn_getCardDataByStatus('Decline', activeFilter, dateRange),
         fn_getAllTransactionApi(),
-        fn_getAllMerchantApi(),
+        fn_getAllMerchantApi(null, 1, null, null, null, null, dateRange),
       ]);
+
+      console.log('Merchant Data Response:', merchantData);
+      console.log('Recent Transactions:', merchantData?.data?.data);
 
       setVerifiedTransactions(approvedData?.data?.data || 0);
       setAdminCharges(approvedData?.data?.adminTotalSum || 0);
@@ -59,22 +65,41 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotal(totalData?.data || 0);
 
-      if (merchantData.status) {
-        setTransactions(merchantData?.data?.data || []);
+      if (merchantData?.status && merchantData?.data?.data) {
+        const recentTransactions = merchantData.data.data.slice(0, 5);
+        setTransactions(recentTransactions);
       } else {
-        setError(merchantData.message);
+        setTransactions([]);
+        setError(merchantData?.message || "No transactions found");
       }
 
     } catch (err) {
       console.error("Error fetching transactions:", err);
       setError("Unable to fetch transactions.");
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (authorization) {
+      console.log("dateRange ", dateRange);
+      fetchAllData();
+
+    }
+
+  }, [dateRange]);
+
+  const resetFilters = () => {
+    setDateRange([null, null]);
+    setActiveFilter('all');
+    fetchAllData();
+  };
+
   const handleFilterClick = async (filterType) => {
     setActiveFilter(filterType);
+    setDateRange([null, null]);
     try {
       setLoading(true);
       const [
@@ -84,11 +109,11 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
         totalData,
         merchantData,
       ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', filterType),
-        fn_getCardDataByStatus('Pending', filterType),
-        fn_getCardDataByStatus('Decline', filterType),
+        fn_getCardDataByStatus('Approved', filterType, null),
+        fn_getCardDataByStatus('Pending', filterType, null),
+        fn_getCardDataByStatus('Decline', filterType, null),
         fn_getAllTransactionApi(),
-        fn_getAllMerchantApi(),
+        fn_getAllMerchantApi(null, 1, null, null, null, null, null),
       ]);
 
       setVerifiedTransactions(approvedData?.data?.data || 0);
@@ -97,16 +122,19 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
       setTotal(totalData?.data || 0);
-      console.log(totalData)
-      if (merchantData.status) {
-        setTransactions(merchantData?.data?.data || []);
+
+      if (merchantData?.status && merchantData?.data?.data) {
+        const recentTransactions = merchantData.data.data.slice(0, 5);
+        setTransactions(recentTransactions);
       } else {
-        setError(merchantData.message);
+        setTransactions([]);
+        setError(merchantData?.message || "No transactions found");
       }
 
     } catch (err) {
       console.error("Error fetching filtered data:", err);
       setError("Unable to fetch filtered data.");
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -248,6 +276,16 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       },
     },
   };
+
+  const handleDateRangeChange = (dates) => {
+    if (!dates) {
+      resetFilters();
+    } else {
+      setDateRange(dates);
+      setActiveFilter('custom');
+    }
+  };
+
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
@@ -258,27 +296,37 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-5">
           <h1 className="text-[25px] font-[500]">Merchant Dashboard</h1>
-          <div className="flex space-x-2 text-[12px]">
-            <button
-              onClick={() => handleFilterClick('all')}
-              className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
-              ALL
-            </button>
-            <button
-              onClick={() => handleFilterClick('today')}
-              className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
-              TODAY
-            </button>
-            <button
-              onClick={() => handleFilterClick('7days')}
-              className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
-              7 DAYS
-            </button>
-            <button
-              onClick={() => handleFilterClick('30days')}
-              className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
-              30 DAYS
-            </button>
+          <div className="flex items-center space-x-2">
+            <div className="flex space-x-2 text-[12px]">
+              <button
+                onClick={() => handleFilterClick('all')}
+                className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                ALL
+              </button>
+              <button
+                onClick={() => handleFilterClick('today')}
+                className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                TODAY
+              </button>
+              <button
+                onClick={() => handleFilterClick('7days')}
+                className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                7 DAYS
+              </button>
+              <button
+                onClick={() => handleFilterClick('30days')}
+                className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
+                30 DAYS
+              </button>
+            </div>
+            {/* Date Range Picker */}
+            <Space direction="vertical" size={10}>
+              <RangePicker
+                value={dateRange}
+                onChange={handleDateRangeChange}
+                className="bg-gray-100"
+              />
+            </Space>
           </div>
         </div>
 
@@ -389,7 +437,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
                           />
                         ))
                       ) : (
-                        <p>No transactions found.</p>
+                      <p>No transactions found.</p>
                       )}
                     </div>
                   )}

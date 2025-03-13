@@ -57,13 +57,13 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      // Format dates using moment library
-      const formattedStartDate = dateRange?.[0] ? dateRange[0].format('YYYY-MM-DD') : null;
-      const formattedEndDate = dateRange?.[1] ? dateRange[1].format('YYYY-MM-DD') : null;
+      const formattedDateRange = dateRange && dateRange[0] && dateRange[1] ? [
+        dateRange[0].format('YYYY-MM-DD'),
+        dateRange[1].format('YYYY-MM-DD')
+      ] : null;
 
-      // Only include dates if both start and end are present
-      const dateFilter = formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null;
-
+      console.log('Fetching with date range:', formattedDateRange);
+      
       const result = await fn_getAllMerchantApi(
         status || null,
         pageNumber,
@@ -71,8 +71,10 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         searchQuery,
         searchTrnId,
         selectedFilteredBank || null,
-        dateFilter
+        formattedDateRange
       );
+
+      console.log('API response:', result);
 
       if (result?.status) {
         if (result?.data?.status === "ok") {
@@ -119,7 +121,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage, merchant, searchQuery, searchTrnId,dateRange, selectedFilteredBank]);
+  }, [currentPage, merchant, searchQuery, searchTrnId, dateRange, selectedFilteredBank]);
 
   const filteredTransactions = transactions;
 
@@ -210,7 +212,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   
           if (result?.status && result?.data?.status === "ok" && result.data.data.length > 0) {
             allTransactions.push(...result.data.data);
-            
+  
             if (result.data.data.length < 10) {
               hasMore = false;
             }
@@ -236,13 +238,17 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
   
       // Create PDF
       const doc = new jsPDF('landscape', 'mm', 'a4');
-      
-      // Add title and date
+  
+      // Get page width for centering text
+      const pageWidth = doc.internal.pageSize.getWidth();
+  
+      // Add title and date (centered)
       doc.setFontSize(16);
-      doc.text('Transactions Report', 14, 15);
+      doc.text('Transactions Report', pageWidth / 2, 15, { align: 'center' });
+  
       doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
-      
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 25, { align: 'center' });
+  
       // Define columns
       const columns = [
         { header: 'TRN-ID', dataKey: 'trnNo' },
@@ -255,7 +261,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       ];
   
       // Calculate total amount for summary
-      const totalAmount = allTransactions.reduce((sum, transaction) => 
+      const totalAmount = allTransactions.reduce((sum, transaction) =>
         sum + (parseFloat(transaction.total) || 0), 0
       );
   
@@ -264,11 +270,9 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         trnNo: transaction.trnNo || '-',
         date: transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : '-',
         username: transaction.username || 'GUEST',
-        // Fix for bank display - check if bankId exists and has bankName property
         bank: transaction.bankId && transaction.bankId.bankName ? 
           transaction.bankId.bankName : 
           (transaction.paymentMethod || ''),
-        // Add INR to the amount display
         amount: transaction.total ? `${transaction.total} INR` : '-',
         utr: transaction.utr || '-',
         status: transaction.status === "Decline" ? "Transaction Decline"
@@ -282,11 +286,11 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       data.push({
         trnNo: '',
         date: '',
-        username: 'TOTAL',  // Move TOTAL text to username column which is left of the amount
+        username: 'TOTAL',
         bank: '',
-        amount: `${totalAmount.toFixed(2)} INR`,  // Add INR to the total amount
+        amount: `${totalAmount.toFixed(2)} INR`,
         utr: '',
-        status: ''  // Remove TOTAL from status column
+        status: ''
       });
   
       // Generate table with custom styling for the total row
@@ -296,10 +300,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         startY: 35,
         styles: { fontSize: 8 },
         headStyles: { fillColor: [66, 139, 202] },
-        // Apply special styling to the last row (total row)
         didDrawCell: (data) => {
           if (data.row.index === data.table.body.length - 1) {
-            // Fill entire row with light gray background
             doc.setFillColor(220, 220, 220);
             doc.rect(
               data.cell.x, 
@@ -309,7 +311,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
               'F'
             );
             
-            // If this is the amount cell (index 4) in the total row, make it bold
+            // Make amount bold in total row
             if (data.column.index === 4) {
               doc.setFont(undefined, 'bold');
               doc.setTextColor(0, 0, 0);
@@ -319,10 +321,10 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 data.cell.y + data.cell.height / 2 + 1,
                 { baseline: 'middle' }
               );
-              return false; // Prevent default text rendering
+              return false;
             }
-            
-            // For the "TOTAL" text in username column (index 2)
+  
+            // Make "TOTAL" bold in username column
             if (data.column.index === 2) {
               doc.setFont(undefined, 'bold');
               doc.text(
@@ -331,7 +333,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 data.cell.y + data.cell.height / 2 + 1,
                 { baseline: 'middle' }
               );
-              return false; // Prevent default text rendering
+              return false;
             }
           }
         }
@@ -355,6 +357,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       });
     }
   };
+  
   return (
     <>
       <div
@@ -386,6 +389,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                     value={dateRange}
                     onChange={(dates) => {
                       setDateRange(dates);
+                      setCurrentPage(1); // Reset to first page when dates change
                     }}
                   />
                 </Space>

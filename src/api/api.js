@@ -225,7 +225,7 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
         const queryParams = new URLSearchParams();
         
         // Add required parameters
-        queryParams.append("page", pageNumber);
+        queryParams.append("page", pageNumber || 1);
         queryParams.append("type", "manual");
         
         // Add optional parameters only if they have values
@@ -235,10 +235,12 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
         if (searchTrnId) queryParams.append("trnNo", searchTrnId);
         if (bankId) queryParams.append("bankId", bankId);
         
-        // Add date range if both dates exist
+        // Format and add date range if provided
         if (dateRange && dateRange[0] && dateRange[1]) {
-            queryParams.append("startDate", dateRange[0]);
-            queryParams.append("endDate", dateRange[1]);
+            const startDate = dateRange[0].format('YYYY-MM-DD');
+            const endDate = dateRange[1].format('YYYY-MM-DD');
+            queryParams.append("startDate", startDate);
+            queryParams.append("endDate", endDate);
         }
 
         const response = await axios.get(
@@ -700,15 +702,31 @@ export const fn_deleteStaffApi = async (id) => {
 };
 
 //------------------------------------Get Card Data By Status API---------------------------------------------
-export const fn_getCardDataByStatus = async (status, filter) => {
+export const fn_getCardDataByStatus = async (status, filter, dateRange) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/ledger/cardMerchantData?status=${status}&filter=${filter}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
+        const queryParams = new URLSearchParams({
+            status: status,
+            filter: filter
         });
+
+        // Format and add date range if provided
+        if (dateRange && dateRange[0] && dateRange[1]) {
+            const startDate = dateRange[0].format('YYYY-MM-DD');
+            const endDate = dateRange[1].format('YYYY-MM-DD');
+            queryParams.append("startDate", startDate);
+            queryParams.append("endDate", endDate);
+        }
+
+        const response = await axios.get(
+            `${BACKEND_URL}/ledger/cardMerchantData?${queryParams.toString()}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return {
             status: true,
             data: response.data,
