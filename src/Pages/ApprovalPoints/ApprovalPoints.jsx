@@ -37,7 +37,32 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      const result = await fn_getAllPointsPaymentApi(status || null, pageNumber);
+      let startDate = null;
+      let endDate = null;
+      
+      if (dateRange && dateRange[0]) {
+        const startDateObj = new Date(dateRange[0].$d);
+        const endDateObj = new Date(dateRange[1].$d);
+        
+        // Adjust for timezone difference and set start date to beginning of day
+        startDateObj.setHours(0, 0, 0, 0);
+        startDate = new Date(startDateObj.getTime() - startDateObj.getTimezoneOffset() * 60000).toISOString();
+        
+        // Adjust for timezone difference and set end date to end of day
+        endDateObj.setHours(23, 59, 59, 999);
+        endDate = new Date(endDateObj.getTime() - endDateObj.getTimezoneOffset() * 60000).toISOString();
+      }
+
+      console.log('Date Range State:', dateRange);
+      console.log('Start Date:', startDate);
+      console.log('End Date:', endDate);
+      
+      const result = await fn_getAllPointsPaymentApi(
+        status || null, 
+        pageNumber,
+        { startDate, endDate }
+      );
+
       if (result?.status) {
         if (result?.data?.status === "ok") {
           setTransactions(result?.data?.data);
@@ -68,10 +93,10 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage]);
+  }, [currentPage, dateRange]);
 
   const filteredTransactions = transactions.filter((transaction) => {
-    const transactionDate = new Date(transaction.createdAt);
+    const transactionDate = new Date(transaction?.createdAt);
 
     const adjustedEndDate = dateRange[1] ? new Date(dateRange[1]) : null;
     if (adjustedEndDate) {
@@ -197,6 +222,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                     value={dateRange}
                     onChange={(dates) => {
                       setDateRange(dates);
+                      setCurrentPage(1);
                     }}
                   />
                 </Space>
@@ -247,9 +273,8 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
                           {transaction?.ledgerId?.trnNo}
                         </td>
-                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap text-nowrap">
-                          {new Date(transaction?.ledgerId?.createdAt).toDateString()},{" "}
-                          {new Date(transaction?.ledgerId?.createdAt).toLocaleTimeString()}
+                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
+                          {new Date(transaction?.createdAt).toUTCString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           {transaction?.ledgerId?.username && transaction?.ledgerId?.username !== "" ? transaction?.ledgerId?.username : "GUEST"}

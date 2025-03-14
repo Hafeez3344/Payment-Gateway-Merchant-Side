@@ -35,12 +35,37 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
     }
     setSelectedPage("dashboard");
     fetchAllData();
-  }, [authorization, navigate, setSelectedPage, activeFilter]);
+  }, [authorization, navigate, setSelectedPage]);
 
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      console.log('Fetching data with:', { activeFilter, dateRange });
+      let startDate = null;
+      let endDate = null;
+      
+      if (dateRange?.[0] && dateRange?.[1]) {
+        // Convert moment objects to Date objects and set time
+        const startDateObj = dateRange[0].startOf('day').toDate();
+        const endDateObj = dateRange[1].endOf('day').toDate();
+        
+        // Format to ISO string
+        startDate = startDateObj.toISOString();
+        endDate = endDateObj.toISOString();
+
+        console.log('Formatted dates:', {
+          startDate,
+          endDate,
+          rawDateRange: dateRange
+        });
+      }
+
+      const formattedDateRange = startDate && endDate ? { startDate, endDate } : null;
+
+      console.log('Fetching data with:', { 
+        activeFilter, 
+        dateRange: formattedDateRange
+      });
+
       const [
         approvedData,
         pendingData,
@@ -48,15 +73,20 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
         totalData,
         merchantData,
       ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', activeFilter, dateRange),
-        fn_getCardDataByStatus('Pending', activeFilter, dateRange),
-        fn_getCardDataByStatus('Decline', activeFilter, dateRange),
+        fn_getCardDataByStatus('Approved', activeFilter, formattedDateRange),
+        fn_getCardDataByStatus('Pending', activeFilter, formattedDateRange),
+        fn_getCardDataByStatus('Decline', activeFilter, formattedDateRange),
         fn_getAllTransactionApi(),
-        fn_getAllMerchantApi(null, 1, null, null, null, null, dateRange),
+        fn_getAllMerchantApi(null, 1, null, null, null, null, formattedDateRange),
       ]);
 
-      console.log('Merchant Data Response:', merchantData);
-      console.log('Recent Transactions:', merchantData?.data?.data);
+      console.log('API Responses:', {
+        approvedData,
+        pendingData,
+        declineData,
+        totalData,
+        merchantData
+      });
 
       setVerifiedTransactions(approvedData?.data?.data || 0);
       setAdminCharges(approvedData?.data?.adminTotalSum || 0);
@@ -83,13 +113,11 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   };
 
   useEffect(() => {
-    if (authorization) {
-      console.log("dateRange ", dateRange);
+    if (authorization && dateRange) {
+      console.log("Fetching data with date range:", dateRange);
       fetchAllData();
-
     }
-
-  }, [dateRange]);
+  }, [dateRange, authorization]);
 
   const resetFilters = () => {
     setDateRange([null, null]);
@@ -278,7 +306,9 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   };
 
   const handleDateRangeChange = (dates) => {
-    if (!dates) {
+    console.log('Date range changed:', dates);
+    if (!dates || !dates[0]) {
+      setDateRange([null, null]);
       resetFilters();
     } else {
       setDateRange(dates);

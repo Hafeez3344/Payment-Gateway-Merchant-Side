@@ -57,12 +57,29 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
 
   const fetchTransactions = async (pageNumber) => {
     try {
-      const formattedDateRange = dateRange && dateRange[0] && dateRange[1] ? [
-        dateRange[0].format('YYYY-MM-DD'),
-        dateRange[1].format('YYYY-MM-DD')
-      ] : null;
+      let startDate = null;
+      let endDate = null;
+      
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        // Ensure dates are in the correct format
+        startDate = dateRange[0].startOf('day').format('YYYY-MM-DD');
+        endDate = dateRange[1].endOf('day').format('YYYY-MM-DD');
+      }
 
-      console.log('Fetching with date range:', formattedDateRange);
+      console.log('Date Range State:', dateRange);
+      console.log('Start Date:', startDate);
+      console.log('End Date:', endDate);
+      console.log('Query Params:', {
+        page: pageNumber || 1,
+        type: 'manual',
+        status: status || null,
+        merchant,
+        searchQuery,
+        searchTrnId,
+        bankId: selectedFilteredBank || null,
+        startDate,
+        endDate
+      });
       
       const result = await fn_getAllMerchantApi(
         status || null,
@@ -71,10 +88,10 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         searchQuery,
         searchTrnId,
         selectedFilteredBank || null,
-        formattedDateRange
+        { startDate, endDate }
       );
 
-      console.log('API response:', result);
+      console.log('API Response:', result);
 
       if (result?.status) {
         if (result?.data?.status === "ok") {

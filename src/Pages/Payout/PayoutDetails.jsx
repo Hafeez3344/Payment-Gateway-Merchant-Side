@@ -104,7 +104,9 @@ const PayoutDetails = ({ showSidebar }) => {
     const detailsToCopy = `Account Holder Name: ${item.username}
 Bank Account: ${item.account}${!isUPI ? `\nIFSC Number: ${item.ifsc || "IFSC Code"}` : ''}
 Amount: ₹ ${item.amount}
-UTR Number: ${item.utr || "N/A"}`;
+UTR Number: ${item.utr || "N/A"}
+Created Date: ${new Date(item.createdAt).toLocaleString()}
+Updated Date: ${new Date(item.updatedAt).toLocaleString()}`;
     navigator.clipboard.writeText(detailsToCopy).then(() => {
       setCopiedId(index);
       notification.success({

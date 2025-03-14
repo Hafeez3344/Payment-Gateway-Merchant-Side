@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 import { FiDownload, FiEye } from "react-icons/fi";
 import { FiUpload } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { Pagination, notification } from "antd";
+import { Pagination, notification, Modal, Input, Form } from "antd";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { MagnifyingGlass } from "react-loader-spinner";
@@ -16,6 +16,8 @@ const Payout = ({ authorization, showSidebar }) => {
   const [totalPages, setTotalPages] = useState(1);
   const containerHeight = window.innerHeight - 120;
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
 
   const handleFileUpload = async (event) => {
     setLoading(true);
@@ -121,6 +123,66 @@ const Payout = ({ authorization, showSidebar }) => {
     XLSX.writeFile(workbook, "sample.xlsx");
   };
 
+  const handleCreateSinglePayout = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    form.resetFields();
+  };
+
+  const handleSubmitPayout = async (values) => {
+    try {
+      // Convert the data to Excel format
+      const data = [{
+        "Account Holder Name": values.username,
+        "Account Number": values.account,
+        "IFSC Number": values.ifsc,
+        "Amount": values.amount
+      }];
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      
+      // Convert workbook to array buffer
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const file = new File([blob], 'single_payout.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      const formData = new FormData();
+      formData.append('csv', file);
+
+      const response = await fn_uploadExcelFile(formData);
+      
+      if (!response.status) {
+        notification.error({
+          message: "Payout Error",
+          description: response.message,
+          placement: "topRight",
+          duration: 3
+        });
+        return;
+      }
+
+      getExcelFile();
+      notification.success({
+        message: "Success",
+        description: "Single payout created successfully",
+        placement: "topRight"
+      });
+
+      handleModalClose();
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to create single payout",
+        placement: "topRight"
+      });
+    }
+  };
+
   return (
     <div
       className={`bg-gray-100 transition-all duration-500 ${showSidebar ? "pl-0 md:pl-[270px]" : "pl-0"
@@ -167,6 +229,16 @@ const Payout = ({ authorization, showSidebar }) => {
               )}
             </div>
             <span className="text-[11px] text-[#00000040]">Excel Files Only</span>
+
+            {/* <button
+              onClick={handleCreateSinglePayout}
+              className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
+            >
+              <FiEye />
+              Create Single Payout
+            </button> */}
+
+
             <button
               onClick={handleDownloadSample}
               className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
@@ -246,13 +318,55 @@ const Payout = ({ authorization, showSidebar }) => {
           </div>
         </div>
       </div>
+
+      <Modal
+        title="Create Single Payout"
+        open={isModalVisible}
+        onCancel={handleModalClose}
+        onOk={() => form.submit()}
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmitPayout}
+          className="mt-4"
+        >
+          <Form.Item
+            label="Account Holder Name"
+            name="username"
+            rules={[{ required: true, message: 'Please enter account holder name' }]}
+          >
+            <Input placeholder="Enter account holder name" className="text-[14px]" />
+          </Form.Item>
+
+          <Form.Item
+            label="Account Number"
+            name="account"
+            rules={[{ required: true, message: 'Please enter account number' }]}
+          >
+            <Input placeholder="Enter account number" className="text-[14px]" />
+          </Form.Item>
+
+          <Form.Item
+            label="IFSC Number"
+            name="ifsc"
+            rules={[{ required: true, message: 'Please enter IFSC number' }]}
+          >
+            <Input placeholder="Enter IFSC number" className="text-[14px]" />
+          </Form.Item>
+
+          <Form.Item
+            label="Amount"
+            name="amount"
+            rules={[{ required: true, message: 'Please enter amount' }]}
+          >
+            <Input type="number" placeholder="Enter amount" className="text-[14px]" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
 
 export default Payout;
-
-
-
-
-

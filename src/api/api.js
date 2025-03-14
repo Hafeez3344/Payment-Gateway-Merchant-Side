@@ -235,23 +235,25 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
         if (searchTrnId) queryParams.append("trnNo", searchTrnId);
         if (bankId) queryParams.append("bankId", bankId);
         
-        // Format and add date range if provided
-        if (dateRange && dateRange[0] && dateRange[1]) {
-            const startDate = dateRange[0].format('YYYY-MM-DD');
-            const endDate = dateRange[1].format('YYYY-MM-DD');
-            queryParams.append("startDate", startDate);
-            queryParams.append("endDate", endDate);
+        // Add date range parameters if provided
+        if (dateRange?.startDate) {
+            console.log('Adding startDate to query:', dateRange.startDate);
+            queryParams.append("startDate", dateRange.startDate);
+        }
+        if (dateRange?.endDate) {
+            console.log('Adding endDate to query:', dateRange.endDate);
+            queryParams.append("endDate", dateRange.endDate);
         }
 
-        const response = await axios.get(
-            `${BACKEND_URL}/ledger/getAllMerchant?${queryParams.toString()}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        const url = `${BACKEND_URL}/ledger/getAllMerchant?${queryParams.toString()}`;
+        console.log('Making API request to:', url);
+
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
 
         return {
             status: true,
@@ -324,17 +326,28 @@ export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, se
 
 
 //----------------------------------Get All Points Payment api--------------------------------------
-export const fn_getAllPointsPaymentApi = async (status, pageNumber) => {
+export const fn_getAllPointsPaymentApi = async (status, pageNumber, dateRange) => {
     try {
         const token = Cookies.get("merchantToken");
-        const response = await axios.get(`${BACKEND_URL}/approval/getAllMerchant`,
+        const queryParams = new URLSearchParams();
+        
+        // Add basic parameters
+        if (status) queryParams.append("status", status);
+        if (pageNumber) queryParams.append("page", pageNumber);
+        
+        // Add date range parameters if provided
+        if (dateRange?.startDate) queryParams.append("startDate", dateRange.startDate);
+        if (dateRange?.endDate) queryParams.append("endDate", dateRange.endDate);
+
+        const response = await axios.get(
+            `${BACKEND_URL}/approval/getAllMerchant?${queryParams.toString()}`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-            });
-        // console.log(response);
+            }
+        );
         return {
             status: true,
             message: "Merchants show successfully",

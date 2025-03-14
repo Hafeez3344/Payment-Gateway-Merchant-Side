@@ -52,13 +52,10 @@ const Reports = ({ authorization, showSidebar }) => {
         { label: "Decline", value: "Decline" },
     ];
 
-    const [toDate, setToDate] = useState("");
-    const [fromDate, setFromDate] = useState("");
+    const [loading, setLoading] = useState(false);
     const [tableData, setTableData] = useState([]);
-    const [selectedBank, setSelectedBank] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
-    const [dateRange, setDateRange] = useState([null, null]);
-    const [disableButton, setDisableButton] = useState(false);
+    const [dateRange, setDateRange] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reportData, setReportData] = useState(null);
     const selectedMerchantName = localStorage.getItem('userName');
@@ -67,51 +64,72 @@ const Reports = ({ authorization, showSidebar }) => {
         window.scroll(0, 0);
         if (!authorization) {
             navigate("/login");
-        };
+        }
+        // Initial load of data
+        fn_getReportsLog();
     }, [authorization]);
 
     useEffect(() => {
+        // This effect will handle both status and date range changes
         fn_getReportsLog();
-    }, []);
-
-    useEffect(() => {
-        if (dateRange[0] && dateRange[1]) {
-            setFromDate(new Date(dateRange[0]?.$d));
-            setToDate(new Date(dateRange[1]?.$d));
-        }
-    }, [dateRange]);
+    }, [selectedStatus, dateRange]);
 
     const fn_changeStatus = (value) => {
-        setSelectedStatus(value);
+        setSelectedStatus(value || ""); // Ensure we handle null/undefined when clearing
     };
 
     const fn_submit = async () => {
         try {
-            if (fromDate === "" || toDate === "") {
-                return notification.error({
+            if (!dateRange || !dateRange[0] || !dateRange[1]) {
+                notification.error({
                     message: "Error",
-                    description: "Please Select Date",
+                    description: "Please Select Date Range",
                     placement: "topRight",
                 });
+                return;
             }
+
             const token = Cookies.get("merchantToken");
             const merchantId = Cookies.get("merchantId");
-            setDisableButton(true);
-            const response = await axios.get(`${BACKEND_URL}/ledger/transactionSummary?merchantId=["${merchantId}"]&status=${selectedStatus}&startDate=${fromDate}&endDate=${toDate}&filterByMerchantId=${merchantId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
+
+            const startDate = new Date(dateRange[0].$d);
+            const endDate = new Date(dateRange[1].$d);
+            
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            
+            const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
+            const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+
+            const queryParams = new URLSearchParams({
+                merchantId: `["${merchantId}"]`,
+                status: selectedStatus,
+                startDate: startISOString,
+                endDate: endISOString,
+                filterByMerchantId: merchantId
             });
-            if (response?.status) {
-                if (response?.data?.status === "ok") {
-                    setReportData(response?.data);
-                    setIsModalOpen(true);
+
+            const response = await axios.get(
+                `${BACKEND_URL}/ledger/transactionSummary?${queryParams.toString()}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
                 }
+            );
+
+            if (response?.data?.status === "ok") {
+                setReportData(response.data);
+                setIsModalOpen(true);
             }
         } catch (error) {
-            console.log("error while download report ", error);
-            setDisableButton(false);
+            console.error("Error generating report:", error);
+            notification.error({
+                message: "Error",
+                description: "Failed to generate report",
+                placement: "topRight"
+            });
         }
     };
 
@@ -124,13 +142,11 @@ const Reports = ({ authorization, showSidebar }) => {
         fn_getReportsLog();
         setIsModalOpen(false);
         setReportData(null);
-        setDisableButton(false);
     };
 
     const handleModalCancel = () => {
         setIsModalOpen(false);
         setReportData(null);
-        setDisableButton(false);
     };
 
     const downloadPDF = (data) => {
@@ -141,6 +157,10 @@ const Reports = ({ authorization, showSidebar }) => {
         });
 
         const tableColumn = ["Date", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+
+        // Calculate total for No. of Transactions
+        const totalTransactions = data?.data?.reduce((sum, item) =>
+            sum + (parseInt(item.NoOfTransaction) || 0), 0);
 
         const tableRows = data?.data?.map((item) => {
             return [
@@ -154,22 +174,45 @@ const Reports = ({ authorization, showSidebar }) => {
             ];
         }) || [];
 
-        tableRows.push(["Total", "", "", "", data.totalPayIn.toFixed(2), data.totalCharges.toFixed(2), data.totalAmount.toFixed(2)]);
+        // Add totals row with No. of Transactions total
+        tableRows.push([
+            "Total",
+            "",
+            totalTransactions.toString(),
+            data.totalPayIn.toFixed(2),
+            data.totalCharges.toFixed(2),
+            data.totalAmount.toFixed(2)
+        ]);
 
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
             styles: { fontSize: 10 },
             theme: "",
-            margin: { top: 30 }
+            margin: { top: 30 },
+            didDrawCell: (data) => {
+                // Add blue background to the total row
+                if (data.row.index === tableRows.length - 1) {
+                    const cell = data.cell;
+                    doc.setFillColor(200, 220, 255); // Light blue color
+                    doc.rect(cell.x, cell.y, cell.width, cell.height, 'F');
+                    doc.setTextColor(0, 0, 0); // Black text
+                    doc.text(cell.text, cell.x + cell.padding('left'), cell.y + cell.padding('top') + cell.styles.fontSize * 0.4);
+                    return false; // Don't draw the cell content twice
+                }
+            }
         });
 
         doc.save("report.pdf");
-        setDisableButton(false);
     };
 
     const downloadExcel = (data) => {
         const tableColumn = ["Date", "Merchant", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+
+        // Calculate total for No. of Transactions
+        const totalTransactions = data?.data?.reduce((sum, item) =>
+            sum + (parseInt(item.NoOfTransaction) || 0), 0);
+
         const tableRows = data?.data?.map((item) => {
             return {
                 Date: item.Date || "All",
@@ -186,7 +229,7 @@ const Reports = ({ authorization, showSidebar }) => {
             Date: "Total",
             Merchant: "",
             Status: "",
-            "No. of Transactions": "",
+            "No. of Transactions": totalTransactions.toString(),
             "Pay In (INR)": data.totalPayIn.toFixed(2),
             "Charges (INR)": data.totalCharges.toFixed(2),
             "Amount (INR)": data.totalAmount.toFixed(2)
@@ -194,38 +237,100 @@ const Reports = ({ authorization, showSidebar }) => {
 
         const worksheet = XLSX.utils.json_to_sheet(tableRows);
         const workbook = XLSX.utils.book_new();
+
+        // Add styling to the total row
+        const totalRowIndex = tableRows.length; // 1-based index in Excel
+        const columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G']; // All columns
+
+        // Add blue background fill to the total row
+        columns.forEach(col => {
+            const cellRef = `${col}${totalRowIndex}`;
+            if (!worksheet[cellRef]) worksheet[cellRef] = {};
+            worksheet[cellRef].s = {
+                fill: {
+                    fgColor: { rgb: "C8DCFF" } // Light blue color
+                },
+                font: {
+                    bold: true
+                }
+            };
+        });
+
         XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
 
         XLSX.writeFile(workbook, "report.xlsx");
-        setDisableButton(false);
     };
 
     const fn_getReportsLog = async () => {
         try {
+            setLoading(true);
             const token = Cookies.get("merchantToken");
             const merchantId = Cookies.get("merchantId");
-            const response = await axios.get(`${BACKEND_URL}/ledgerLog/getAll?&filterByMerchantId=${merchantId}`, {
+
+            const queryParams = new URLSearchParams({
+                filterByMerchantId: merchantId
+            });
+
+            // Only add status if it's not empty
+            if (selectedStatus !== "") {
+                queryParams.append("status", selectedStatus);
+            }
+
+            // Add date range if selected
+            if (dateRange && dateRange[0] && dateRange[1]) {
+                const startDate = new Date(dateRange[0].$d);
+                const endDate = new Date(dateRange[1].$d);
+                
+                // Set start date to beginning of day
+                startDate.setHours(0, 0, 0, 0);
+                
+                // Set end date to end of day
+                endDate.setHours(23, 59, 59, 999);
+                
+                const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
+                const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
+                
+                queryParams.append("startDate", startISOString);
+                queryParams.append("endDate", endISOString);
+            }
+
+            const url = `${BACKEND_URL}/ledgerLog/getAll?${queryParams.toString()}`;
+            console.log('Fetching reports with URL:', url); // Debug log
+
+            const response = await axios.get(url, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
             });
-            if (response?.status) {
-                if (response?.data?.status === "ok") {
-                    setTableData(response?.data?.data?.map((item, index) => {
-                        return {
-                            key: `${index + 1}`,
-                            reportId: `${index + 1}`,
-                            createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
-                            merchant: item?.merchantId?.merchantName || "All",
-                            status: item?.status && item?.status !== "" ? item?.status : "All",
-                            dateRange: item?.startDate && item?.endDate ? `${new Date(item?.startDate).toDateString()} - ${new Date(item?.endDate).toDateString()}` : "All"
-                        }
-                    }))
-                }
+
+            if (response?.data?.status === "ok") {
+                const formattedData = response?.data?.data?.map((item, index) => ({
+                    key: `${index + 1}`,
+                    reportId: `${index + 1}`,
+                    createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
+                    status: item?.status || "All",
+                    dateRange: item?.startDate && item?.endDate 
+                        ? `${new Date(item?.startDate).toLocaleDateString()} - ${new Date(item?.endDate).toLocaleDateString()}`
+                        : "All"
+                }));
+                setTableData(formattedData || []);
+            } else {
+                notification.error({
+                    message: "Error",
+                    description: response?.data?.message || "Failed to fetch reports",
+                    placement: "topRight"
+                });
             }
         } catch (error) {
-            console.log("error in fetching reports log ", error);
+            console.error("Error fetching reports:", error);
+            notification.error({
+                message: "Error",
+                description: "Failed to fetch reports",
+                placement: "topRight"
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -253,7 +358,9 @@ const Reports = ({ authorization, showSidebar }) => {
                             style={{ width: '100%', height: "38px" }}
                             placeholder="Please Select Status"
                             onChange={fn_changeStatus}
+                            value={selectedStatus}
                             options={statusOptions}
+                            allowClear
                         />
                     </div>
                     <div className="flex flex-col gap-[2px]">
@@ -263,15 +370,28 @@ const Reports = ({ authorization, showSidebar }) => {
                                 value={dateRange}
                                 onChange={(dates) => setDateRange(dates)}
                                 style={{ width: "100%", height: "38px" }}
+                                format="DD/MM/YYYY"
+                                placeholder={["Start Date", "End Date"]}
+                                allowClear
                             />
                         </Space>
                     </div>
                 </div>
                 <div className="flex justify-end mt-[20px]">
-                    <Button type="primary" className="h-[38px] w-[200px]" onClick={fn_submit} disabled={disableButton}><FaDownload /> Download Report</Button>
+                    <Button 
+                        type="primary" 
+                        className="h-[38px] w-[200px]" 
+                        onClick={fn_submit}
+                    >
+                        <FaDownload /> Download Report
+                    </Button>
                 </div>
                 <div className="w-full bg-[white] mt-[30px]">
-                    <Table dataSource={tableData} columns={columns} />
+                    <Table 
+                        dataSource={tableData} 
+                        columns={columns} 
+                        loading={loading}
+                    />
                 </div>
             </div>
             <Modal
