@@ -308,7 +308,7 @@ const Reports = ({ authorization, showSidebar }) => {
                 const formattedData = response?.data?.data?.map((item, index) => ({
                     key: `${index + 1}`,
                     reportId: `${index + 1}`,
-                    createdAt: new Date(item?.createdAt)?.toLocaleDateString(),
+                    createdAt: `${new Date(item?.createdAt).getUTCDate()} ${getMonthName(new Date(item?.createdAt).getUTCMonth())} ${new Date(item?.createdAt).getUTCFullYear()}, ${new Date(item?.createdAt).toLocaleTimeString()}`,
                     status: item?.status || "All",
                     dateRange: item?.startDate && item?.endDate 
                         ? `${new Date(item?.startDate).toLocaleDateString()} - ${new Date(item?.endDate).toLocaleDateString()}`
@@ -332,6 +332,14 @@ const Reports = ({ authorization, showSidebar }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const getMonthName = (monthIndex) => {
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        return monthNames[monthIndex];
     };
 
     return (
@@ -414,3 +422,8 @@ const Reports = ({ authorization, showSidebar }) => {
 };
 
 export default Reports;
+
+
+
+
+

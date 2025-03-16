@@ -16,6 +16,14 @@ import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllMerchantApi, fn_updateTr
 
 // import { io } from "socket.io-client";
 
+const getMonthName = (monthIndex) => {
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    return monthNames[monthIndex];
+};
+
 const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
   const navigate = useNavigate();
@@ -62,8 +70,8 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       
       if (dateRange && dateRange[0] && dateRange[1]) {
         // Ensure dates are in the correct format
-        startDate = dateRange[0].startOf('day').format('YYYY-MM-DD');
-        endDate = dateRange[1].endOf('day').format('YYYY-MM-DD');
+        startDate = dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+        endDate = dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
       }
 
       console.log('Date Range State:', dateRange);
@@ -495,8 +503,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                       >
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2]">{transaction?.trnNo}</td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {new Date(transaction?.createdAt).toDateString()},{" "}
-                          {new Date(transaction?.createdAt).toLocaleTimeString()}
+                          {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}, {new Date(transaction?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}</td>
                         <td className="p-4 text-nowrap">
