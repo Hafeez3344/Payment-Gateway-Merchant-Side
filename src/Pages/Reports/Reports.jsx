@@ -305,15 +305,22 @@ const Reports = ({ authorization, showSidebar }) => {
             });
 
             if (response?.data?.status === "ok") {
-                const formattedData = response?.data?.data?.map((item, index) => ({
-                    key: `${index + 1}`,
-                    reportId: `${index + 1}`,
-                    createdAt: `${new Date(item?.createdAt).getUTCDate()} ${getMonthName(new Date(item?.createdAt).getUTCMonth())} ${new Date(item?.createdAt).getUTCFullYear()}, ${new Date(item?.createdAt).toLocaleTimeString()}`,
-                    status: item?.status || "All",
-                    dateRange: item?.startDate && item?.endDate 
-                        ? `${new Date(item?.startDate).toLocaleDateString()} - ${new Date(item?.endDate).toLocaleDateString()}`
-                        : "All"
-                }));
+                const formattedData = response?.data?.data?.map((item, index) => {
+                    const startDate = new Date(item?.startDate);
+                    const endDate = new Date(item?.endDate);
+                    const formattedStartDate = `${startDate.getUTCDate()} ${getMonthName(startDate.getUTCMonth())} ${startDate.getUTCFullYear()}`;
+                    const formattedEndDate = `${endDate.getUTCDate()} ${getMonthName(endDate.getUTCMonth())} ${endDate.getUTCFullYear()}`;
+                    
+                    return {
+                        key: `${index + 1}`,
+                        reportId: `${index + 1}`,
+                        createdAt: `${new Date(item?.createdAt).getUTCDate()} ${getMonthName(new Date(item?.createdAt).getUTCMonth())} ${new Date(item?.createdAt).getUTCFullYear()}, ${new Date(item?.createdAt).toLocaleTimeString()}`,
+                        status: item?.status || "All",
+                        dateRange: item?.startDate && item?.endDate 
+                            ? `${formattedStartDate} - ${formattedEndDate}`
+                            : "All"
+                    };
+                });
                 setTableData(formattedData || []);
             } else {
                 notification.error({
