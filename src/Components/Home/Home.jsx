@@ -6,7 +6,7 @@ import { FaCircleExclamation } from "react-icons/fa6";
 import { Modal, Button, Input, notification, Space, DatePicker } from "antd";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend, } from "chart.js";
-import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getAllVerifiedTransactionApi, fn_getCardDataByStatus, } from "../../api/api";
+import { fn_getAllMerchantApi, fn_getAllTransactionApi, fn_getCardDataByStatus, } from "../../api/api";
 
 const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissionsData }) => {
   const navigate = useNavigate();
@@ -42,12 +42,12 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setLoading(true);
       let startDate = null;
       let endDate = null;
-      
+
       if (dateRange?.[0] && dateRange?.[1]) {
         // Convert moment objects to Date objects and set time
         const startDateObj = dateRange[0].startOf('day').toDate();
         const endDateObj = dateRange[1].endOf('day').toDate();
-        
+
         // Format to ISO string
         startDate = startDateObj.toISOString();
         endDate = endDateObj.toISOString();
@@ -61,11 +61,6 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
 
       const formattedDateRange = startDate && endDate ? { startDate, endDate } : null;
 
-      console.log('Fetching data with:', { 
-        activeFilter, 
-        dateRange: formattedDateRange
-      });
-
       const [
         approvedData,
         pendingData,
@@ -73,11 +68,11 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
         totalData,
         merchantData,
       ] = await Promise.all([
-        fn_getCardDataByStatus('Approved', activeFilter, formattedDateRange),
-        fn_getCardDataByStatus('Pending', activeFilter, formattedDateRange),
-        fn_getCardDataByStatus('Decline', activeFilter, formattedDateRange),
+        fn_getCardDataByStatus('Approved', activeFilter, dateRange),
+        fn_getCardDataByStatus('Pending', activeFilter, dateRange),
+        fn_getCardDataByStatus('Decline', activeFilter, dateRange),
         fn_getAllTransactionApi(),
-        fn_getAllMerchantApi(null, 1, null, null, null, null, formattedDateRange),
+        fn_getAllMerchantApi(null, 1, null, null, null, null, dateRange),
       ]);
 
       console.log('API Responses:', {
@@ -467,7 +462,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
                           />
                         ))
                       ) : (
-                      <p>No transactions found.</p>
+                        <p>No transactions found.</p>
                       )}
                     </div>
                   )}
