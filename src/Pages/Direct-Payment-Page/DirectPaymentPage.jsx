@@ -18,6 +18,7 @@ import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
 // import { io } from "socket.io-client";
 
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllDirectPaymentApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
+import moment from "moment/moment";
 
 const getMonthName = (monthIndex) => {
     const monthNames = [
@@ -528,10 +529,10 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                           {transaction?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}, {new Date(transaction?.createdAt).toLocaleTimeString()}
+                          {moment.utc(transaction?.createdAt).format('DD MMM YYYY, HH:mm:ss A')}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
-                          {transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}
+                          {transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"} 
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] text-nowrap">
                           {transaction?.site}
