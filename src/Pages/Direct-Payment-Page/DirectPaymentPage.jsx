@@ -19,14 +19,6 @@ import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
 
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllDirectPaymentApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
 
-const getMonthName = (monthIndex) => {
-    const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    return monthNames[monthIndex];
-};
-
 const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
   const navigate = useNavigate();
@@ -81,7 +73,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         merchant,
         searchQuery,
         searchTrnId,
-        selectedFilteredBank || null,
+        selectedFilteredBank || null,  // Pass null if no bank selected
         formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null
       );
       if (result?.status) {
@@ -306,7 +298,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       doc.text('Direct Payment Transactions Report', pageWidth / 2, 15, { align: 'center' });
   
       doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, 25, { align: 'center' });
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 25, { align: 'center' });
   
       // Define columns
       const columns = [
@@ -328,7 +320,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       // Format the data
       const data = allTransactions.map(transaction => ({
         trnNo: transaction.trnNo || '-',
-        date: `${new Date(transaction.createdAt).toLocaleDateString()}`,
+        date: transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : '-',
         username: transaction.username || 'GUEST',
         website: transaction.site || '-',
         bank: transaction.bankId && transaction.bankId.bankName ? 
@@ -527,8 +519,9 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2]">
                           {transaction?.trnNo}
                         </td>
-                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {`${new Date(transaction?.createdAt).getUTCDate()} ${getMonthName(new Date(transaction?.createdAt).getUTCMonth())} ${new Date(transaction?.createdAt).getUTCFullYear()}`}, {new Date(transaction?.createdAt).toLocaleTimeString()}
+                        <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap text-nowrap">
+                          {new Date(transaction?.createdAt).toDateString()},{" "}
+                          {new Date(transaction?.createdAt).toLocaleTimeString()}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           {transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}

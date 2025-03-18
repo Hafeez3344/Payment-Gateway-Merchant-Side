@@ -223,18 +223,18 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
     try {
         const token = Cookies.get("merchantToken");
         const queryParams = new URLSearchParams();
-
+        
         // Add required parameters
         queryParams.append("page", pageNumber || 1);
         queryParams.append("type", "manual");
-
+        
         // Add optional parameters only if they have values
         if (status) queryParams.append("status", status);
         if (merchant) queryParams.append("trnStatus", merchant);
         if (searchQuery) queryParams.append("utr", searchQuery);
         if (searchTrnId) queryParams.append("trnNo", searchTrnId);
         if (bankId) queryParams.append("bankId", bankId);
-
+        
         // Add date range parameters if provided
         if (dateRange?.startDate) {
             console.log('Adding startDate to query:', dateRange.startDate);
@@ -330,11 +330,11 @@ export const fn_getAllPointsPaymentApi = async (status, pageNumber, dateRange) =
     try {
         const token = Cookies.get("merchantToken");
         const queryParams = new URLSearchParams();
-
+        
         // Add basic parameters
         if (status) queryParams.append("status", status);
         if (pageNumber) queryParams.append("page", pageNumber);
-
+        
         // Add date range parameters if provided
         if (dateRange?.startDate) queryParams.append("startDate", dateRange.startDate);
         if (dateRange?.endDate) queryParams.append("endDate", dateRange.endDate);
@@ -718,27 +718,28 @@ export const fn_deleteStaffApi = async (id) => {
 export const fn_getCardDataByStatus = async (status, filter, dateRange) => {
     try {
         const token = Cookies.get("merchantToken");
-        let url = `${BACKEND_URL}/ledger/cardMerchantData?status=${status}&filter=${filter}`;
+        const queryParams = new URLSearchParams({
+            status: status,
+            filter: filter
+        });
 
-        if (dateRange && dateRange[0]) {
-            const startDate = new Date(dateRange[0].$d);
-            startDate.setHours(0, 0, 0, 0);
-            const startISOString = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
-
-            const endDate = new Date(dateRange[1].$d);
-            endDate.setHours(23, 59, 59, 999);
-            const endISOString = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString();
-
-            url += `&startDate=${startISOString}`;
-            url += `&endDate=${endISOString}`;
+        // Format and add date range if provided
+        if (dateRange && dateRange[0] && dateRange[1]) {
+            const startDate = dateRange[0].format('YYYY-MM-DD');
+            const endDate = dateRange[1].format('YYYY-MM-DD');
+            queryParams.append("startDate", startDate);
+            queryParams.append("endDate", endDate);
         }
 
-        const response = await axios.get(url, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await axios.get(
+            `${BACKEND_URL}/ledger/cardMerchantData?${queryParams.toString()}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return {
             status: true,
             data: response.data,
