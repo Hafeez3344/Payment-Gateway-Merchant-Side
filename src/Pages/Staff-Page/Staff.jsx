@@ -1,11 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Input, notification, Switch, Select } from "antd";
-
 import { fn_createStaffApi, fn_getStaffApi, fn_updateStaffApi, fn_deleteStaffApi } from "../../api/api";
 
-import { FiEdit, FiTrash2 } from "react-icons/fi";
-import { PiArrowBendDownRightFill } from "react-icons/pi";
 
 const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
 
@@ -157,17 +155,52 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
       userName: staff?.userName,
       email: staff?.email,
       password: staff?.password,
-      duties: staff?.type,
-      dashboard: staff?.dashboard,
-      merchantProfile: staff?.merchantProfile,
-      uploadStatement: staff?.uploadStatement,
-      transactionHistory: staff?.transactionHistory,
-      directPayment: staff?.directPayment,
-      approvalPoints: staff?.approvalPoints,
-      reportsAnalytics: staff?.reportsAnalytics,
-      editPermission: staff?.editPermission,
-      support: staff?.support
+      type: staff?.type || "staff",
     });
+
+    setCheckPages({
+      dashboard: { 
+        view: true, 
+        edit: false 
+      },
+      transactionHistory: { 
+        view: true, 
+        edit: false 
+      },
+      directPayment: { 
+        view: true, 
+        edit: false 
+      },
+      approvalPoints: { 
+        view: true, 
+        edit: false 
+      },
+      merchantProfile: { 
+        view: true, 
+        edit: true 
+      },
+      reportsAnalytics: { 
+        view: true, 
+        edit: true 
+      },
+      support: { 
+        view: true, 
+        edit: true 
+      },
+      uploadStatement: { 
+        view: false, 
+        edit: false 
+      },
+      settings: { 
+        view: false, 
+        edit: false 
+      },
+      staff: { 
+        view: true, 
+        edit: false 
+      },
+    });
+
     setEditStaffId(staff._id);
     setIsEditMode(true);
     setOpen(true);
@@ -297,17 +330,6 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
     fetchStaffList();
   }, []);
 
-  const fn_changeCheckbox = (e, label, option) => {
-    const isChecked = e.target.checked;
-    setCheckPages((prev) => {
-      const updated = { ...prev[label], [option]: isChecked };
-      if (option === "view" && !isChecked) {
-        updated.edit = false;
-      };
-      return { ...prev, [label]: updated };
-    });
-  };
-
   return (
     <>
       <div
@@ -375,13 +397,13 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
                                 handleStatusChange(staff._id, checked)
                               }
                             />
-                            {/* <Button
+                             <Button
                               className="bg-green-100 hover:bg-green-200 text-green-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                               title="Edit"
                               onClick={() => handleEdit(staff)}
                             >
                               <FiEdit size={16} />
-                            </Button> */}
+                            </Button> 
                             <Button
                               className="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 flex items-center justify-center min-w-[32px] h-[32px] border-none"
                               title="Delete"
@@ -428,7 +450,7 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
             Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={handleSubmit}>
-            Save
+            {isEditMode ? "Update" : "Save"}
           </Button>,
         ]}
         width={600}
@@ -514,120 +536,6 @@ const Staff = ({ setSelectedPage, authorization, showSidebar }) => {
               <p className="text-red-500 text-xs mt-1">{errors.type}</p>
             )}
           </div>
-          {formData.type === "staff" && (
-            <div>
-              <p className="text-sm font-medium mb-1">
-                Permissions{" "}
-                {!isEditMode && <span className="text-red-500">*</span>}
-              </p>
-              <div className="flex flex-col gap-[5px]">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.dashboard.view} onChange={(e) => fn_changeCheckbox(e, "dashboard", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Dashboard</p>
-                  </div>
-                </div>
-                <hr />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.transactionHistory.view} onChange={(e) => fn_changeCheckbox(e, "transactionHistory", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Transaction History</p>
-                  </div>
-                  {checkedPages?.transactionHistory?.view && (
-                    <div className="ms-[5px] flex items-center gap-[10px]">
-                      <PiArrowBendDownRightFill className="text-gray-500" />
-                      <input type="checkbox" checked={checkedPages.transactionHistory.edit} onChange={(e) => fn_changeCheckbox(e, "transactionHistory", "edit")} />
-                      <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
-                    </div>
-                  )}
-                </div>
-                <hr />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.directPayment.view} onChange={(e) => fn_changeCheckbox(e, "directPayment", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Direct Payment</p>
-                  </div>
-                  {checkedPages?.directPayment?.view && (
-                    <div className="ms-[5px] flex items-center gap-[10px]">
-                      <PiArrowBendDownRightFill className="text-gray-500" />
-                      <input type="checkbox" checked={checkedPages.directPayment.edit} onChange={(e) => fn_changeCheckbox(e, "directPayment", "edit")} />
-                      <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
-                    </div>
-                  )}
-                </div>
-                <hr />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.approvalPoints.view} onChange={(e) => fn_changeCheckbox(e, "approvalPoints", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Approved Points</p>
-                  </div>
-                  {checkedPages?.approvalPoints?.view && (
-                    <div className="ms-[5px] flex items-center gap-[10px]">
-                      <PiArrowBendDownRightFill className="text-gray-500" />
-                      <input type="checkbox" checked={checkedPages.approvalPoints.edit} onChange={(e) => fn_changeCheckbox(e, "approvalPoints", "edit")} />
-                      <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
-                    </div>
-                  )}
-                </div>
-                <hr />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.merchantProfile.view} onChange={(e) => fn_changeCheckbox(e, "merchantProfile", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Merchant Profile</p>
-                  </div>
-                  {checkedPages?.merchantProfile?.view && (
-                    <div className="ms-[5px] flex items-center gap-[10px]">
-                      <PiArrowBendDownRightFill className="text-gray-500" />
-                      <input type="checkbox" checked={checkedPages.merchantProfile.edit} onChange={(e) => fn_changeCheckbox(e, "merchantProfile", "edit")} />
-                      <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
-                    </div>
-                  )}
-                </div>
-                <hr />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.reportsAnalytics.view} onChange={(e) => fn_changeCheckbox(e, "reportsAnalytics", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Reports and Analytics</p>
-                  </div>
-                  {checkedPages?.reportsAnalytics?.view && (
-                    <div className="ms-[5px] flex items-center gap-[10px]">
-                      <PiArrowBendDownRightFill className="text-gray-500" />
-                      <input type="checkbox" checked={checkedPages.reportsAnalytics.edit} onChange={(e) => fn_changeCheckbox(e, "reportsAnalytics", "edit")} />
-                      <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
-                    </div>
-                  )}
-                </div>
-                <hr />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.support.view} onChange={(e) => fn_changeCheckbox(e, "support", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Support / Help Center</p>
-                  </div>
-                  {checkedPages?.support?.view && (
-                    <div className="ms-[5px] flex items-center gap-[10px]">
-                      <PiArrowBendDownRightFill className="text-gray-500" />
-                      <input type="checkbox" checked={checkedPages.support.edit} onChange={(e) => fn_changeCheckbox(e, "support", "edit")} />
-                      <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
-                    </div>
-                  )}
-                </div>
-                {/* <hr />
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-[10px]">
-                    <input type="checkbox" checked={checkedPages.uploadStatement.view} onChange={(e) => fn_changeCheckbox(e, "uploadStatement", "view")} />
-                    <p className="text-[13px] font-[500] mt-[-1px]">Upload Statement</p>
-                  </div>
-                  {checkedPages?.uploadStatement?.view && (
-                    <div className="ms-[5px] flex items-center gap-[10px]">
-                      <PiArrowBendDownRightFill className="text-gray-500" />
-                      <input type="checkbox" checked={checkedPages.uploadStatement.edit} onChange={(e) => fn_changeCheckbox(e, "uploadStatement", "edit")} />
-                      <p className="text-[13px] font-[500] mt-[-1px]">Can Edit ?</p>
-                    </div>
-                  )}
-                </div> */}
-              </div>
-            </div>
-          )}
         </div>
       </Modal>
     </>

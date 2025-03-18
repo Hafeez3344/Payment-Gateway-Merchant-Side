@@ -1,13 +1,14 @@
 import * as XLSX from "xlsx";
 import moment from "moment/moment";
-import { FiDownload, FiEye } from "react-icons/fi";
+import { FaBox } from "react-icons/fa6";
 import { FiUpload } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { Pagination, notification, Modal, Input, Form } from "antd";
+import { FiDownload, FiEye } from "react-icons/fi";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { MagnifyingGlass } from "react-loader-spinner";
-import { fn_uploadExcelFile, fn_getUploadExcelFile } from "../../api/api";
+import { Pagination, notification, Modal, Input, Form } from "antd";
+import { fn_uploadExcelFile, fn_getUploadExcelFile, fn_singlePayout } from "../../api/api";
 
 
 const Payout = ({ authorization, showSidebar }) => {
@@ -135,27 +136,14 @@ const Payout = ({ authorization, showSidebar }) => {
 
   const handleSubmitPayout = async (values) => {
     try {
-      // Convert the data to Excel format
-      const data = [{
-        "Account Holder Name": values.username,
-        "Account Number": values.account,
-        "IFSC Number": values.ifsc,
-        "Amount": values.amount
-      }];
+      const payoutData = {
+        accountHolderName: values.username,
+        accountNumber: values.account,
+        ifscNumber: values.ifsc,
+        amount: values.amount
+      };
 
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-      
-      // Convert workbook to array buffer
-      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const file = new File([blob], 'single_payout.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-      const formData = new FormData();
-      formData.append('csv', file);
-
-      const response = await fn_uploadExcelFile(formData);
+      const response = await fn_singlePayout(payoutData);
       
       if (!response.status) {
         notification.error({
@@ -167,7 +155,7 @@ const Payout = ({ authorization, showSidebar }) => {
         return;
       }
 
-      getExcelFile();
+      getExcelFile(); // Refresh the list
       notification.success({
         message: "Success",
         description: "Single payout created successfully",
@@ -231,13 +219,13 @@ const Payout = ({ authorization, showSidebar }) => {
             </div>
             <span className="text-[11px] text-[#00000040]">Excel Files Only</span>
 
-            {/* <button
+            <button
               onClick={handleCreateSinglePayout}
               className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
             >
-              <FiEye />
+              <FaBox  />
               Create Single Payout
-            </button> */}
+            </button>
 
 
             <button

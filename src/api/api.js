@@ -934,4 +934,31 @@ export const fn_updateExcelWithdraw = async (id) => {
     }
 }
 
+//------------------------------------  Single Payout  API --------------------------------------
+export const fn_singlePayout = async (data) => {
+    try {
+        const token = Cookies.get("merchantToken");
+        const response = await axios.post(
+            `${BACKEND_URL}/excelWithdraw/create`,
+            data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return {
+            status: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            status: false,
+            message: error?.response?.data?.message || "Failed to get excel file data"
+        };
+    }
+}
+
+
 export default BACKEND_URL;

@@ -111,7 +111,7 @@ const Reports = ({ authorization, showSidebar }) => {
             });
 
             const response = await axios.get(
-                `${BACKEND_URL}/ledger/transactionSummary?${queryParams.toString()}`,
+                `${BACKEND_URL}/ledger/transactionSummaryTest?${queryParams.toString()}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -157,32 +157,51 @@ const Reports = ({ authorization, showSidebar }) => {
             format: "a4"
         });
 
-        const tableColumn = ["Date", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
+        // Add title and timestamp
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.text("Transactions Report", doc.internal.pageSize.width / 2, 30, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Generated on: ${moment().format('M/D/YYYY, h:mm:ss A')}`, doc.internal.pageSize.width / 2, 50, { align: 'center' });
 
-        // Calculate total for No. of Transactions
-        const totalTransactions = data?.data?.reduce((sum, item) =>
-            sum + (parseInt(item.NoOfTransaction) || 0), 0);
+        const tableColumn = [
+            "Date",
+            "Trn Status",
+            "No. of Transactions",
+            "PayIn (INR)",
+            "Payout (INR)", 
+            "Charges (INR)",
+            "Net Amount (INR)"
+        ];
+
+        // Calculate total transactions (PayIn + Payout)
+        const totalTransactions = (data?.payIn?.totalTransaction || 0) + (data?.payout?.totalTransaction || 0);
 
         const tableRows = data?.data?.map((item) => {
+            const isPayIn = item.Type === "payIn";
             return [
                 item.Date || "All",
-                // selectedMerchantName === "" ? "All" : selectedMerchantName,
                 (!item.Status || item.Status === "") ? "All" : item.Status,
                 item.NoOfTransaction || "0",
-                item.PayIn || "0",
-                item.Charges || "0",
-                item.Amount || "0"
+                isPayIn ? (Number(item.PayIn || 0) > 0 ? Number(item.PayIn).toFixed(2) : "-") : "-",
+                !isPayIn ? (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-") : "-",
+                isPayIn ? (Number(item.Charges || 0) > 0 ? Number(item.Charges).toFixed(2) : "-") : "-",
+                isPayIn ? (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-") : 
+                         (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-"),
             ];
         }) || [];
 
-        // Add totals row with No. of Transactions total
+        // Add totals row
         tableRows.push([
-            "Total",
+            "SUBTOTAL",
             "",
             totalTransactions.toString(),
-            data.totalPayIn.toFixed(2),
-            data.totalCharges.toFixed(2),
-            data.totalAmount.toFixed(2)
+            Number(data.payIn?.totalPayIn || 0).toFixed(2),
+            Number(data.payout?.totalAmount || 0).toFixed(2), 
+            Number((data.payIn?.totalCharges || 0) + (data.payout?.totalCharges || 0)).toFixed(2),
+            Number((data.payIn?.totalAmount || 0) + (data.payout?.totalAmount || 0)).toFixed(2)
         ]);
 
         doc.autoTable({
@@ -190,16 +209,16 @@ const Reports = ({ authorization, showSidebar }) => {
             body: tableRows,
             styles: { fontSize: 10 },
             theme: "",
-            margin: { top: 30 },
+            margin: { top: 70 }, // Increased top margin to accommodate the title
             didDrawCell: (data) => {
                 // Add blue background to the total row
                 if (data.row.index === tableRows.length - 1) {
                     const cell = data.cell;
-                    doc.setFillColor(200, 220, 255); // Light blue color
+                    doc.setFillColor(220, 220, 240); // Light purple color
                     doc.rect(cell.x, cell.y, cell.width, cell.height, 'F');
-                    doc.setTextColor(0, 0, 0); // Black text
+                    doc.setTextColor(0, 0, 0);
                     doc.text(cell.text, cell.x + cell.padding('left'), cell.y + cell.padding('top') + cell.styles.fontSize * 0.4);
-                    return false; // Don't draw the cell content twice
+                    return false;
                 }
             }
         });
@@ -208,57 +227,50 @@ const Reports = ({ authorization, showSidebar }) => {
     };
 
     const downloadExcel = (data) => {
-        const tableColumn = ["Date", "Merchant", "Trn Status", "No. of Transactions", "Pay In (INR)", "Charges (INR)", "Amount (INR)"];
-
-        // Calculate total for No. of Transactions
-        const totalTransactions = data?.data?.reduce((sum, item) =>
-            sum + (parseInt(item.NoOfTransaction) || 0), 0);
-
         const tableRows = data?.data?.map((item) => {
+            const isPayIn = item.Type === "payIn";
             return {
                 Date: item.Date || "All",
-                Merchant: selectedMerchantName === "" ? "All" : selectedMerchantName,
                 Status: (!item.Status || item.Status === "") ? "All" : item.Status,
                 "No. of Transactions": item.NoOfTransaction || "0",
-                "Pay In (INR)": item.PayIn || "0",
-                "Charges (INR)": item.Charges || "0",
-                "Amount (INR)": item.Amount || "0"
+                "PayIn (INR)": isPayIn ? (Number(item.PayIn || 0) > 0 ? Number(item.PayIn).toFixed(2) : "-") : "-",
+                "Payout (INR)": !isPayIn ? (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-") : "-",
+                "Charges (INR)": isPayIn ? (Number(item.Charges || 0) > 0 ? Number(item.Charges).toFixed(2) : "-") : "-",
+                "Net Amount (INR)": isPayIn ? (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-") : 
+                                   (Number(item.Amount || 0) > 0 ? Number(item.Amount).toFixed(2) : "-"),
             };
         }) || [];
 
+        // Calculate total transactions
+        const totalTransactions = (data.payIn?.totalTransaction || 0) + (data.payout?.totalTransaction || 0);
+
+        // Add totals row
         tableRows.push({
             Date: "Total",
-            Merchant: "",
             Status: "",
             "No. of Transactions": totalTransactions.toString(),
-            "Pay In (INR)": data.totalPayIn.toFixed(2),
-            "Charges (INR)": data.totalCharges.toFixed(2),
-            "Amount (INR)": data.totalAmount.toFixed(2)
+            "PayIn (INR)": Number(data.payIn?.totalPayIn || 0).toFixed(2),
+            "Payout (INR)": Number(data.payout?.totalAmount || 0).toFixed(2),
+            "Charges (INR)": Number((data.payIn?.totalCharges || 0) + (data.payout?.totalCharges || 0)).toFixed(2),
+            "Net Amount (INR)": Number((data.payIn?.totalAmount || 0) + (data.payout?.totalAmount || 0)).toFixed(2)
         });
 
         const worksheet = XLSX.utils.json_to_sheet(tableRows);
         const workbook = XLSX.utils.book_new();
 
-        // Add styling to the total row
-        const totalRowIndex = tableRows.length; // 1-based index in Excel
-        const columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G']; // All columns
-
-        // Add blue background fill to the total row
-        columns.forEach(col => {
-            const cellRef = `${col}${totalRowIndex}`;
+        // Style the total row
+        const range = XLSX.utils.decode_range(worksheet["!ref"]);
+        const totalRowIndex = range.e.r;
+        for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellRef = XLSX.utils.encode_cell({ r: totalRowIndex, c: col });
             if (!worksheet[cellRef]) worksheet[cellRef] = {};
             worksheet[cellRef].s = {
-                fill: {
-                    fgColor: { rgb: "C8DCFF" } // Light blue color
-                },
-                font: {
-                    bold: true
-                }
+                font: { bold: true },
+                fill: { fgColor: { rgb: "DCDCF0" } }, // Light purple background
             };
-        });
+        }
 
         XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-
         XLSX.writeFile(workbook, "report.xlsx");
     };
 
@@ -309,8 +321,6 @@ const Reports = ({ authorization, showSidebar }) => {
                 const formattedData = response?.data?.data?.map((item, index) => {
                     const startDate = new Date(item?.startDate);
                     const endDate = new Date(item?.endDate);
-                    const formattedStartDate = `${startDate.getUTCDate()} ${getMonthName(startDate.getUTCMonth())} ${startDate.getUTCFullYear()}`;
-                    const formattedEndDate = `${endDate.getUTCDate()} ${getMonthName(endDate.getUTCMonth())} ${endDate.getUTCFullYear()}`;
                     
                     return {
                         key: `${index + 1}`,
@@ -318,7 +328,7 @@ const Reports = ({ authorization, showSidebar }) => {
                         createdAt: `${moment.utc(item?.createdAt).format('DD MMM YYYY, hh:mm A')}`,
                         status: item?.status || "All",
                         dateRange: item?.startDate && item?.endDate 
-                            ? `${formattedStartDate} - ${formattedEndDate}`
+                            ? `${startDate.getUTCDate()} ${getMonthName(startDate.getUTCMonth())} ${startDate.getUTCFullYear()} - ${endDate.getUTCDate()} ${getMonthName(endDate.getUTCMonth())} ${endDate.getUTCFullYear()}`
                             : "All"
                     };
                 });
@@ -344,8 +354,8 @@ const Reports = ({ authorization, showSidebar }) => {
 
     const getMonthName = (monthIndex) => {
         const monthNames = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         ];
         return monthNames[monthIndex];
     };
