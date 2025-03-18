@@ -42,6 +42,8 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
   const editablePermission = Object.keys(permissionsData).length > 0 ? permissionsData?.directPayment?.edit : true;
   const [allBanks, setAllBanks] = useState([]);
   const [selectedFilteredBank, setSelectedFilteredBank] = useState("");
+  const [isHovering, setIsHovering] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
 
   // useEffect(() => {
@@ -388,6 +390,13 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         placement: "topRight"
       });
     }
+  };
+
+  const handleMouseMove = (e) => {
+    const { left, top, width, height } = e.target.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setMousePosition({ x, y });
   };
 
   return (
@@ -806,11 +815,21 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">
-              <img
-                src={`${BACKEND_URL}/${selectedTransaction?.image}`}
-                alt="Payment Proof"
-                className="max-h-[400px]"
-              />
+              <div className="relative w-full max-w-[400px] overflow-hidden cursor-zoom-in" style={{ aspectRatio: "1" }}>
+                <img
+                  src={`${BACKEND_URL}/${selectedTransaction?.image}`}
+                  alt="Payment Proof"
+                  className="w-full h-full object-contain"
+                  style={{
+                    transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
+                    transform: isHovering ? "scale(2)" : "scale(1)",
+                    transition: "transform 0.1s ease-out"
+                  }}
+                  onMouseEnter={() => setIsHovering(true)}
+                  onMouseLeave={() => setIsHovering(false)}
+                  onMouseMove={handleMouseMove}
+                />
+              </div>
 
               {/* <div className="flex">
                 <button

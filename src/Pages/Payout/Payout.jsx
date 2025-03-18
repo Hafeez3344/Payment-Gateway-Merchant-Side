@@ -219,13 +219,13 @@ const Payout = ({ authorization, showSidebar }) => {
             </div>
             <span className="text-[11px] text-[#00000040]">Excel Files Only</span>
 
-            <button
-              onClick={handleCreateSinglePayout}
-              className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
-            >
-              <FaBox  />
-              Create Single Payout
-            </button>
+              {/* <button
+                onClick={handleCreateSinglePayout}
+                className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
+              >
+                <FaBox  />
+                Create Single Payout
+              </button> */}
 
 
             <button
