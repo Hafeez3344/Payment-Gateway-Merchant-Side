@@ -8,25 +8,13 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 import { RxCross2 } from "react-icons/rx";
-import { FaRegEdit } from "react-icons/fa";
-import { IoMdCheckmark } from "react-icons/io";
-import { GoCircleSlash } from "react-icons/go";
-import { FiEye, FiTrash2 } from "react-icons/fi";
-import { RiFindReplaceLine } from "react-icons/ri";
+import { FiEye } from "react-icons/fi";
 import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
 
 // import { io } from "socket.io-client";
 
 import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllDirectPaymentApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
 import moment from "moment/moment";
-
-const getMonthName = (monthIndex) => {
-    const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    return monthNames[monthIndex];
-};
 
 const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
@@ -329,7 +317,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       // Format the data
       const data = allTransactions.map(transaction => ({
         trnNo: transaction.trnNo || '-',
-        date: transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : '-',
+        date: transaction.createdAt ? moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A') : '-',
         username: transaction.username || 'GUEST',
         website: transaction.site || '-',
         bank: transaction.bankId && transaction.bankId.bankName ? 
@@ -529,7 +517,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                           {transaction?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {moment.utc(transaction?.createdAt).format('DD MMM YYYY, HH:mm:ss A')}
+                          {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           {transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"} 
@@ -692,9 +680,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                 },
                 {
                   label: "Date & Time:",
-                  value: `${new Date(
-                    selectedTransaction.createdAt
-                  ).toLocaleString()}`,
+                  value: `${moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}`,
                 },
                 {
                   label: "Bank Name:",

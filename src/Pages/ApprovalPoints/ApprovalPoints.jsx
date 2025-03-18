@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Button } from "antd";
+import moment from "moment/moment";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification, DatePicker, Space } from "antd";
@@ -274,7 +275,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                           {transaction?.ledgerId?.trnNo}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {new Date(transaction?.createdAt).toUTCString()}
+                          {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
                           {transaction?.ledgerId?.username && transaction?.ledgerId?.username !== "" ? transaction?.ledgerId?.username : "GUEST"}
@@ -383,9 +384,7 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
                 },
                 {
                   label: "Date & Time:",
-                  value: `${new Date(
-                    selectedTransaction.createdAt
-                  ).toLocaleString()}`,
+                  value: `${moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}`,
                 },
                 {
                   label: "Bank Name:",

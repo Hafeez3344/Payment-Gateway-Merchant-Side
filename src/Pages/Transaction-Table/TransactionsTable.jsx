@@ -1,6 +1,7 @@
 import axios from "axios";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import moment from "moment/moment";
 import { RxCross2 } from "react-icons/rx";
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
@@ -285,7 +286,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       // Format the data
       const data = allTransactions.map(transaction => ({
         trnNo: transaction.trnNo || '-',
-        date: transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : '-',
+        date: transaction.createdAt ? moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A') : '-',
         username: transaction.username || 'GUEST',
         bank: transaction.bankId && transaction.bankId.bankName ? 
           transaction.bankId.bankName : 
@@ -495,8 +496,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                       >
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2]">{transaction?.trnNo}</td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] whitespace-nowrap">
-                          {new Date(transaction?.createdAt).toDateString()},{" "}
-                          {new Date(transaction?.createdAt).toLocaleTimeString()}
+                          {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2]">{transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}</td>
                         <td className="p-4 text-nowrap">
@@ -644,9 +644,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 },
                 {
                   label: "Date & Time:",
-                  value: `${new Date(
-                    selectedTransaction.createdAt
-                  ).toLocaleString()}`,
+                  value: `${moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}`,
                 },
                 {
                   label: "Bank Name:",

@@ -2,6 +2,7 @@ import axios from "axios";
 import "jspdf-autotable";
 import jsPDF from "jspdf";
 import Cookies from "js-cookie";
+import moment from "moment/moment";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Button, DatePicker, notification, Select, Space, Table, Modal } from "antd";
@@ -314,7 +315,7 @@ const Reports = ({ authorization, showSidebar }) => {
                     return {
                         key: `${index + 1}`,
                         reportId: `${index + 1}`,
-                        createdAt: `${new Date(item?.createdAt).getUTCDate()} ${getMonthName(new Date(item?.createdAt).getUTCMonth())} ${new Date(item?.createdAt).getUTCFullYear()}, ${new Date(item?.createdAt).toLocaleTimeString()}`,
+                        createdAt: `${moment.utc(item?.createdAt).format('DD MMM YYYY, hh:mm A')}`,
                         status: item?.status || "All",
                         dateRange: item?.startDate && item?.endDate 
                             ? `${formattedStartDate} - ${formattedEndDate}`

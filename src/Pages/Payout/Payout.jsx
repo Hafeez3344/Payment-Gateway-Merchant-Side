@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import moment from "moment/moment";
 import { FiDownload, FiEye } from "react-icons/fi";
 import { FiUpload } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -280,8 +281,7 @@ const Payout = ({ authorization, showSidebar }) => {
                         </span>
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
-                        {new Date(withraw?.createdAt).toDateString()},{" "}
-                        {new Date(withraw?.createdAt).toLocaleTimeString()}
+                        {moment.utc(withraw?.createdAt).format('DD MMM YYYY, hh:mm A')}
                       </td>
                       <td className="p-4 text-[11px] font-[600] text-[#000000B2] whitespace-nowrap ">
                         {withraw?.withdrawCount || withraw?.noOfWithdraws || withraw?.data?.length || 0}
