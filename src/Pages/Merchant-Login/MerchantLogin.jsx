@@ -1,6 +1,6 @@
 import Cookies from "js-cookie";
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Form, Grid, Input, Typography, notification } from "antd";
 
 import logo from "../../assets/logo.png";
@@ -15,9 +15,23 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified, s
   const navigate = useNavigate();
   const screens = useBreakpoint();
 
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get("email"); // Get the 'id' query parameter
+  const password = searchParams.get("password"); // Get the 'id' query parameter
+
+  console.log(email, password);
+  
+
   useEffect(() => {
     if (authorization) {
       navigate("/");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (email && password) {
+      const values = { email: email, password: password };
+      onFinish(values)
     }
   }, []);
 
@@ -142,6 +156,7 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified, s
         >
           <Form.Item
             name="email"
+            id="email"
             rules={[
               {
                 type: "email",
@@ -154,6 +169,7 @@ const MerchantLogin = ({ authorization, setAuthorization, setMerchantVerified, s
           </Form.Item>
           <Form.Item
             name="password"
+            id="password"
             rules={[
               {
                 required: true,
