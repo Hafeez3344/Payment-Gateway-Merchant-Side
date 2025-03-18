@@ -152,7 +152,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               selectedPage={selectedPage}
               icon={<FaMoneyBillWave className="text-[20px]" />}
             />
-            <Menu
+            {/* <Menu
               onClick={() => {
                 setSelectedPage("setting");
                 navigate("/system-configuration");
@@ -162,7 +162,7 @@ const SideBar = ({ merchantVerified, showSidebar, setShowSide, setAuthorization,
               name="setting"
               selectedPage={selectedPage}
               icon={<IoSettingsOutline className="text-[20px]" />}
-            />
+            /> */}
             <Menu
               onClick={() => {
                 setSelectedPage("staff");
