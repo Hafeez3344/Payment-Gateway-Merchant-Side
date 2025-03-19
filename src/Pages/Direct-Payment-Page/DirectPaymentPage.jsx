@@ -1,20 +1,18 @@
+import 'jspdf-autotable';
 import axios from "axios";
+import jsPDF from 'jspdf';
 import { Button } from "antd";
+import moment from 'moment-timezone';
+import { FiEye } from "react-icons/fi";
+import { RxCross2 } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
-import { RxCross2 } from "react-icons/rx";
-import { FiEye } from "react-icons/fi";
 import { FaCheck, FaIndianRupeeSign } from "react-icons/fa6";
-
+import { Pagination, Modal, Input, notification, DatePicker, Space, Select } from "antd";
+import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllDirectPaymentApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
 // import { io } from "socket.io-client";
 
-import BACKEND_URL, { fn_deleteTransactionApi, fn_getAllDirectPaymentApi, fn_updateTransactionStatusApi, fn_getAllBanksData2 } from "../../api/api";
-import moment from "moment/moment";
 
 const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permissionsData, loginType }) => {
 
@@ -222,7 +220,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
       });
     };
   };
-  
+
   const downloadPDF = async () => {
     try {
       notification.info({
@@ -230,15 +228,15 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         description: "Fetching transactions...",
         duration: 3
       });
-  
+
       // Format dates correctly
       const formattedStartDate = dateRange?.[0] ? dateRange[0].format('YYYY-MM-DD') : null;
       const formattedEndDate = dateRange?.[1] ? dateRange[1].format('YYYY-MM-DD') : null;
-  
+
       const allTransactions = [];
       let page = 1;
       let hasMore = true;
-  
+
       // Create separate query parameters for the API call
       const queryParams = {
         status: status || null,
@@ -249,7 +247,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         bankId: selectedFilteredBank || null,
         dateRange: formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null
       };
-  
+
       while (hasMore) {
         try {
           const result = await fn_getAllDirectPaymentApi(
@@ -261,10 +259,10 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
             queryParams.bankId,
             queryParams.dateRange
           );
-  
+
           if (result?.status && result?.data?.status === "ok" && result.data.data.length > 0) {
             allTransactions.push(...result.data.data);
-  
+
             if (result.data.data.length < 10) {
               hasMore = false;
             }
@@ -278,7 +276,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
           hasMore = false;
         }
       }
-  
+
       if (allTransactions.length === 0) {
         notification.warning({
           message: "No Data",
@@ -287,18 +285,18 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         });
         return;
       }
-  
+
       // Create PDF
       const doc = new jsPDF('landscape', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.width;
-  
+
       // Add title and date centered
       doc.setFontSize(16);
       doc.text('Direct Payment Transactions Report', pageWidth / 2, 15, { align: 'center' });
-  
+
       doc.setFontSize(10);
       doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 25, { align: 'center' });
-  
+
       // Define columns
       const columns = [
         { header: 'TRN-ID', dataKey: 'trnNo', width: 20 },
@@ -310,30 +308,30 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         { header: 'UTR', dataKey: 'utr', width: 30 },
         { header: 'Status', dataKey: 'status', width: 25 }
       ];
-  
+
       // Calculate total amount for summary
-      const totalAmount = allTransactions.reduce((sum, transaction) => 
+      const totalAmount = allTransactions.reduce((sum, transaction) =>
         sum + (parseFloat(transaction.total) || 0), 0
       );
-  
+
       // Format the data
       const data = allTransactions.map(transaction => ({
         trnNo: transaction.trnNo || '-',
         date: transaction.createdAt ? moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A') : '-',
         username: transaction.username || 'GUEST',
         website: transaction.site || '-',
-        bank: transaction.bankId && transaction.bankId.bankName ? 
+        bank: transaction.bankId && transaction.bankId.bankName ?
           (transaction.bankId.bankName === "UPI" ? `UPI - ${transaction.bankId.iban}` : transaction.bankId.bankName)
           : (transaction.paymentMethod || 'N/A'),
         amount: transaction.total ? `${transaction.total} INR` : '-',
         utr: transaction.utr || '-',
         status: transaction.status === "Decline" ? "Transaction Decline"
           : transaction.status === "Pending" ? "Transaction Pending"
-          : transaction.approval === true ? "Points Approved"
-          : (transaction.reason && transaction.reason !== "") ? "Points Decline"
-          : "Points Pending"
+            : transaction.approval === true ? "Points Approved"
+              : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+                : "Points Pending"
       }));
-  
+
       // Add subtotal row to data with TOTAL on the left side
       data.push({
         trnNo: '',
@@ -345,7 +343,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         utr: '',
         status: ''
       });
-  
+
       // Generate table
       doc.autoTable({
         head: [columns.map(col => col.header)],
@@ -371,17 +369,17 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
           }
         }
       });
-  
+
       // Save PDF with date in filename
       const dateStr = new Date().toISOString().slice(0, 10);
       doc.save(`direct-payment-transactions-${dateStr}.pdf`);
-  
+
       notification.success({
         message: "Success",
         description: "PDF generated successfully",
         placement: "topRight"
       });
-  
+
     } catch (error) {
       console.error("Error generating PDF:", error);
       notification.error({
@@ -529,7 +527,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                           {moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
                         </td>
                         <td className="p-4 text-[13px] font-[700] text-[#000000B2] text-nowrap">
-                          {transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"} 
+                          {transaction?.username && transaction?.username !== "" ? transaction?.username : "GUEST"}
                         </td>
                         <td className="p-4 text-[13px] font-[600] text-[#000000B2] text-nowrap">
                           {transaction?.site}
@@ -792,7 +790,37 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
               )}
               {selectedTransaction?.trnStatus === "Transaction Decline" ?
                 <>
-                  <p className="text-[14px] font-[700]">
+                  <div className="flex items-center mt-4">
+                    <p className="text-[14px] font-[700] mr-2">Transaction Activity:</p>
+                  </div>
+                  {selectedTransaction?.trnStatus !== "Transaction Pending" && (
+                      <div className="flex items-center">
+                        <span
+                          className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
+                              ? "text-[#0DA000]"
+                              : selectedTransaction?.status === "Pending"
+                                ? "text-[#FFB800]"
+                                : selectedTransaction?.status === "Manual Verified"
+                                  ? "text-[#0864E8]"
+                                  : "text-[#FF002A]"
+                            }`}
+                        >
+                          {selectedTransaction?.status === "Decline"
+                            ? "Transaction Decline"
+                            : selectedTransaction?.status === "Pending"
+                              ? "Transaction Pending"
+                              : selectedTransaction?.approval === true
+                                ? "Points Approved"
+                                : (selectedTransaction?.reason && selectedTransaction?.reason !== "")
+                                  ? "Points Decline"
+                                  : "Points Pending"}
+                        </span>
+                        <p className="text-[14px] font-[400] ml-6">
+                          {moment(selectedTransaction?.updatedAt).tz('Asia/Kolkata').format('DD MMM YYYY, hh:mm A')}
+                        </p>
+                      </div>
+                    )}
+                  <p className="text-[14px] font-[700] mt-3">
                     Reason for Decline Transaction
                   </p>
 
@@ -802,16 +830,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                 </>
                 : null}
 
-              {selectedTransaction?.activity && selectedTransaction?.activity !== "" &&
-                (<>
-                  <p className="text-[14px] font-[700]">
-                    Activity
-                  </p>
 
-                  <p className="text-[14px] font-[400]">
-                    {selectedTransaction?.activity}
-                  </p>
-                </>)}
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">

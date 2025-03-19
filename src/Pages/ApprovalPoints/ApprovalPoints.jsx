@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Button } from "antd";
-import moment from "moment/moment";
+import moment from 'moment-timezone';
+
 import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Pagination, Modal, Input, notification, DatePicker, Space } from "antd";
@@ -42,15 +43,15 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
     try {
       let startDate = null;
       let endDate = null;
-      
+
       if (dateRange && dateRange[0]) {
         const startDateObj = new Date(dateRange[0].$d);
         const endDateObj = new Date(dateRange[1].$d);
-        
+
         // Adjust for timezone difference and set start date to beginning of day
         startDateObj.setHours(0, 0, 0, 0);
         startDate = new Date(startDateObj.getTime() - startDateObj.getTimezoneOffset() * 60000).toISOString();
-        
+
         // Adjust for timezone difference and set end date to end of day
         endDateObj.setHours(23, 59, 59, 999);
         endDate = new Date(endDateObj.getTime() - endDateObj.getTimezoneOffset() * 60000).toISOString();
@@ -59,9 +60,9 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
       console.log('Date Range State:', dateRange);
       console.log('Start Date:', startDate);
       console.log('End Date:', endDate);
-      
+
       const result = await fn_getAllPointsPaymentApi(
-        status || null, 
+        status || null,
         pageNumber,
         { startDate, endDate }
       );
@@ -471,18 +472,38 @@ const ApprovalPoints = ({ setSelectedPage, authorization, showSidebar, permissio
               ))}
               <div className="border-b w-[370px] mt-4"></div>
 
-
-              {selectedTransaction?.activity && selectedTransaction?.activity !== "" &&
-              (<>
-              <p className="text-[14px] font-[700]">
-              Activity
-                  </p>
-
-                  <p className="text-[14px] font-[400]">
-                    {selectedTransaction?.activity}
-                  </p>
-              </>)}
-              
+              {selectedTransaction?.trnStatus !== "Transaction Pending" && (
+                <div>
+                  <div className="flex items-center mt-4">
+                    <p className="text-[14px] font-[700] mr-2">Transaction Activity:</p>
+                  </div>
+                  <div className="flex items-center mt-4">
+                    <span
+                      className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
+                          ? "text-[#0DA000]"
+                          : selectedTransaction?.status === "Pending"
+                            ? "text-[#FFB800]"
+                            : selectedTransaction?.status === "Manual Verified"
+                              ? "text-[#0864E8]"
+                              : "text-[#FF002A]"
+                        }`}
+                    >
+                      {selectedTransaction?.status === "Decline"
+                        ? "Transaction Decline"
+                        : selectedTransaction?.status === "Pending"
+                          ? "Transaction Pending"
+                          : selectedTransaction?.approval === true
+                            ? "Points Approved"
+                            : (selectedTransaction?.reason && selectedTransaction?.reason !== "")
+                              ? "Points Decline"
+                              : "Points Pending"}
+                    </span>
+                    <p className="text-[14px] font-[400] ml-6">
+                      {moment(selectedTransaction?.updatedAt).tz('Asia/Kolkata').format('DD MMM YYYY, hh:mm A')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
             {/* Right side with border and image */}
             <div className="w-full md:w-1/2 md:border-l my-10 md:mt-0 pl-0 md:pl-6 flex flex-col justify-between items-center h-full">

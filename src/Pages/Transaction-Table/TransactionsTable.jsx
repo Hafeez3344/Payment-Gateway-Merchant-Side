@@ -1,7 +1,8 @@
 import axios from "axios";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import moment from "moment/moment";
+// import moment from "moment/moment";
+import moment from 'moment-timezone';
 import { RxCross2 } from "react-icons/rx";
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdCheckmark } from "react-icons/io";
@@ -62,7 +63,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
     try {
       let startDate = null;
       let endDate = null;
-      
+
       if (dateRange && dateRange[0] && dateRange[1]) {
         // Ensure dates are in the correct format
         startDate = dateRange[0].startOf('day').format('YYYY-MM-DD');
@@ -83,7 +84,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         startDate,
         endDate
       });
-      
+
       const result = await fn_getAllMerchantApi(
         status || null,
         pageNumber,
@@ -198,15 +199,15 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         description: "Fetching transactions...",
         duration: 3
       });
-  
+
       // Format dates correctly
       const formattedStartDate = dateRange?.[0] ? dateRange[0].format('YYYY-MM-DD') : null;
       const formattedEndDate = dateRange?.[1] ? dateRange[1].format('YYYY-MM-DD') : null;
-  
+
       const allTransactions = [];
       let page = 1;
       let hasMore = true;
-  
+
       // Create separate query parameters for the API call
       const queryParams = {
         status: status || null,
@@ -217,7 +218,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         bankId: selectedFilteredBank || null,
         dateRange: formattedStartDate && formattedEndDate ? [formattedStartDate, formattedEndDate] : null
       };
-  
+
       while (hasMore) {
         try {
           const result = await fn_getAllMerchantApi(
@@ -229,10 +230,10 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
             queryParams.bankId,
             queryParams.dateRange
           );
-  
+
           if (result?.status && result?.data?.status === "ok" && result.data.data.length > 0) {
             allTransactions.push(...result.data.data);
-  
+
             if (result.data.data.length < 10) {
               hasMore = false;
             }
@@ -246,7 +247,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
           hasMore = false;
         }
       }
-  
+
       if (allTransactions.length === 0) {
         notification.warning({
           message: "No Data",
@@ -255,20 +256,20 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         });
         return;
       }
-  
+
       // Create PDF
       const doc = new jsPDF('landscape', 'mm', 'a4');
-  
+
       // Get page width for centering text
       const pageWidth = doc.internal.pageSize.getWidth();
-  
+
       // Add title and date (centered)
       doc.setFontSize(16);
       doc.text('Transactions Report', pageWidth / 2, 15, { align: 'center' });
-  
+
       doc.setFontSize(10);
       doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 25, { align: 'center' });
-  
+
       // Define columns
       const columns = [
         { header: 'TRN-ID', dataKey: 'trnNo' },
@@ -279,29 +280,29 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         { header: 'UTR', dataKey: 'utr' },
         { header: 'Status', dataKey: 'status' }
       ];
-  
+
       // Calculate total amount for summary
       const totalAmount = allTransactions.reduce((sum, transaction) =>
         sum + (parseFloat(transaction.total) || 0), 0
       );
-  
+
       // Format the data
       const data = allTransactions.map(transaction => ({
         trnNo: transaction.trnNo || '-',
         date: transaction.createdAt ? moment.utc(transaction?.createdAt).format('DD MMM YYYY, hh:mm A') : '-',
         username: transaction.username || 'GUEST',
-        bank: transaction.bankId && transaction.bankId.bankName ? 
-          transaction.bankId.bankName : 
+        bank: transaction.bankId && transaction.bankId.bankName ?
+          transaction.bankId.bankName :
           (transaction.paymentMethod || ''),
         amount: transaction.total ? `${transaction.total} INR` : '-',
         utr: transaction.utr || '-',
         status: transaction.status === "Decline" ? "Transaction Decline"
           : transaction.status === "Pending" ? "Transaction Pending"
-          : transaction.approval === true ? "Points Approved"
-          : (transaction.reason && transaction.reason !== "") ? "Points Decline"
-          : "Points Pending"
+            : transaction.approval === true ? "Points Approved"
+              : (transaction.reason && transaction.reason !== "") ? "Points Decline"
+                : "Points Pending"
       }));
-  
+
       // Add subtotal row to data - now with TOTAL in the username column (left of amount)
       data.push({
         trnNo: '',
@@ -312,7 +313,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
         utr: '',
         status: ''
       });
-  
+
       // Generate table with custom styling for the total row
       doc.autoTable({
         head: [columns.map(col => col.header)],
@@ -324,13 +325,13 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
           if (data.row.index === data.table.body.length - 1) {
             doc.setFillColor(220, 220, 220);
             doc.rect(
-              data.cell.x, 
-              data.cell.y, 
-              data.cell.width, 
-              data.cell.height, 
+              data.cell.x,
+              data.cell.y,
+              data.cell.width,
+              data.cell.height,
               'F'
             );
-            
+
             // Make amount bold in total row
             if (data.column.index === 4) {
               doc.setFont(undefined, 'bold');
@@ -343,7 +344,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
               );
               return false;
             }
-  
+
             // Make "TOTAL" bold in username column
             if (data.column.index === 2) {
               doc.setFont(undefined, 'bold');
@@ -358,16 +359,16 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
           }
         }
       });
-  
+
       // Save PDF
       doc.save('transactions-report.pdf');
-  
+
       notification.success({
         message: "Success",
         description: "PDF generated successfully",
         placement: "topRight"
       });
-  
+
     } catch (error) {
       console.error("Error generating PDF:", error);
       notification.error({
@@ -377,7 +378,7 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
       });
     }
   };
-  
+
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.target.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
@@ -734,10 +735,44 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                   <button className="bg-[#F6790233] flex text-[#F67A03] h-[35px] items-center mb-[10px] px-[10px] rounded-[5px]">Update Information</button>
                 )}
               </div>
+
               {selectedTransaction?.reason && selectedTransaction?.reason !== "" && (
                 <div>
                   <p className="font-[600]">Reason For Decline Points:</p>
                   <p className="font-[400] text-[13px]">{selectedTransaction?.reason}</p>
+                </div>
+              )}
+
+              {selectedTransaction?.trnStatus !== "Transaction Pending" && (
+                <div>
+                  <div className="flex items-center mt-4">
+                    <p className="text-[14px] font-[700] mr-2">Transaction Activity:</p>
+                  </div>
+                  <div className="flex items-center mt-4">
+                    <span
+                      className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
+                          ? "text-[#0DA000]"
+                          : selectedTransaction?.status === "Pending"
+                            ? "text-[#FFB800]"
+                            : selectedTransaction?.status === "Manual Verified"
+                              ? "text-[#0864E8]"
+                              : "text-[#FF002A]"
+                        }`}
+                    >
+                      {selectedTransaction?.status === "Decline"
+                        ? "Transaction Decline"
+                        : selectedTransaction?.status === "Pending"
+                          ? "Transaction Pending"
+                          : selectedTransaction?.approval === true
+                            ? "Points Approved"
+                            : (selectedTransaction?.reason && selectedTransaction?.reason !== "")
+                              ? "Points Decline"
+                              : "Points Pending"}
+                    </span>
+                    <p className="text-[14px] font-[400] ml-6">
+                      {moment(selectedTransaction?.updatedAt).tz('Asia/Kolkata').format('DD MMM YYYY, hh:mm A')}
+                    </p>
+                  </div>
                 </div>
               )}
 
