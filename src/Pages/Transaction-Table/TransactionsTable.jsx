@@ -400,10 +400,12 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
             </p>
           </div>
           <div className="flex justify-end mb-2">
-            <Button type="primary" onClick={downloadPDF}>
-              <p className="">Download Report</p>
-            </Button>
-          </div>
+              <div className="w-full flex justify-center md:justify-end">
+                <Button type="primary" onClick={downloadPDF}>
+                  <p className="">Download Report</p>
+                </Button>
+              </div>
+            </div>
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
               <div>

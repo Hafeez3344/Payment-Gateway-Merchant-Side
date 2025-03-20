@@ -137,14 +137,15 @@ const Payout = ({ authorization, showSidebar }) => {
   const handleSubmitPayout = async (values) => {
     try {
       const payoutData = {
-        accountHolderName: values.username,
-        accountNumber: values.account,
-        ifscNumber: values.ifsc,
-        amount: values.amount
+        username: values.username,
+        account: values.account,
+        ifsc: values.ifsc,
+        amount: values.amount,
+        type: "single"
       };
 
       const response = await fn_singlePayout(payoutData);
-      
+
       if (!response.status) {
         notification.error({
           message: "Payout Error",
@@ -219,15 +220,13 @@ const Payout = ({ authorization, showSidebar }) => {
             </div>
             <span className="text-[11px] text-[#00000040]">Excel Files Only</span>
 
-              {/* <button
-                onClick={handleCreateSinglePayout}
-                className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
-              >
-                <FaBox  />
-                Create Single Payout
-              </button> */}
-
-
+            <button
+              onClick={handleCreateSinglePayout}
+              className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
+            >
+              <FaBox />
+              Create Single Payout
+            </button>
             <button
               onClick={handleDownloadSample}
               className="flex items-center bg-blue-500 text-white rounded py-2 px-4 cursor-pointer gap-2"
@@ -246,7 +245,7 @@ const Payout = ({ authorization, showSidebar }) => {
             <table className="min-w-full border">
               <thead>
                 <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                  <th className="p-4">Payout ID</th>
+                  <th className="p-4 text-nowrap">Payout ID</th>
                   <th className="p-4 text-nowrap">Excel File Name</th>
                   <th className="p-4">DATE</th>
                   <th className="p-4 text-nowrap">No Of Withdraws</th>

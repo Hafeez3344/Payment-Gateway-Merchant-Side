@@ -321,35 +321,39 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
         {/* Header Section */}
         <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-5">
           <h1 className="text-[25px] font-[500]">Merchant Dashboard</h1>
-          <div className="flex items-center space-x-2">
-            <div className="flex space-x-2 text-[12px]">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
+            <div className="grid grid-cols-2 sm:flex gap-2 text-[12px]">
               <button
                 onClick={() => handleFilterClick('all')}
-                className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                className={`${activeFilter === 'all' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                border w-[120px] sm:w-[70px] p-2 sm:p-1.5 rounded`}>
                 ALL
               </button>
               <button
                 onClick={() => handleFilterClick('today')}
-                className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                className={`${activeFilter === 'today' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                border w-[120px] sm:w-[70px] p-2 sm:p-1 rounded`}>
                 TODAY
               </button>
               <button
                 onClick={() => handleFilterClick('7days')}
-                className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1 rounded`}>
+                className={`${activeFilter === '7days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                border w-[120px] sm:w-[70px] p-2 sm:p-1 rounded`}>
                 7 DAYS
               </button>
               <button
                 onClick={() => handleFilterClick('30days')}
-                className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} border w-[70px] sm:w-[70px] p-1.5 rounded`}>
+                className={`${activeFilter === '30days' ? 'text-white bg-[#0864E8]' : 'text-black'} 
+                border w-[120px] sm:w-[70px] p-2 sm:p-1 rounded`}>
                 30 DAYS
               </button>
             </div>
             {/* Date Range Picker */}
-            <Space direction="vertical" size={10}>
+            <Space direction="vertical" size={10} className="w-full sm:w-auto">
               <RangePicker
                 value={dateRange}
                 onChange={handleDateRangeChange}
-                className="bg-gray-100"
+                className="bg-gray-100 w-full sm:w-auto"
               />
             </Space>
           </div>

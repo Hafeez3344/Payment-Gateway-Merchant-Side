@@ -935,12 +935,12 @@ export const fn_updateExcelWithdraw = async (id) => {
 }
 
 //------------------------------------  Single Payout  API --------------------------------------
-export const fn_singlePayout = async (data) => {
+export const fn_singlePayout = async (payoutData) => {
     try {
         const token = Cookies.get("merchantToken");
         const response = await axios.post(
-            `${BACKEND_URL}/excelWithdraw/create`,
-            data,
+            `${BACKEND_URL}/excelWithdraw/create`, 
+            payoutData,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -950,15 +950,16 @@ export const fn_singlePayout = async (data) => {
         );
         return {
             status: true,
-            data: response.data,
+            message: "Payout created successfully",
+            data: response.data
         };
     } catch (error) {
         return {
             status: false,
-            message: error?.response?.data?.message || "Failed to get excel file data"
+            message: error.response?.data?.message || "Failed to create payout"
         };
     }
-}
+};
 
 
 export default BACKEND_URL;

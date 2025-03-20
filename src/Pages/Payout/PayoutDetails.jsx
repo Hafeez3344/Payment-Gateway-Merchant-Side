@@ -108,8 +108,8 @@ Amount: ₹ ${item.amount}
 UTR Number: ${item.utr || "N/A"}
 Created Date: ${moment.utc(item?.createdAt).format('DD MMM YYYY, hh:mm A')}
 Updated Date: ${moment.utc(item?.updatedAt)
-  .tz('Asia/Kolkata')
-  .format('DD MMM YYYY, hh:mm A')}`
+        .tz('Asia/Kolkata')
+        .format('DD MMM YYYY, hh:mm A')}`
     navigator.clipboard.writeText(detailsToCopy).then(() => {
       setCopiedId(index);
       notification.success({
@@ -145,77 +145,82 @@ Updated Date: ${moment.utc(item?.updatedAt)
               </div>
             </div>
             <div className="w-full border-t-[1px] border-[#DDDDDD80] hidden sm:block mb-4"></div>
-            <table className="min-w-full border">
-              <thead>
-                <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
-                  <th className="p-4">S_ID</th>
-                  <th className="p-4">Account Holder Name</th>
-                  <th className="p-4">Account Number</th>
-                  <th className="p-4">IFSC Number</th>
-                  <th className="p-4">Amount</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slipData?.map((item, index) => (
-                  <tr key={index} className="text-gray-800 text-sm border-b">
-                    <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
-                      {index + 1}
-                    </td>
-                    <td className="p-4 text-[12px] font-[600] text-[#000000B2]">
-                      {item?.username}
-                    </td>
-                    <td className="p-4 text-[12px] font-[600] text-[#000000B2] text-nowrap">
-                      {item?.account}
-                    </td>
-                    <td className="p-4 text-[12px] font-[600] text-[#000000B2] text-nowrap">
-                          {item?.ifsc || "IFSC Number"}
-                    </td>
-                    <td className="p-4 text-[12px] font-[700] text-[#000000B2]">
-                      ₹ {item?.amount}
-                    </td>
-                    <td className="p-4 text-[13px] font-[500]">
-                      <div className="flex items-center gap-2">
-                        <span className={`py-1 rounded-[20px] text-nowrap text-[11px] font-[600] w-[100px] flex items-center justify-center ${getStatusClass(item?.status)}`}>
-                          {item?.status}
-                        </span>
-                        {item?.status === "Approved" && (
-                          <button
-                            onClick={() => handleCopyDetails(item, index)}
-                            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                            title="Copy payout details"
-                          >
-                            {copiedId === index ? (
-                              <TiTick className="text-green-600 text-lg" />
-                            ) : (
-                              <FaRegCopy className="text-gray-600 text-sm" />
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4 text-[12px] font-[600] flex space-x-2">
-                      <button
-                        className={`rounded-[20px] text-[11px] font-[600] w-[29px] h-[29px] flex items-center justify-center ${item?.status !== "Pending" ? "bg-gray-300 text-black cursor-not-allowed" : "bg-[#FF173D33] text-[#D50000]"}`}
-                        onClick={() => handleCancelPayout(item)}
-                        disabled={item?.status !== "Pending"}
-                        title="Cancel Withdraw ?"
-                      >
-                        <RxCross2 className="text-[14px]" />
-                      </button>
-                      <button
-                        className="bg-blue-100 text-blue-600 rounded-full px-2 py-2 mx-2"
-                        title="View"
-                        onClick={() => handleViewDetails(item)}
-                      >
-                        <FiEye />
-                      </button>
-                    </td>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full border">
+                <thead>
+                  <tr className="bg-[#ECF0FA] text-left text-[12px] text-gray-700">
+                    <th className="p-4 whitespace-nowrap">S_ID</th>
+                    <th className="p-4 whitespace-nowrap">Account Holder Name</th>
+                    <th className="p-4 whitespace-nowrap">Account Number</th>
+                    <th className="p-4 whitespace-nowrap">IFSC Number</th>
+                    <th className="p-4 whitespace-nowrap">Amount</th>
+                    <th className="p-4 whitespace-nowrap">Status</th>
+                    <th className="p-4 whitespace-nowrap">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {slipData?.map((item, index) => (
+                    <tr key={index} className="text-gray-800 text-sm border-b">
+                      <td className="p-4 text-[12px] font-[600] text-[#000000B2] whitespace-nowrap">
+                        {index + 1}
+                      </td>
+                      <td className="p-4 text-[12px] font-[600] text-[#000000B2] whitespace-nowrap">
+                        {item?.username}
+                      </td>
+                      <td className="p-4 text-[12px] font-[600] text-[#000000B2] whitespace-nowrap">
+                        {item?.account}
+                      </td>
+                      <td className="p-4 text-[12px] font-[600] text-[#000000B2] whitespace-nowrap">
+                        {item?.ifsc || "IFSC Number"}
+                      </td>
+                      <td className="p-4 text-[12px] font-[700] text-[#000000B2] whitespace-nowrap">
+                        ₹ {item?.amount}
+                      </td>
+                      <td className="p-4 text-[13px] font-[500] whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className={`py-1 rounded-[20px] text-[11px] font-[600] w-[100px] flex items-center justify-center ${getStatusClass(item?.status)}`}>
+                            {item?.status}
+                          </span>
+                          {item?.status === "Approved" && (
+                            <button
+                              onClick={() => handleCopyDetails(item, index)}
+                              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                              title="Copy payout details"
+                            >
+                              {copiedId === index ? (
+                                <TiTick className="text-green-600 text-lg" />
+                              ) : (
+                                <FaRegCopy className="text-gray-600 text-sm" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4 text-[12px] font-[600] whitespace-nowrap">
+                        <div className="flex space-x-2">
+                          <button
+                            className={`rounded-[20px] text-[11px] font-[600] w-[29px] h-[29px] flex items-center justify-center ${item?.status !== "Pending" ? "bg-gray-300 text-black cursor-not-allowed" : "bg-[#FF173D33] text-[#D50000]"}`}
+                            onClick={() => handleCancelPayout(item)}
+                            disabled={item?.status !== "Pending"}
+                            title="Cancel Withdraw ?"
+                          >
+                            <RxCross2 className="text-[14px]" />
+                          </button>
+                          <button
+                            className="bg-blue-100 text-blue-600 rounded-full px-2 py-2"
+                            title="View"
+                            onClick={() => handleViewDetails(item)}
+                          >
+                            <FiEye />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           <div className="flex flex-col md:flex-row items-center p-4 justify-between space-y-4 md:space-y-0">
             <p className="text-[13px] font-[500] text-gray-500 text-center md:text-left"></p>
@@ -233,67 +238,79 @@ Updated Date: ${moment.utc(item?.updatedAt)
         title="Payout Details"
         open={isModalVisible}
         onCancel={handleModalClose}
-        width={(selectedWithdrawData?.status === "Pending" || selectedWithdrawData?.status === "Cancel") ? 600 : 900}
-        style={{ fontFamily: "sans-serif" }}
+        width={(selectedWithdrawData?.status === "Pending" || selectedWithdrawData?.status === "Cancel") ? "95%" : "95%"}
+        style={{
+          fontFamily: "sans-serif",
+          maxWidth: (selectedWithdrawData?.status === "Pending" || selectedWithdrawData?.status === "Cancel") ? "600px" : "900px",
+          margin: "10px auto",
+          top: "0%",
+        }}
+        bodyStyle={{
+          padding: "12px",
+          maxHeight: "85vh",
+          overflowY: "auto"
+        }}
+        wrapClassName="flex items-start sm:items-center"
         footer={null}
       >
         {selectedWithdrawData && (
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col lg:flex-row justify-between gap-4">
             {/* Left Column */}
-            <div className={`${(selectedWithdrawData.status === "Pending" || selectedWithdrawData.status === "Cancel") ? "w-full" : "w-[450px]"}`}>
+            <div className={`${(selectedWithdrawData.status === "Pending" || selectedWithdrawData.status === "Cancel") ? "w-full" : "w-full lg:w-[450px]"}`}>
               <div className="flex flex-col gap-2 mt-3">
                 {/* Transaction Time */}
                 <p className="text-[12px] font-[500] text-gray-600 mt-[-18px]">
                   Transaction Time:{" "}
-                  <span className="font-[600]">
+                  <span className="font-[600] break-words">
                     {moment.utc(selectedWithdrawData?.createdAt).format('DD MMM YYYY, hh:mm A')}
                   </span>
                 </p>
 
                 {/* Username */}
-                <div className="flex items-center gap-4 mt-[10px]">
-                  <p className="text-[12px] font-[600] w-[200px]">Account Holder Name:</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-[10px] w-full">
+                  <p className="text-[12px] font-[600] min-w-[120px] sm:w-[200px] text-nowrap">Account Holder Name:</p>
                   <Input
-                    className="text-[12px] bg-gray-200"
+                    className="text-[12px] bg-gray-200 w-full"
                     readOnly
                     value={selectedWithdrawData?.username || "N/A"}
                   />
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <p className="text-[12px] font-[600] w-[200px]">Bank Account:</p>
+                {/* Account Number */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+                  <p className="text-[12px] font-[600] min-w-[120px] sm:w-[200px] text-nowrap">Bank Account:</p>
                   <Input
-                    className="text-[12px] bg-gray-200"
+                    className="text-[12px] bg-gray-200 w-full"
                     readOnly
                     value={selectedWithdrawData?.account || "N/A"}
                   />
                 </div>
 
                 {/* IFSC Number */}
-                <div className="flex items-center gap-4">
-                  <p className="text-[12px] font-[600] w-[200px]">IFSC Number:</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+                  <p className="text-[12px] font-[600] min-w-[120px] sm:w-[200px] text-nowrap">IFSC Number:</p>
                   <Input
-                    className="text-[12px] bg-gray-200"
+                    className="text-[12px] bg-gray-200 w-full"
                     readOnly
                     value={selectedWithdrawData?.ifsc || "-"}
                   />
                 </div>
 
                 {/* Amount */}
-                <div className="flex items-center gap-4">
-                  <p className="text-[12px] font-[600] w-[200px]">Amount:</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+                  <p className="text-[12px] font-[600] min-w-[120px] sm:w-[200px] text-nowrap">Amount:</p>
                   <Input
-                    className="text-[12px] bg-gray-200"
+                    className="text-[12px] bg-gray-200 w-full"
                     readOnly
                     value={`₹ ${selectedWithdrawData?.amount}` || "N/A"}
                   />
                 </div>
 
-                {/* Withdraw Amount  */}
-                <div className="flex items-center gap-4">
-                  <p className="text-[12px] font-[600] w-[200px]">Withdraw Amount:</p>
+                {/* Withdraw Amount */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+                  <p className="text-[12px] font-[600] min-w-[120px] sm:w-[200px] text-nowrap">Withdraw Amount:</p>
                   <Input
-                    className="text-[12px] bg-gray-200"
+                    className="text-[12px] bg-gray-200 w-full"
                     readOnly
                     value={`₹ ${selectedWithdrawData?.withdrawAmount}` || "N/A"}
                   />
@@ -331,13 +348,26 @@ Updated Date: ${moment.utc(item?.updatedAt)
                   >
                     {selectedWithdrawData?.status}
                   </div>
+
                 </div>
+                {/* Add Updated Time */}
+                <div className="flex items-center mt-2">
+
+                  <p className="text-[14px] font-[600] w-[150px]">
+                    Updated Time: </p>
+                  <span className="font-[400] break-words">
+                    {moment.utc(selectedWithdrawData?.updatedAt)
+                      .tz('Asia/Kolkata')
+                      .format('DD MMM YYYY, hh:mm A')}
+                  </span>
+                </div>
+
               </div>
             </div>
 
-            {/* Right Column - Only show for non-pending status */}
+            {/* Right Column */}
             {selectedWithdrawData.status !== "Pending" && selectedWithdrawData.status !== "Cancel" && selectedWithdrawData?.status !== "Decline" && (
-              <div className="w-[350px] border-l pl-4">
+              <div className="w-full lg:w-[350px] border-t lg:border-l lg:border-t-0 pt-4 lg:pt-0 lg:pl-4 mt-4 lg:mt-0">
                 <div className="flex flex-col gap-4">
                   {/* Payment Proof */}
                   {selectedWithdrawData?.image ? (

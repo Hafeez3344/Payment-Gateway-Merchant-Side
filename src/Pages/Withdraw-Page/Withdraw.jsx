@@ -436,20 +436,22 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                 <div className="p-7">
                     <div className="flex flex-col md:flex-row gap-[12px] items-center justify-between mb-4">
                         <h1 className="text-[25px] font-[500]">Withdraw Transactions</h1>
-                        <div className="flex items-center gap-[20px]">
-                            <div className="text-[12px]">
-                                <p className="text-gray-600 text-nowrap">Withdraw Amount:</p>
-                                <p className="text-green-500 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.approvedWithdraw || 0}</p>
+                        <div className="flex flex-col sm:flex-row items-center gap-[20px] w-full sm:w-auto">
+                            <div className="text-[12px] w-full sm:w-auto text-center sm:text-left">
+                                <p className="text-gray-600">Withdraw Amount:</p>
+                                <p className="text-green-500 font-[500]">
+                                    <FaIndianRupeeSign className="inline-block mt-[-1px]" /> 
+                                    {merchantWallet?.approvedWithdraw || 0}
+                                </p>
                             </div>
-                            <div className="text-[12px]">
+                            <div className="text-[12px] w-full sm:w-auto text-center sm:text-left">
                                 <p className="text-gray-600">Pending Withdrawal:</p>
-                                <p className="text-yellow-500 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.withdrawAmounts || 0}</p>
+                                <p className="text-yellow-500 font-[500]">
+                                    <FaIndianRupeeSign className="inline-block mt-[-1px]" /> 
+                                    {merchantWallet?.withdrawAmounts || 0}
+                                </p>
                             </div>
-                            {/* <div className="text-[12px]">
-                                <p className="text-gray-600">Available Amount:</p>
-                                <p className="text-blue-600 font-[500]"><FaIndianRupeeSign className="inline-block mt-[-1px]" /> {merchantWallet?.pendingAmount || 0}</p>
-                            </div> */}
-                            <div className="text-[12px]">
+                            <div className="text-[12px] w-full sm:w-auto text-center sm:text-left">
                                 <p className="text-gray-600">Available Amount:</p>
                                 <p className="text-blue-600 font-[500]">
                                     <FaIndianRupeeSign className="inline-block mt-[-1px]" />
@@ -461,16 +463,23 @@ const Withdraw = ({ setSelectedPage, authorization, showSidebar }) => {
                     <div className="bg-white rounded-lg p-4">
                         <div className="flex flex-col md:flex-row items-center justify-between pb-3">
                             <div>
-                                <p className="text-black font-medium text-lg">
+                                <p className="text-black font-medium text-lg mb-3 md:mb-0">
                                     List of withdraw Transactions
                                 </p>
-
                             </div>
-                            <div className="flex flex-row items-center gap-[10px]">
-                                <Button type="primary" onClick={handleAddAccount}>
+                            <div className="flex flex-col sm:flex-row w-full sm:w-auto items-center gap-[10px]">
+                                <Button 
+                                    type="primary" 
+                                    onClick={handleAddAccount}
+                                    className="w-full sm:w-auto"
+                                >
                                     Add Bank Account
                                 </Button>
-                                <Button type="primary" onClick={handleWithdrawRequest}>
+                                <Button 
+                                    type="primary" 
+                                    onClick={handleWithdrawRequest}
+                                    className="w-full sm:w-auto"
+                                >
                                     Create Withdraw Request
                                 </Button>
                             </div>

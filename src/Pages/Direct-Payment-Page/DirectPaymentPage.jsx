@@ -413,9 +413,11 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
           </div>
           {loginType !== "minor" && (
             <div className="flex justify-end mb-2">
-              <Button type="primary" onClick={downloadPDF}>
-                <p className="">Download Report</p>
-              </Button>
+              <div className="w-full flex justify-center md:justify-end">
+                <Button type="primary" onClick={downloadPDF}>
+                  <p className="">Download Report</p>
+                </Button>
+              </div>
             </div>
           )}
           <div className="bg-white rounded-lg p-4">
