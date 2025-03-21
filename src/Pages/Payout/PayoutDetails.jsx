@@ -350,17 +350,19 @@ Updated Date: ${moment.utc(item?.updatedAt)
                   </div>
 
                 </div>
-                {/* Add Updated Time */}
-                <div className="flex items-center mt-2">
-
-                  <p className="text-[14px] font-[600] w-[150px]">
-                    Updated Time: </p>
-                  <span className="font-[400] break-words">
-                    {moment.utc(selectedWithdrawData?.updatedAt)
-                      .tz('Asia/Kolkata')
-                      .format('DD MMM YYYY, hh:mm A')}
-                  </span>
-                </div>
+                {/* Show Updated Time only for certain statuses */}
+                {(selectedWithdrawData?.status === "Approved" || 
+                  selectedWithdrawData?.status === "Decline") && (
+                  <div className="flex items-center mt-2">
+                    <p className="text-[14px] font-[600] w-[150px]">
+                      Updated Time: </p>
+                    <span className="font-[400] break-words">
+                      {moment.utc(selectedWithdrawData?.updatedAt)
+                        .tz('Asia/Kolkata')
+                        .format('DD MMM YYYY, hh:mm A')}
+                    </span>
+                  </div>
+                )}
 
               </div>
             </div>
