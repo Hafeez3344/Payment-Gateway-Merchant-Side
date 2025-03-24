@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import moment from "moment/moment";
 
 // const BACKEND_URL = "https://backend.royal247.org";
 const BACKEND_URL = "https://test-backend.royal247.org";
@@ -237,14 +238,15 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
         if (bankId) queryParams.append("bankId", bankId);
         
         // Add date range parameters if provided
-        if (dateRange?.startDate) {
-            console.log('Adding startDate to query:', dateRange.startDate);
-            queryParams.append("startDate", dateRange.startDate);
-        }
-        if (dateRange?.endDate) {
-            console.log('Adding endDate to query:', dateRange.endDate);
-            queryParams.append("endDate", dateRange.endDate);
-        }
+        // if (dateRange?.startDate) {
+        //     console.log('Adding startDate to query:', dateRange.startDate);
+        //     queryParams.append("startDate", dateRange.startDate);
+        // }
+        // if (dateRange?.endDate) {
+        //     console.log('Adding endDate to query:', dateRange.endDate);
+        //     queryParams.append("endDate", dateRange.endDate);
+        // }
+        {moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
 
         const url = `${BACKEND_URL}/ledger/getAllMerchant?${queryParams.toString()}`;
         console.log('Making API request to:', url);
@@ -288,14 +290,24 @@ export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, se
         });
 
         // Only add bankId if it exists and is not null
+        // if (bankId) {
+        //     queryParams.append("bankId", bankId);
+        // }
+
+        // // Add date range if provided
+        // if (dateRange && dateRange[0] && dateRange[1]) {
+        //     queryParams.append("startDate", dateRange[0]);
+        //     queryParams.append("endDate", dateRange[1]);
+        // }
+
         if (bankId) {
             queryParams.append("bankId", bankId);
         }
-
-        // Add date range if provided
+        
+        // Add date range if provided using moment.utc
         if (dateRange && dateRange[0] && dateRange[1]) {
-            queryParams.append("startDate", dateRange[0]);
-            queryParams.append("endDate", dateRange[1]);
+            queryParams.append("startDate", moment.utc(dateRange[0]).format('YYYY-MM-DD'));
+            queryParams.append("endDate", moment.utc(dateRange[1]).format('YYYY-MM-DD'));
         }
 
         const response = await axios.get(

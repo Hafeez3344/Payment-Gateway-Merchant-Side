@@ -322,7 +322,7 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
         website: transaction.site || '-',
         bank: transaction.bankId && transaction.bankId.bankName ?
           (transaction.bankId.bankName === "UPI" ? `UPI - ${transaction.bankId.iban}` : transaction.bankId.bankName)
-          : (transaction.paymentMethod || 'N/A'),
+          : (transaction.paymentMethod || ''),
         amount: transaction.total ? `${transaction.total} INR` : '-',
         utr: transaction.utr || '-',
         status: transaction.status === "Decline" ? "Transaction Decline"
