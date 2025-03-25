@@ -2,8 +2,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import moment from "moment/moment";
 
-// const BACKEND_URL = "https://backend.royal247.org";
-const BACKEND_URL = "https://test-backend.royal247.org";
+const BACKEND_URL = "https://backend.royal247.org";
+// const BACKEND_URL = "https://test-backend.royal247.org";
 // const BACKEND_URL = "http://46.202.166.64:8000";
 export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 
@@ -233,22 +233,22 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
         // Add optional parameters only if they have values
         if (status) queryParams.append("status", status);
         if (merchant) queryParams.append("trnStatus", merchant);
-        if (searchQuery) queryParams.append("utr", searchQuery);
+        if (searchQuery) queryParams.append("search", searchQuery);
         if (searchTrnId) queryParams.append("trnNo", searchTrnId);
         if (bankId) queryParams.append("bankId", bankId);
         
         // Add date range parameters if provided
-        // if (dateRange?.startDate) {
-        //     console.log('Adding startDate to query:', dateRange.startDate);
-        //     queryParams.append("startDate", dateRange.startDate);
-        // }
-        // if (dateRange?.endDate) {
-        //     console.log('Adding endDate to query:', dateRange.endDate);
-        //     queryParams.append("endDate", dateRange.endDate);
-        // }
-        {moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
+        if (dateRange?.startDate) {
+            console.log('Adding startDate to query:', dateRange.startDate);
+            queryParams.append("startDate", dateRange.startDate);
+        }
+        if (dateRange?.endDate) {
+            console.log('Adding endDate to query:', dateRange.endDate);
+            queryParams.append("endDate", dateRange.endDate);
+        }
+        // {moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
 
-        const url = `${BACKEND_URL}/ledger/getAllMerchant?${queryParams.toString()}`;
+        const url = `${BACKEND_URL}/ledger/getAllMerchant`;
         console.log('Making API request to:', url);
 
         const response = await axios.get(url, {
@@ -285,8 +285,7 @@ export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, se
             status: status || "",
             type: "direct",
             trnStatus: merchant || "",
-            utr: searchQuery || "",
-            trnNo: searchTrnId || ""
+            search: searchQuery || ""
         });
 
         // Only add bankId if it exists and is not null

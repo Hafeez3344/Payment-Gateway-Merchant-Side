@@ -400,12 +400,12 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
             </p>
           </div>
           <div className="flex justify-end mb-2">
-              <div className="w-full flex justify-center md:justify-end">
-                <Button type="primary" onClick={downloadPDF}>
-                  <p className="">Download Report</p>
-                </Button>
-              </div>
+            <div className="w-full flex justify-center md:justify-end">
+              <Button type="primary" onClick={downloadPDF}>
+                <p className="">Download Report</p>
+              </Button>
             </div>
+          </div>
           <div className="bg-white rounded-lg p-4">
             <div className="flex flex-col md:flex-row items-center justify-between pb-3">
               <div>
@@ -414,35 +414,6 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                 </p>
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-                <Space direction="vertical" size={10}>
-                  <RangePicker
-                    value={dateRange}
-                    onChange={(dates) => {
-                      setDateRange(dates);
-                      setCurrentPage(1); // Reset to first page when dates change
-                    }}
-                  />
-                </Space>
-
-                {/* Search By TRN Is */}
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search by TRN-ID"
-                    value={searchTrnId}
-                    onChange={(e) => setSearchTrnId(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search by UTR"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
                 {/* DropDown of status */}
                 <div>
                   <Select
@@ -459,6 +430,24 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                       { value: 'Transaction Decline', label: 'Transaction Decline' }
                     ]}
                     dropdownStyle={{ minWidth: '180px' }}
+                  />
+                </div>
+                <Space direction="vertical" size={10}>
+                  <RangePicker
+                    value={dateRange}
+                    onChange={(dates) => {
+                      setDateRange(dates);
+                      setCurrentPage(1); // Reset to first page when dates change
+                    }}
+                  />
+                </Space>
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by UTR / Trn-ID"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
 
@@ -753,12 +742,12 @@ const TransactionsTable = ({ setSelectedPage, authorization, showSidebar, permis
                   <div className="flex items-center mt-4">
                     <span
                       className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
-                          ? "text-[#0DA000]"
-                          : selectedTransaction?.status === "Pending"
-                            ? "text-[#FFB800]"
-                            : selectedTransaction?.status === "Manual Verified"
-                              ? "text-[#0864E8]"
-                              : "text-[#FF002A]"
+                        ? "text-[#0DA000]"
+                        : selectedTransaction?.status === "Pending"
+                          ? "text-[#FFB800]"
+                          : selectedTransaction?.status === "Manual Verified"
+                            ? "text-[#0864E8]"
+                            : "text-[#FF002A]"
                         }`}
                     >
                       {selectedTransaction?.status === "Decline"

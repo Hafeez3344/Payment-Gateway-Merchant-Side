@@ -429,34 +429,6 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
               </div>
               <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
 
-                <Space direction="vertical" size={10}>
-                  <RangePicker
-                    value={dateRange}
-                    onChange={(dates) => {
-                      setDateRange(dates);
-                    }}
-                  />
-                </Space>
-                {/* Search Input */}
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search By TRN-ID"
-                    value={searchTrnId}
-                    onChange={(e) => setSearchTrnId(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-
-                <div className="flex flex-col w-full md:w-40">
-                  <input
-                    type="text"
-                    placeholder="Search by UTR"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
                 {/* DropDown of status */}
                 {loginType !== "minor" && (
                   <div>
@@ -477,6 +449,23 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                     />
                   </div>
                 )}
+                <Space direction="vertical" size={10}>
+                  <RangePicker
+                    value={dateRange}
+                    onChange={(dates) => {
+                      setDateRange(dates);
+                    }}
+                  />
+                </Space>
+                <div className="flex flex-col w-full md:w-40">
+                  <input
+                    type="text"
+                    placeholder="Search by UTR / Trn-ID"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border w-full border-gray-300 rounded py-1.5 text-[12px] pl-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
                 {/* Search by Bank */}
                 {/* <div>
                   <Select

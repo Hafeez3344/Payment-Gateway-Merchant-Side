@@ -12,11 +12,14 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   const navigate = useNavigate();
   const { RangePicker } = DatePicker;
   const [total, setTotal] = useState(0);
+  const [total2, setTotal2] = useState(0);
+  const [total3, setTotal3] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const containerHeight = window.innerHeight - 105;
   const [adminCharges, setAdminCharges] = useState("")
   const [transactions, setTransactions] = useState([]);
+  const [merchantTotal, setMerchantTotal] = useState(0);
   const [generatedLink, setGeneratedLink] = useState("");
   const [activeFilter, setActiveFilter] = useState('all');
   const [dateRange, setDateRange] = useState([null, null]);
@@ -26,6 +29,9 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
   const [transactionData, setTransactionData] = useState({ amount: "", username: "", });
+
+  // const totalHeight = window.innerHeight - (56+112+20+28+50);
+  const totalHeight = window.innerHeight - 366;
 
 
   useEffect(() => {
@@ -88,10 +94,13 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setTotalTransactions(approvedData?.data?.totalTransaction || 0);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
-      setTotal(totalData?.data || 0);
+      setTotal(approvedData?.data?.totalTransaction || 0);
+      setTotal2(pendingData?.data?.totalTransaction || 0);
+      setTotal3(declineData?.data?.totalTransaction || 0);
+      setMerchantTotal(approvedData?.data?.merchantTotalSum || 0);
 
       if (merchantData?.status && merchantData?.data?.data) {
-        const recentTransactions = merchantData.data.data.slice(0, 5);
+        const recentTransactions = merchantData.data.data.slice(0, 10);
         setTransactions(recentTransactions);
       } else {
         setTransactions([]);
@@ -144,7 +153,10 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setTotalTransactions(approvedData?.data?.totalTransaction || 0);
       setUnverifiedTransactions(pendingData?.data?.data || 0);
       setDeclineTransactions(declineData?.data?.data || 0);
-      setTotal(totalData?.data || 0);
+      setTotal(approvedData?.data?.totalTransaction || 0);
+      setTotal2(pendingData?.data?.totalTransaction || 0);
+      setTotal3(declineData?.data?.totalTransaction || 0);
+      setMerchantTotal(approvedData?.data?.merchantTotalSum || 0);
 
       if (merchantData?.status && merchantData?.data?.data) {
         const recentTransactions = merchantData.data.data.slice(0, 5);
@@ -272,6 +284,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       },
     ],
   };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -365,10 +378,10 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
             className="bg-white px-[14px] py-[10px] rounded-[5px] shadow text-white"
             style={{ backgroundImage: "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))" }}
           >
-            <h2 className="text-[13px] uppercase font-[500]">SYSTEM APPROVED TRANSACTIONS</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(verifiedTransactions).toFixed(2)}</p>
+            <h2 className="text-[13px] uppercase font-[500]">AVAILABLE BALANCE</h2>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {merchantTotal.toFixed(2)}</p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              No. of Transactions: <span className="font-[700]">{total}</span>
+              Total Transactions: <span className="font-[700]">{verifiedTransactions}</span>
             </p>
           </div>
           <div
@@ -378,7 +391,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
             <h2 className="text-[13px] uppercase font-[500]">PENDING TRANSACTIONS</h2>
             <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(unverifiedTransactions).toFixed(2)}</p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              No. of Transactions: <span className="font-[700]">{total}</span>
+              No. of Transactions: <span className="font-[700]">{total2}</span>
             </p>
           </div>
           <div
@@ -388,7 +401,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
             <h2 className="text-[13px] uppercase font-[500]">FAILED TRANSACTIONS</h2>
             <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(declineTransactions).toFixed(2)}</p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              No. of Transactions: <span className="font-[700]">{total}</span>
+              No. of Transactions: <span className="font-[700]">{total3}</span>
             </p>
           </div>
           <div
@@ -439,7 +452,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
             </div>
           </div>
           {/* Recent Transactions Section */}
-          <div className="bg-white p-6 rounded shadow w-full flex-1 h-[100%]">
+          <div className="bg-white p-6 rounded shadow w-full flex-1 overflow-auto" style={{minHeight: `${totalHeight}px`, maxHeight: `${totalHeight}px`}}>
             <h2 className="text-[16px] font-[700]">RECENT TRANSACTIONS</h2>
             <p className="text-[11px] font-[500] text-gray-500 pt-1">
               Customer is an individual or business that purchases the goods or
