@@ -29,6 +29,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
   const [verifiedTransactions, setVerifiedTransactions] = useState(0);
   const [unverifiedTransactions, setUnverifiedTransactions] = useState(0);
   const [transactionData, setTransactionData] = useState({ amount: "", username: "", });
+  const [availableWithdraw, setAvailableWithdraw] = useState(0);
 
   // const totalHeight = window.innerHeight - (56+112+20+28+50);
   const totalHeight = window.innerHeight - 366;
@@ -98,6 +99,7 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
       setTotal2(pendingData?.data?.totalTransaction || 0);
       setTotal3(declineData?.data?.totalTransaction || 0);
       setMerchantTotal(approvedData?.data?.merchantTotalSum || 0);
+      setAvailableWithdraw(approvedData?.data?.availableWithdraw)
 
       if (merchantData?.status && merchantData?.data?.data) {
         const recentTransactions = merchantData.data.data.slice(0, 10);
@@ -379,9 +381,9 @@ const Home = ({ setSelectedPage, authorization, showSidebar, loginType, permissi
             style={{ backgroundImage: "linear-gradient(to right, rgba(0, 150, 102, 1), rgba(59, 221, 169, 1))" }}
           >
             <h2 className="text-[13px] uppercase font-[500]">AVAILABLE BALANCE</h2>
-            <p className="mt-[13px] text-[20px] font-[700]">₹ {merchantTotal.toFixed(2)}</p>
+            <p className="mt-[13px] text-[20px] font-[700]">₹ {Number(availableWithdraw).toFixed(2)}</p>
             <p className="pt-[3px] text-[13px] font-[500] mb-[7px]">
-              Total Transactions: <span className="font-[700]">{verifiedTransactions}</span>
+              Approved Transactions: <span className="font-[700]">{verifiedTransactions}</span>
             </p>
           </div>
           <div
