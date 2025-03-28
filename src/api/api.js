@@ -2,8 +2,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import moment from "moment/moment";
 
-// const BACKEND_URL = "https://backend.royal247.org";
-const BACKEND_URL = "https://test-backend.royal247.org";
+const BACKEND_URL = "https://backend.royal247.org";
+// const BACKEND_URL = "https://test-backend.royal247.org";
 // const BACKEND_URL = "http://46.202.166.64:8000";
 export const PDF_READ_URL = "https://pdf.royal247.org/parse-statement"
 
@@ -225,18 +225,18 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
     try {
         const token = Cookies.get("merchantToken");
         const queryParams = new URLSearchParams();
-        
+
         // Add required parameters
         queryParams.append("page", pageNumber || 1);
         queryParams.append("type", "manual");
-        
+
         // Add optional parameters only if they have values
         if (status) queryParams.append("status", status);
         if (merchant) queryParams.append("trnStatus", merchant);
         if (searchQuery) queryParams.append("search", searchQuery);
         if (searchTrnId) queryParams.append("trnNo", searchTrnId);
         if (bankId) queryParams.append("bankId", bankId);
-        
+
         // Add date range parameters if provided
         if (dateRange?.startDate) {
             console.log('Adding startDate to query:', dateRange.startDate);
@@ -248,7 +248,7 @@ export const fn_getAllMerchantApi = async (status, pageNumber, merchant, searchQ
         }
         // {moment.utc(selectedTransaction?.createdAt).format('DD MMM YYYY, hh:mm A')}
 
-        const url = `${BACKEND_URL}/ledger/getAllMerchant`;
+        const url = `${BACKEND_URL}/ledger/getAllMerchant?${queryParams.toString()}`;
         console.log('Making API request to:', url);
 
         const response = await axios.get(url, {
@@ -302,7 +302,7 @@ export const fn_getAllDirectPaymentApi = async (status, pageNumber, merchant, se
         if (bankId) {
             queryParams.append("bankId", bankId);
         }
-        
+
         // Add date range if provided using moment.utc
         if (dateRange && dateRange[0] && dateRange[1]) {
             queryParams.append("startDate", moment.utc(dateRange[0]).format('YYYY-MM-DD'));
@@ -342,11 +342,11 @@ export const fn_getAllPointsPaymentApi = async (status, pageNumber, dateRange) =
     try {
         const token = Cookies.get("merchantToken");
         const queryParams = new URLSearchParams();
-        
+
         // Add basic parameters
         if (status) queryParams.append("status", status);
         if (pageNumber) queryParams.append("page", pageNumber);
-        
+
         // Add date range parameters if provided
         if (dateRange?.startDate) queryParams.append("startDate", dateRange.startDate);
         if (dateRange?.endDate) queryParams.append("endDate", dateRange.endDate);
@@ -951,7 +951,7 @@ export const fn_singlePayout = async (payoutData) => {
     try {
         const token = Cookies.get("merchantToken");
         const response = await axios.post(
-            `${BACKEND_URL}/excelWithdraw/create`, 
+            `${BACKEND_URL}/excelWithdraw/create`,
             payoutData,
             {
                 headers: {

@@ -785,32 +785,32 @@ const DirectPaymentPage = ({ setSelectedPage, authorization, showSidebar, permis
                     <p className="text-[14px] font-[700] mr-2">Transaction Activity:</p>
                   </div>
                   {selectedTransaction?.trnStatus !== "Transaction Pending" && (
-                      <div className="flex items-center">
-                        <span
-                          className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
-                              ? "text-[#0DA000]"
-                              : selectedTransaction?.status === "Pending"
-                                ? "text-[#FFB800]"
-                                : selectedTransaction?.status === "Manual Verified"
-                                  ? "text-[#0864E8]"
-                                  : "text-[#FF002A]"
-                            }`}
-                        >
-                          {selectedTransaction?.status === "Decline"
-                            ? "Transaction Decline"
-                            : selectedTransaction?.status === "Pending"
-                              ? "Transaction Pending"
-                              : selectedTransaction?.approval === true
-                                ? "Points Approved"
-                                : (selectedTransaction?.reason && selectedTransaction?.reason !== "")
-                                  ? "Points Decline"
-                                  : "Points Pending"}
-                        </span>
-                        <p className="text-[14px] font-[400] ml-6">
-                          {moment(selectedTransaction?.updatedAt).tz('Asia/Kolkata').format('DD MMM YYYY, hh:mm A')}
-                        </p>
-                      </div>
-                    )}
+                    <div className="flex items-center">
+                      <span
+                        className={`text-nowrap text-[16px] font-[700] flex items-center justify-center ${selectedTransaction?.status === "Approved"
+                          ? "text-[#0DA000]"
+                          : selectedTransaction?.status === "Pending"
+                            ? "text-[#FFB800]"
+                            : selectedTransaction?.status === "Manual Verified"
+                              ? "text-[#0864E8]"
+                              : "text-[#FF002A]"
+                          }`}
+                      >
+                        {selectedTransaction?.status === "Decline"
+                          ? "Transaction Decline"
+                          : selectedTransaction?.status === "Pending"
+                            ? "Transaction Pending"
+                            : selectedTransaction?.approval === true
+                              ? "Points Approved"
+                              : (selectedTransaction?.reason && selectedTransaction?.reason !== "")
+                                ? "Points Decline"
+                                : "Points Pending"}
+                      </span>
+                      <p className="text-[14px] font-[400] ml-6">
+                        {moment(selectedTransaction?.updatedAt).tz('Asia/Kolkata').format('DD MMM YYYY, hh:mm A')}
+                      </p>
+                    </div>
+                  )}
                   <p className="text-[14px] font-[700] mt-3">
                     Reason for Decline Transaction
                   </p>

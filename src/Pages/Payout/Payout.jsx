@@ -54,6 +54,7 @@ const Payout = ({ authorization, showSidebar }) => {
               placement: "topRight",
               duration: 3
             });
+            fileInput.value = "";
             return;
           }
 
@@ -67,6 +68,7 @@ const Payout = ({ authorization, showSidebar }) => {
           fileInput.value = "";
         } catch (err) {
           setLoading(false);
+          fileInput.value = "";
           notification.error({
             message: "Error",
             description: "Failed to process Excel file",
